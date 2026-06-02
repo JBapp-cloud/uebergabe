@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  PRISMA ÜBERGABEPROTOKOLL – PROJEKTKONTEXT FÜR KI-ASSISTENT                ║
+║  Diese Datei einfach hochladen – Claude ist sofort im Bild.                ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  PRODUKT                                                                     ║
+║  Digitale Wohnungsübergabe-App für PRISMA Unternehmensgruppe                ║
+║  (prisma-zentrum.com) – österreichischer Immobilienentwickler.              ║
+║  Single-File HTML-App, läuft komplett im Browser, kein Backend.             ║
+║                                                                              ║
+║  VERSION: v7-PWA (letzte stabile Version)                                       ║
+║                                                                              ║
+║  EINSATZ                                                                     ║
+║  • Hauptsächlich iPhone Safari vor Ort bei Wohnungsübergaben                ║
+║  • Auch Mac/Desktop möglich                                                  ║
+║                                                                              ║
+║  WORKFLOW (6 Schritte)                                                       ║
+║  1. Stammdaten  2. Schlüssel  3. Zähler  4. Räume (Prüfung+Zustand+Mängel) ║
+║  5. Weitere Fotos  6. Unterschriften + Export                                ║
+║                                                                              ║
+║  FEATURES (implementiert)                                                    ║
+║  • Raumbasierte Mängel-Erfassung mit Zustand gut/mittel/schlecht            ║
+║  • Fotos je Raum + je Mangel + allgemeine Fotos                             ║
+║  • Signaturen (Canvas, touch-optimiert)                                      ║
+║  • LocalStorage-Persistenz (auto-save + restore)                            ║
+║  • PDF-Export: iOS-sicherer Fullscreen-Iframe (kein window.open)           ║
+║  • E-Mail-Funktion (mailto:)                                                 ║
+║  • PRISMA Branding (#eb5b36)                                                 ║
+║                                                                              ║
+║  OBJEKTE PFLEGEN                                                              ║
+║  var OBJEKTE=[...] im JS direkt bearbeiten (Suche: "OBJEKTE PFLEGEN")       ║
+║  Format: {name:"Adresse", eigentuemer:"Name"}                                ║
+║                                                                              ║
+║  TECHNISCHE ENTSCHEIDUNGEN                                                   ║
+║  • Kein Framework, kein Build-Step – reines HTML/CSS/JS                     ║
+║  • iOS Safari: capture="environment" nur für Kamera-Button,                 ║
+║    Galerie-Button ohne capture für Mehrfachauswahl                          ║
+║  • touch-action:none nur per CSS auf canvas, nicht inline                   ║
+║  • Drucken via document.write in sichtbarem Fullscreen-Iframe               ║
+║  • Excel: Arial 10pt, negative Zahlen mit Minus (falls relevant)            ║
+║                                                                              ║
+║  DESIGN                                                                      ║
+║  • Primärfarbe: #eb5b36 (PRISMA Orange)                                      ║
+║  • Font: -apple-system / Helvetica Neue / Arial                              ║
+║  • Mobile-first, min touch-target 44px                                       ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+-->
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PRISMA Übergabeprotokoll</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#eb5b36">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Übergabe">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+/* === RESET === */
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;font-size:15px;background:#ededed;color:#1a1a1a;min-height:100vh;-webkit-overflow-scrolling:touch;overflow-y:auto}
+/* PWA safe-area (iPhone Notch) */
+.sticky-top{padding-top:env(safe-area-inset-top)}
+@supports(padding:env(safe-area-inset-top)){.header{padding-top:calc(14px + env(safe-area-inset-top))}}
+
+/* === LAYOUT === */
+.app{max-width:880px;margin:0 auto;padding:0 0 60px}
+.sticky-top{position:sticky;top:0;z-index:50;will-change:transform;-webkit-transform:translateZ(0)}
+
+/* === HEADER === */
+.header{background:#fff;padding:14px 22px 11px;border-bottom:3px solid #eb5b36;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 6px rgba(0,0,0,.07)}
+.header-left .app-title{font-size:16px;font-weight:700;color:#1a1a1a;line-height:1.2;letter-spacing:-.2px}
+.header-left .app-sub{font-size:11px;color:#999;margin-top:1px}
+@media(max-width:480px){
+  .header{padding:10px 14px 9px}
+  .header-left .app-title{font-size:14px}
+}
+
+/* === PROGRESS === */
+.progress-bar{height:3px;background:#e0e0e0}
+.progress-fill{height:3px;background:#eb5b36;transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+/* === STEP TABS === */
+.steps{display:flex;background:#fff;border-bottom:1px solid #e8e8e8;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step-tab{flex:1;min-width:60px;padding:9px 4px 8px;text-align:center;font-size:9.5px;color:#bbb;cursor:pointer;border-right:1px solid #f0f0f0;user-select:none;font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:color .15s,background .15s;position:relative;-webkit-tap-highlight-color:transparent}
+.step-tab:last-child{border-right:none}
+.step-tab .sn{font-size:15px;font-weight:700;display:block;line-height:1.1;margin-bottom:1px}
+.step-tab.active{color:#eb5b36;background:#fff8f6}
+.step-tab.active::after{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:#eb5b36}
+.step-tab.done{color:#444;background:#fafafa}
+.step-tab.done .sn::before{content:"✓ ";font-size:10px;vertical-align:1px}
+@media(max-width:500px){.step-tab{min-width:50px;font-size:8.5px;padding:7px 2px 6px}.step-tab .sn{font-size:13px}}
+
+/* === CONTENT === */
+.content-area{background:#fff;border:1px solid #e0e0e0;border-top:none;padding:26px 26px 22px;min-height:420px}
+@media(max-width:600px){.content-area{padding:18px 15px 18px}}
+
+/* === SECTION HEADERS === */
+.sec-hd{font-size:10.5px;font-weight:700;color:#eb5b36;letter-spacing:1.2px;text-transform:uppercase;border-bottom:1.5px solid #fad5c9;padding-bottom:5px;margin:24px 0 15px}
+.sec-hd:first-child{margin-top:0}
+
+/* === OBJ BOX === */
+.obj-box{border:1px solid #e0e0e0;padding:15px 17px;margin-bottom:20px;background:#fafafa;border-radius:1px}
+.obj-row{display:flex;align-items:center;margin-bottom:11px;gap:10px}
+.obj-row:last-child{margin-bottom:0}
+.obj-lbl{font-weight:700;font-size:12.5px;color:#555;min-width:195px;flex-shrink:0}
+.obj-val{flex:1}
+.obj-val input{width:100%;border:none;border-bottom:1.5px solid #d0d0d0;font-size:14.5px;font-family:inherit;color:#1a1a1a;background:transparent;padding:4px 3px 3px;outline:none;-webkit-appearance:none;transition:border-color .15s}
+.obj-val input:focus{border-bottom-color:#eb5b36}
+@media(max-width:520px){
+  .obj-row{flex-direction:column;align-items:flex-start;gap:3px}
+  .obj-lbl{min-width:unset;font-size:11.5px;color:#777}
+  .obj-val{width:100%}
+}
+
+/* === FIELD ROW === */
+.field-row{display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:145px}
+.field-full{flex-basis:100%}
+.field label{font-size:10.5px;font-weight:700;color:#888;letter-spacing:.5px;text-transform:uppercase}
+.field input,.field select{border:none;border-bottom:1.5px solid #d0d0d0;padding:6px 3px 4px;font-size:14.5px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0;transition:border-color .15s}
+.field input:focus,.field select:focus{border-bottom-color:#eb5b36}
+
+/* === CHECKBOXES === */
+.cb-group{margin-bottom:18px}
+.cb-row{display:flex;align-items:flex-start;gap:11px;font-size:14px;line-height:1.5;cursor:pointer;padding:10px 12px;border:1px solid #ebebeb;margin-bottom:7px;background:#fff;transition:background .12s,border-color .12s;-webkit-tap-highlight-color:transparent}
+.cb-row:hover{background:#fdf8f7;border-color:#f0c8be}
+.cb-row input[type=checkbox]{width:19px;height:19px;min-width:19px;margin-top:2px;cursor:pointer;accent-color:#eb5b36;flex-shrink:0}
+.cb-row.checked{background:#fff8f6;border-color:#f0c8be}
+
+/* === TABLES === */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:14px;border:1px solid #e0e0e0}
+.tbl-scroll table{margin-bottom:0;min-width:500px;width:100%;border-collapse:collapse}
+table.tbl th{padding:9px 11px;font-size:11.5px;font-weight:700;text-align:left;background:#f5f5f5;color:#444;border-bottom:2px solid #d8d8d8;white-space:nowrap}
+table.tbl td{padding:8px 9px;font-size:13.5px;vertical-align:middle;border-bottom:1px solid #ebebeb}
+table.tbl tr:last-child td{border-bottom:none}
+table.tbl tr:hover td{background:#fafafa}
+table.tbl input,table.tbl select{border:none;width:100%;font-size:13px;background:transparent;color:#1a1a1a;outline:none;font-family:inherit;padding:3px 2px}
+
+/* === MANGEL TABLE === */
+table.mg-tbl th{padding:9px 11px;font-size:11.5px;font-weight:700;text-align:left;background:#f5f5f5;color:#444;border-bottom:2px solid #d8d8d8}
+table.mg-tbl td{padding:8px 9px;font-size:13px;vertical-align:middle;border-bottom:1px solid #ebebeb}
+table.mg-tbl tr:last-child td{border-bottom:none}
+table.mg-tbl input,table.mg-tbl select{border:none;width:100%;font-size:13px;background:transparent;color:#1a1a1a;outline:none;font-family:inherit;padding:2px}
+
+/* === CHECKLISTE === */
+.cl-tbl{width:100%;border-collapse:collapse;margin-bottom:16px}
+.cl-tbl th{padding:9px 12px;font-size:11.5px;font-weight:700;text-align:left;background:#f5f5f5;color:#444;border-bottom:2px solid #d8d8d8}
+.cl-tbl td{padding:9px 12px;font-size:13px;vertical-align:top;border-bottom:1px solid #ebebeb}
+.cl-tbl td:first-child{font-weight:700;font-size:12px;width:120px;color:#333}
+.cl-tbl td:last-child{width:60px;text-align:center}
+.cl-tbl tr.checked-row td{background:#f9fff6}
+.cl-tbl input[type=checkbox]{width:22px;height:22px;accent-color:#2a9d3b;cursor:pointer}
+
+/* === SCHLÜSSEL ROW === */
+.sk-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 0;border-bottom:1px solid #f0f0f0}
+.sk-anz{width:52px;border:none;border-bottom:1.5px solid #d0d0d0;text-align:center;font-size:14px;font-family:inherit;background:transparent;outline:none;padding:4px 2px;-webkit-appearance:none}
+.sk-lbl{font-size:13px;color:#777;white-space:nowrap}
+.sk-sel,.sk-inp{border:none;border-bottom:1.5px solid #d0d0d0;font-size:13px;font-family:inherit;background:transparent;outline:none;padding:4px 3px;-webkit-appearance:none;border-radius:0}
+.sk-sel{min-width:155px}
+.sk-inp{flex:1;min-width:80px}
+
+/* === BUTTONS === */
+.btn-add{background:#fff;color:#333;border:1.5px solid #888;padding:9px 17px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:700;transition:background .12s,border-color .12s;display:inline-flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent;margin-bottom:12px}
+.btn-add:hover{background:#f5f5f5;border-color:#333}
+.btn-del{background:transparent;color:#ccc;border:1px solid #e0e0e0;padding:5px 9px;font-size:12px;cursor:pointer;font-family:inherit;transition:color .15s,border-color .15s,background .15s;min-width:34px;min-height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%}
+.btn-del:hover{color:#e00;border-color:#e00;background:#fff0f0}
+
+/* === FOTO === */
+.foto-btn{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1.5px solid #ccc;padding:5px 11px;font-size:11.5px;cursor:pointer;color:#666;font-family:inherit;transition:border-color .12s,color .12s;min-height:34px;-webkit-tap-highlight-color:transparent}
+.foto-btn:hover{border-color:#555;color:#333}
+.foto-thumb-wrap{position:relative;display:inline-block}
+.foto-thumb{width:60px;height:60px;object-fit:cover;border:1px solid #ddd;display:block}
+.foto-del-btn{position:absolute;top:-7px;right:-7px;background:#d00;color:#fff;border:none;width:18px;height:18px;font-size:9px;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.foto-zone{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:5px}
+
+/* === FOTO GRID === */
+.foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:16px}
+@media(max-width:480px){.foto-grid{grid-template-columns:repeat(2,1fr)}}
+.foto-card{border:1px solid #e0e0e0;overflow:hidden;background:#fafafa}
+.foto-card img{width:100%;height:112px;object-fit:cover;display:block}
+.foto-card-foot{padding:5px 7px;display:flex;gap:5px;align-items:center;border-top:1px solid #f0f0f0}
+.foto-card-foot input{border:none;font-size:11.5px;width:100%;background:transparent;outline:none;font-family:inherit;color:#666}
+
+/* === SIGNATUR === */
+.sig-grid{display:flex;gap:22px;flex-wrap:wrap;margin:14px 0 20px}
+.sig-col{flex:1;min-width:210px}
+.sig-lbl{font-size:11.5px;font-weight:700;color:#444;margin-bottom:7px;letter-spacing:.2px}
+.sig-wrap{border:1.5px solid #ccc;background:#f8f8f8;position:relative;cursor:crosshair}
+.sig-wrap canvas{display:block;width:100%;height:115px;touch-action:auto}
+.sig-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:#ccc;pointer-events:none;user-select:none;letter-spacing:.3px}
+.sig-clear{background:#fff;border:1px solid #ccc;padding:5px 13px;font-size:11.5px;cursor:pointer;color:#666;margin-top:5px;font-family:inherit;transition:border-color .12s}
+.sig-clear:hover{border-color:#555;color:#333}
+
+/* === NAVIGATION === */
+.nav-bar{display:flex;justify-content:space-between;align-items:center;padding:18px 0 0;border-top:1px solid #e8e8e8;margin-top:20px;gap:10px;flex-wrap:wrap}
+.btn-back{background:#fff;border:1.5px solid #aaa;padding:11px 22px;font-size:14px;cursor:pointer;color:#333;font-family:inherit;font-weight:700;transition:border-color .12s;min-height:46px;-webkit-tap-highlight-color:transparent}
+.btn-back:hover{border-color:#333}
+.btn-fwd{background:#1a1a1a;color:#fff;border:none;padding:11px 24px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:700;transition:background .15s;min-height:46px;-webkit-tap-highlight-color:transparent}
+.btn-fwd:hover{background:#eb5b36}
+.btn-print{background:#eb5b36;color:#fff;border:none;padding:11px 22px;font-size:14px;cursor:pointer;font-weight:700;font-family:inherit;min-height:46px;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.btn-print:hover{background:#d04a28}
+.btn-email{background:#fff;color:#1a1a1a;border:1.5px solid #555;padding:11px 20px;font-size:14px;cursor:pointer;font-weight:700;font-family:inherit;min-height:46px;-webkit-tap-highlight-color:transparent}
+.btn-email:hover{background:#f5f5f5}
+.nav-right{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:500px){
+  .nav-bar{flex-direction:column-reverse;align-items:stretch}
+  .btn-back,.btn-fwd,.btn-print,.btn-email{width:100%;text-align:center;justify-content:center}
+  .nav-right{flex-direction:column;width:100%}
+}
+
+/* === HINTS & ALERTS === */
+.hint{background:#fdf6f4;border:1px solid #f5d0c5;border-left:3px solid #eb5b36;padding:12px 15px;font-size:12.5px;color:#666;margin-bottom:15px;line-height:1.65}
+.info-empty{text-align:center;padding:20px 0;font-size:13px;color:#bbb;border-bottom:1px solid #f0f0f0;margin-bottom:10px}
+.warn-box{border-left:3px solid #eb5b36;background:#fdf6f4;padding:9px 13px;font-size:12.5px;margin-bottom:12px;color:#666}
+
+/* === TOAST === */
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;font-size:11.5px;padding:7px 15px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:999;border-radius:3px;box-shadow:0 3px 12px rgba(0,0,0,.2)}
+.toast.show{opacity:1}
+
+/* === LOADING === */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;z-index:200;font-size:13px;color:#888;display:none}
+.loading-overlay.active{display:flex}
+
+
+/* === ZUSTAND BADGE === */
+.zust-row{display:flex;gap:7px;margin:8px 0 4px;flex-wrap:wrap}
+.zust-btn{border:1.5px solid #ddd;background:#fff;font-size:12px;font-weight:700;padding:7px 13px;cursor:pointer;font-family:inherit;border-radius:2px;transition:all .12s;min-height:36px;-webkit-tap-highlight-color:transparent;letter-spacing:.3px}
+.zust-btn:hover{border-color:#aaa}
+.zust-btn.sel-gut{background:#e8f7ec;border-color:#4caf50;color:#1b7a2e}
+.zust-btn.sel-mittel{background:#fff8e6;border-color:#f0a500;color:#8a5c00}
+.zust-btn.sel-schlecht{background:#fdecea;border-color:#e53935;color:#b71c1c}
+
+/* === RAUM-FOTO BLOCK (in Mängel) === */
+.raum-block{border:1px solid #e8e8e8;margin-bottom:14px;background:#fff}
+.raum-block-hd{display:flex;align-items:center;gap:10px;padding:12px 15px;background:#fafafa;border-bottom:1px solid #f0f0f0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.raum-block-hd .rb-name{font-weight:700;font-size:14px;flex:1}
+.raum-block-hd .rb-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:2px}
+.rb-badge.gut{background:#e8f7ec;color:#1b7a2e}
+.rb-badge.mittel{background:#fff8e6;color:#8a5c00}
+.rb-badge.schlecht{background:#fdecea;color:#b71c1c}
+.rb-badge.none{background:#f0f0f0;color:#aaa}
+.raum-block-hd .rb-toggle{font-size:13px;color:#aaa;margin-left:4px;transition:transform .2s}
+.raum-block-hd.open .rb-toggle{transform:rotate(180deg)}
+.raum-block-body{padding:14px 15px;display:none}
+.raum-block-body.open{display:block}
+
+/* === MANGEL CARD === */
+.mangel-card{background:#fff8f6;border:1px solid #f5d0c5;padding:11px 13px;margin-bottom:9px;position:relative}
+.mangel-card-row{display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap}
+.mangel-card textarea{width:100%;border:none;border-bottom:1.5px solid #e0d0d0;font-size:13.5px;font-family:inherit;background:transparent;outline:none;padding:3px 2px;resize:none;min-height:38px}
+.mangel-card textarea:focus{border-bottom-color:#eb5b36}
+
+/* === FOTO GRID (Raum-Fotos) === */
+.rfoto-grid{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px;align-items:flex-start}
+.rfoto-item{position:relative;width:80px}
+.rfoto-img{width:80px;height:80px;object-fit:cover;display:block;border:1px solid #e0e0e0}
+.rfoto-del{position:absolute;top:-6px;right:-6px;background:#c00;color:#fff;border:none;width:20px;height:20px;border-radius:50%;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.rfoto-lbl{font-size:10px;color:#888;width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.rfoto-add{width:80px;height:80px;border:2px dashed #ddd;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fafafa;font-size:11px;color:#bbb;gap:4px;-webkit-tap-highlight-color:transparent;transition:border-color .12s,background .12s}
+.rfoto-add:hover,.rfoto-add:active{border-color:#eb5b36;background:#fff8f6;color:#eb5b36}
+.rfoto-add span{font-size:22px;line-height:1}
+
+/* === DOWNLOAD BUTTON === */
+.btn-dl{background:#2e7d32;color:#fff;border:none;padding:11px 22px;font-size:14px;cursor:pointer;font-weight:700;font-family:inherit;min-height:46px;transition:background .15s;-webkit-tap-highlight-color:transparent;display:inline-flex;align-items:center;gap:7px}
+.btn-dl:hover{background:#1b5e20}
+
+/* === FOTO COUNT PILL === */
+.fcnt{display:inline-block;background:#eb5b36;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:5px;vertical-align:middle}
+
+input:focus,select:focus,textarea:focus{border-bottom-color:#eb5b36 !important}
+
+
+/* === AUTOCOMPLETE === */
+.ac-wrap{position:relative;flex:1}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #eb5b36;border-top:none;z-index:200;max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.ac-item{padding:11px 12px;font-size:14px;cursor:pointer;border-bottom:1px solid #f5f5f5;-webkit-tap-highlight-color:transparent}
+.ac-item:last-child{border-bottom:none}
+.ac-item:active,.ac-item:hover{background:#fff8f6}
+.ac-item strong{color:#eb5b36}
+.ac-item small{display:block;font-size:11.5px;color:#999;margin-top:1px}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- STICKY HEADER + STEPS -->
+  <div class="sticky-top">
+    <div class="header">
+      <div class="header-left">
+        <div class="app-title" id="app-title">Übergabeprotokoll Wohnung</div>
+        <div class="app-sub" id="prog-lbl">Schritt 1 von 6</div>
+      </div>
+      <div id="header-logo">
+        <svg width="128" height="34" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="60" font-family="-apple-system,Arial,sans-serif" font-size="62" font-weight="700" fill="#333" letter-spacing="2">PRISMA</text>
+          <rect x="244" y="7" width="48" height="48" rx="4" fill="#eb5b36"/>
+          <circle cx="268" cy="31" r="14" fill="none" stroke="white" stroke-width="4.5"/>
+          <circle cx="268" cy="31" r="5.5" fill="none" stroke="white" stroke-width="3.5"/>
+          <circle cx="268" cy="31" r="1.5" fill="white"/>
+        </svg>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:14%"></div></div>
+    <div class="steps" id="stepbar"></div>
+  </div>
+
+  <div class="content-area" id="content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loading">Fotos werden verarbeitet…</div>
+
+<script>
+// ── DATA ───────────────────────────────────────────────────────────────────
+var ROOMS=["GANG","KÜCHE","BAD","WC","WOHNZIMMER","SCHLAFZIMMER 1","SCHLAFZIMMER 2","SCHLAFZIMMER 3","BALKON","ABSTELLRAUM","SONSTIGE"];
+var RPUNKTE={
+  "GANG":"Boden, Wände, Decke, Wohnungstür, Schloss",
+  "KÜCHE":"Boden, Wände, Decke, Einbaumöbel, Herd, Spüle, Türe, Fenster, Silikonfugen",
+  "BAD":"Boden, Wände, Decke, Badewanne/Dusche, WC, Waschbecken, Lüftung, Fenster, Türe, Silikonfugen",
+  "WC":"Boden, Wände, Decke, WC, Lüftung, Fenster, Türe, Silikonfugen",
+  "WOHNZIMMER":"Boden, Wände, Decke, Fenster, Türe",
+  "SCHLAFZIMMER 1":"Boden, Wände, Decke, Fenster, Türe",
+  "SCHLAFZIMMER 2":"Boden, Wände, Decke, Fenster, Türe",
+  "SCHLAFZIMMER 3":"Boden, Wände, Decke, Fenster, Türe",
+  "BALKON":"Boden, Wände, Fenster, Türe, Regenabfluss, Geländer",
+  "ABSTELLRAUM":"Boden, Wände",
+  "SONSTIGE":"–"
+};
+var SK_OPTS=["Wohnungsschlüssel","Briefkasten","Keller","Handsender Tiefgarage","Sonstiges"];
+var ZAE_OPTS=["Strom","Wärme","Kaltwasser","Warmwasser","Gas","Sonstiges"];
+var CB_LABELS=["keine Mängel/Schäden festgestellt","die aufgeführten Mängel/Schäden festgestellt","die Kaution war zum Zeitpunkt der Übergabe hinterlegt"];
+var STEP_LABELS=["Stammdaten","Schlüssel","Zähler","Räume","Fotos","Abschluss"];
+
+var cur=0;
+var visited={}; // tracks which steps the user has actively been on
+var D={
+  typ:"Übergabe",datum:"",objekt:"",top:"",eigentuemer:"",mieter:"",
+  email_mieter:"",telefon:"",kfz:"",verwalter:"",anbieter:"",
+  strom_person:"Mieter",strom_bis:"",
+  cb:[false,false,false],
+  schluessel:[{art:"Wohnungsschlüssel",_sel:"Wohnungsschlüssel",anz:"",nr:"",foto:null}],
+  zaehler:[
+    {art:"Strom",_sel:"Strom",stand:"",nr:"",foto:null},
+    {art:"Wärme",_sel:"Wärme",stand:"",nr:"",foto:null},
+    {art:"Kaltwasser",_sel:"Kaltwasser",stand:"",nr:"",foto:null}
+  ],
+  maengel:[],
+  raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",fotos:[]};}),
+  fotos:[],
+  sig_v:null,sig_m:null,
+  email_empf:""
+};
+var padV=null,padM=null;
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function ge(id){return document.getElementById(id);}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function fmtDate(s){if(!s)return"–";var d=new Date(s);return isNaN(d)?s:d.toLocaleDateString("de-AT");}
+function fmtNow(){var n=new Date();return n.toLocaleDateString("de-AT")+" "+n.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});}
+function protTitle(){return D.typ==="Rücknahme"?"Rücknahmeprotokoll Wohnung":"Übergabeprotokoll Wohnung";}
+
+function toast(msg,dur){
+  var t=ge("toast");t.textContent=msg;t.classList.add("show");
+  setTimeout(function(){t.classList.remove("show");},dur||1800);
+}
+
+function loading(on){ge("loading").classList[on?"add":"remove"]("active");}
+
+function scrollTop(){window.scrollTo({top:0,behavior:"auto"});}
+
+// ── IMAGE RESIZE ───────────────────────────────────────────────────────────
+function resizeImg(file,cb){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=900,w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      if(h>MAX&&h>w){w=Math.round(w*MAX/h);h=MAX;}
+      var cv=document.createElement("canvas");cv.width=w;cv.height=h;
+      cv.getContext("2d").drawImage(img,0,0,w,h);
+      cb(cv.toDataURL("image/jpeg",0.72));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── SAVE CURRENT STEP TO D ────────────────────────────────────────────────
+function saveStep(){
+  var i,el;
+  if(cur===0){
+    ["typ","datum","objekt","top","eigentuemer","mieter","email_mieter","telefon","kfz","verwalter","anbieter","strom_bis","strom_person"].forEach(function(k){el=ge("f_"+k);if(el)D[k]=el.value;});
+    for(i=0;i<CB_LABELS.length;i++){el=ge("cb_"+i);if(el)D.cb[i]=el.checked;}
+    var ttl=ge("app-title");if(ttl)ttl.textContent=protTitle();
+  }
+  if(cur===1){
+    for(i=0;i<D.schluessel.length;i++){
+      var se=ge("sk_sel_"+i),ae=ge("sk_anz_"+i),ne=ge("sk_nr_"+i),ce=ge("sk_cust_"+i);
+      if(ae)D.schluessel[i].anz=ae.value;
+      if(ne)D.schluessel[i].nr=ne.value;
+      if(se){D.schluessel[i]._sel=se.value;D.schluessel[i].art=(se.value==="Sonstiges"&&ce&&ce.value)?ce.value:"Sonstiges"===se.value?se.value:se.value;}
+    }
+  }
+  if(cur===2){
+    for(i=0;i<D.zaehler.length;i++){
+      var se=ge("zae_sel_"+i),ne=ge("zae_nr_"+i),ste=ge("zae_st_"+i),ce=ge("zae_cust_"+i);
+      if(ne)D.zaehler[i].nr=ne.value;
+      if(ste)D.zaehler[i].stand=ste.value;
+      if(se){D.zaehler[i]._sel=se.value;D.zaehler[i].art=(se.value==="Sonstiges"&&ce&&ce.value)?ce.value:se.value;}
+    }
+  }
+  if(cur===3){saveMangelStep();}
+  // cur===4 = Fotos: saves inline
+  if(cur===5){
+    if(padV&&!padV.isEmpty())D.sig_v=padV.toDataURL();
+    if(padM&&!padM.isEmpty())D.sig_m=padM.toDataURL();
+    el=ge("f_email_empf");if(el)D.email_empf=el.value;
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function goStep(n){
+  if(n===cur)return;
+  saveStep();
+  visited[cur]=true; // mark current step as visited before leaving
+  // Auto-save to localStorage
+  try{localStorage.setItem("prisma_proto",JSON.stringify(D));}catch(e){}
+  cur=n;render();scrollTop();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function render(){
+  // Step bar
+  var bar=ge("stepbar");
+  bar.innerHTML=STEP_LABELS.map(function(s,i){
+    var cls="step-tab"+(i===cur?" active":visited[i]?" done":"");
+    return'<div class="'+cls+'" onclick="goStep('+i+')" title="'+s+'">'+
+      '<span class="sn">'+(visited[i]?"✓":"")+(i+1)+'</span>'+s+
+    '</div>';
+  }).join("");
+  ge("prog-lbl").textContent="Schritt "+(cur+1)+" von 6";
+  ge("prog-fill").style.width=Math.round((cur+1)/6*100)+"%";
+  var ttl=ge("app-title");if(ttl)ttl.textContent=protTitle();
+  var c=ge("content");c.innerHTML="";
+  [step0,step1,step2,step3,step4,null][cur]?c.innerHTML=[step0,step1,step2,step3,step4][cur]():step5(c);
+}
+
+function navBar(hasPrev,hasNext,nextLabel){
+  return'<div class="nav-bar">'+
+    (hasPrev?'<button class="btn-back" onclick="goStep('+( cur-1)+')">← Zurück</button>':"<span></span>")+
+    '<div class="nav-right">'+
+      (hasNext?'<button class="btn-fwd" onclick="goStep('+( cur+1)+')">'+( nextLabel||"Weiter →")+'</button>':"")
+    +'</div></div>';
+}
+
+// ── FIELD HELPERS ─────────────────────────────────────────────────────────
+function inp(id,val,ph,type){
+  var t=type||"text";
+  var a=t==="email"?' autocomplete="email"':t==="tel"?' autocomplete="tel"':t==="date"?' autocomplete="off"':'  autocomplete="off"';
+  return'<input type="'+t+'" id="'+id+'" value="'+esc(val)+'"'+a+(ph?' placeholder="'+esc(ph)+'"':"")+' style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:14.5px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">';
+}
+function sel(id,opts,val,onch){
+  return'<select id="'+id+'"'+( onch?' onchange="'+onch+'"':"")+ ' style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:14.5px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
+    opts.map(function(o){return'<option'+(o===val?' selected':"")+'>'+o+'</option>';}).join("")+
+  '</select>';
+}
+function fotoBtn(label,onch){
+  return'<label class="foto-btn">📷 '+label+'<input type="file" accept="image/*" capture="environment" style="display:none" onchange="'+onch+'">'+'</label>';
+}
+function fotoThumb(src,delFn){
+  return'<div class="foto-thumb-wrap"><img class="foto-thumb" src="'+src+'"><button class="foto-del-btn" onclick="'+delFn+'" type="button" title="Löschen">✕</button></div>';
+}
+
+function logoSVG(){
+  return'<svg width="110" height="30" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">'+
+    '<text x="0" y="60" font-family="Arial,sans-serif" font-size="62" font-weight="700" fill="#333" letter-spacing="2">PRISMA</text>'+
+    '<rect x="244" y="7" width="48" height="48" rx="4" fill="#eb5b36"/>'+
+    '<circle cx="268" cy="31" r="14" fill="none" stroke="white" stroke-width="4.5"/>'+
+    '<circle cx="268" cy="31" r="5.5" fill="none" stroke="white" stroke-width="3.5"/>'+
+    '<circle cx="268" cy="31" r="1.5" fill="white"/>'+
+  '</svg>';
+}
+
+// ── STEP 0: STAMMDATEN ────────────────────────────────────────────────────
+function step0(){
+  var cbs=CB_LABELS.map(function(l,i){
+    return'<label class="cb-row'+(D.cb[i]?' checked':"")+'"><input type="checkbox" id="cb_'+i+'"'+( D.cb[i]?' checked':"")+ ' onchange="D.cb['+i+']=this.checked;this.closest(\'label\').classList.toggle(\'checked\',this.checked)">'+l+'</label>';
+  }).join("");
+  return'<div class="sec-hd">Objektdaten</div>'+
+    '<div class="obj-box">'+
+      '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:14.5px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">Top-Nummer</span><span class="obj-val">'+inp("f_top",D.top,"z.B. Top 12")+'</span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">Eigentümer/in</span><span class="obj-val">'+inp("f_eigentuemer",D.eigentuemer)+'</span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">Mieter/in</span><span class="obj-val">'+inp("f_mieter",D.mieter)+'</span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">E-Mail Mieter/in</span><span class="obj-val">'+inp("f_email_mieter",D.email_mieter,"","email")+'</span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">Telefonnummer</span><span class="obj-val">'+inp("f_telefon",D.telefon,"","tel")+'</span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">KFZ-Kennzeichen</span><span class="obj-val">'+inp("f_kfz",D.kfz)+'</span></div>'+
+    '</div>'+
+    '<div class="field-row">'+
+      '<div class="field"><label>Art des Protokolls</label>'+sel("f_typ",["Übergabe","Rücknahme"],D.typ,"saveTyp()")+'</div>'+
+      '<div class="field"><label>Datum der Übergabe</label>'+inp("f_datum",D.datum,"","date")+'</div>'+
+    '</div>'+
+    '<div class="field-row">'+
+      '<div class="field field-full"><label>Übergabe durchgeführt durch (PRISMA)</label>'+inp("f_verwalter",D.verwalter)+'</div>'+
+    '</div>'+
+    '<div class="sec-hd">Bei der Übergabe festgestellt</div>'+
+    '<p style="font-size:13px;color:#666;margin-bottom:12px">Bei der Übergabe der Mieteinheit samt Nebenflächen wurden:</p>'+
+    '<div class="cb-group">'+cbs+'</div>'+
+    '<div class="sec-hd">Stromzähler-Anmeldung</div>'+
+    '<div class="field-row">'+
+      '<div class="field"><label>Anbieter</label>'+inp("f_anbieter",D.anbieter)+'</div>'+
+      '<div class="field"><label>Erledigt durch</label>'+sel("f_strom_person",["Mieter","Vermieter"],D.strom_person)+'</div>'+
+      '<div class="field"><label>Erledigt bis</label>'+inp("f_strom_bis",D.strom_bis,"","date")+'</div>'+
+    '</div>'+
+    navBar(false,true,"Weiter: Schlüssel →");
+}
+function saveTyp(){var el=ge("f_typ");if(el){D.typ=el.value;var t=ge("app-title");if(t)t.textContent=protTitle();}}
+
+// ── STEP 1: SCHLÜSSEL ─────────────────────────────────────────────────────
+function step1(){
+  var rows=D.schluessel.map(function(s,i){
+    var sv=s._sel||s.art;
+    var fix=(i===0);
+    var thumb=s.foto?fotoThumb(s.foto,"delSkFoto("+i+")"):"";
+    return'<div class="sk-row">'+
+      '<input type="number" class="sk-anz" id="sk_anz_'+i+'" value="'+esc(s.anz)+'" min="0" placeholder="0">'+
+      '<span class="sk-lbl">Stk.</span>'+
+      (fix
+        ? '<strong style="font-size:13.5px;min-width:155px">Wohnungsschlüssel</strong><input type="hidden" id="sk_sel_'+i+'" value="Wohnungsschlüssel">'
+        : '<select class="sk-sel" id="sk_sel_'+i+'" onchange="skChange('+i+')">'+SK_OPTS.map(function(o){return'<option'+(o===sv?' selected':"")+">"+o+"</option>";}).join("")+'</select>'+
+          (sv==="Sonstiges"?'<input class="sk-inp" id="sk_cust_'+i+'" value="'+esc(s.art!=="Sonstiges"?s.art:"")+'" placeholder="Art…">':"")
+      )+
+      '<input class="sk-inp" id="sk_nr_'+i+'" value="'+esc(s.nr)+'" placeholder="Schlüsselnummer" style="flex:1">'+
+      '<div class="foto-zone">'+thumb+(s.foto?"":fotoBtn("Foto","addSkFoto("+i+",this)"))+'</div>'+
+      (i>0?'<button class="btn-del" onclick="delSk('+i+')" type="button">✕</button>':"")
+    +'</div>';
+  }).join("");
+  return'<div class="sec-hd">Schlüssel / Sender übergeben</div>'+rows+
+    '<button class="btn-add" onclick="addSk()" style="margin-top:10px">＋ Schlüssel hinzufügen</button>'+
+    navBar(true,true,"Weiter: Zähler →");
+}
+function skChange(i){saveStep();render();}
+function addSk(){saveStep();D.schluessel.push({art:"Briefkasten",_sel:"Briefkasten",anz:"",nr:"",foto:null});render();}
+function delSk(i){saveStep();D.schluessel.splice(i,1);toast("Zeile gelöscht");render();}
+function addSkFoto(i,inp){if(!inp.files||!inp.files[0])return;saveStep();loading(true);resizeImg(inp.files[0],function(d){D.schluessel[i].foto=d;loading(false);render();});}
+function delSkFoto(i){D.schluessel[i].foto=null;render();}
+
+// ── STEP 2: ZÄHLER ────────────────────────────────────────────────────────
+function step2(){
+  var rows=D.zaehler.map(function(z,i){
+    var sv=z._sel||z.art;
+    var fix=(i<3);
+    var thumb=z.foto?fotoThumb(z.foto,"delZaeFoto("+i+")"):"";
+    return'<tr>'+
+      '<td style="min-width:120px;background:#fafafa;font-weight:700">'+
+        (fix
+          ? esc(z.art)+'<input type="hidden" id="zae_sel_'+i+'" value="'+esc(z.art)+'">'+
+          '<div id="zae_cust_wrap_'+i+'" style="display:none"></div>'
+          : '<select id="zae_sel_'+i+'" onchange="zaeChange('+i+')" style="border:none;width:100%;font-size:13px;font-family:inherit;background:transparent;outline:none">'+
+              ZAE_OPTS.map(function(o){return'<option'+(o===sv?' selected':"")+">"+o+"</option>";}).join("")+
+            '</select>'+
+            (sv==="Sonstiges"?'<input id="zae_cust_'+i+'" value="'+esc(z.art!=="Sonstiges"?z.art:"")+'" placeholder="Zählerart…" style="border:none;border-bottom:1px solid #ccc;width:100%;font-size:12px;font-family:inherit;background:transparent;outline:none;margin-top:3px">':"")
+        )+
+      '</td>'+
+      '<td><input id="zae_nr_'+i+'" value="'+esc(z.nr)+'" placeholder="Zählernummer" style="border:none;width:100%;font-size:13px;font-family:inherit;outline:none;background:transparent;padding:3px"></td>'+
+      '<td><input id="zae_st_'+i+'" value="'+esc(z.stand)+'" placeholder="Zählerstand" style="border:none;width:100%;font-size:13px;font-family:inherit;outline:none;background:transparent;padding:3px"></td>'+
+      '<td style="width:85px"><div class="foto-zone">'+thumb+(z.foto?"":'<label class="foto-btn" style="padding:4px 8px;font-size:11px">📷<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addZaeFoto('+i+',this)"></label>')+'</div></td>'+
+      (i>=3?'<td style="width:40px"><button class="btn-del" onclick="delZae('+i+')" type="button">✕</button></td>':"<td></td>")+
+    '</tr>';
+  }).join("");
+  return'<div class="sec-hd">Zählerstände erfassen</div>'+
+    '<div class="tbl-scroll"><table class="tbl"><thead><tr>'+
+      '<th style="min-width:120px">Zählerart</th><th>Zählernummer</th><th>Zählerstand</th><th style="width:85px">Foto</th><th style="width:40px"></th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<button class="btn-add" onclick="addZae()">＋ Zähler hinzufügen</button>'+
+    navBar(true,true,"Weiter: Mängel →");
+}
+function zaeChange(i){saveStep();render();}
+function addZae(){saveStep();D.zaehler.push({art:"Warmwasser",_sel:"Warmwasser",stand:"",nr:"",foto:null});render();}
+function delZae(i){saveStep();D.zaehler.splice(i,1);toast("Zeile gelöscht");render();}
+function addZaeFoto(i,inp){if(!inp.files||!inp.files[0])return;saveStep();loading(true);resizeImg(inp.files[0],function(d){D.zaehler[i].foto=d;loading(false);render();});}
+function delZaeFoto(i){D.zaehler[i].foto=null;render();}
+
+// ── STEP 3: MÄNGEL + ZUSTAND + FOTOS (raumbezogen) ──────────────────────
+function step3(){
+  var totalM=D.raeume.reduce(function(a,r){return a+r.fotos.length;},0)+D.fotos.length;
+  // Render each room as collapsible block
+  var blocks=D.raeume.map(function(r,ri){
+    // Badge
+    var badgeCls=r.zustand?r.zustand:"none";
+    var badgeLbl=r.zustand?({gut:"Gut",mittel:"Mittel",schlecht:"Schlecht"}[r.zustand]||r.zustand):"Zustand?";
+    var mangCount=D.maengel.filter(function(m){return m._rsel===r.r;}).length;
+    var fotoCount=r.fotos.length;
+    var summary=(mangCount>0?mangCount+" Mängel":"")+(fotoCount>0?(mangCount>0?" · ":"")+fotoCount+" Fotos":"");
+
+    // Mängel cards for this room
+    var roomMangelIdx=[];
+    D.maengel.forEach(function(m,i){if(m._rsel===r.r)roomMangelIdx.push(i);});
+    var mangelCards=roomMangelIdx.map(function(i){
+      var m=D.maengel[i];
+      var thumb=m.foto?
+        '<div class="rfoto-item"><img class="rfoto-img" src="'+m.foto+'"><button class="rfoto-del" onclick="delMFoto('+i+')" type="button">✕</button></div>'
+        :'<label class="rfoto-add"><span>📷</span>Foto<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addMFoto('+i+',this)"></label>';
+      return '<div class="mangel-card">'+
+        '<div class="mangel-card-row">'+
+          '<textarea id="mg_m_'+i+'" rows="1" placeholder="Mangel / Schaden beschreiben…" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.maengel['+i+'].mangel=this.value">'+esc(m.mangel)+'</textarea>'+
+          '<button class="btn-del" onclick="delM('+i+')" type="button" title="Mangel löschen">✕</button>'+
+        '</div>'+
+        '<div class="mangel-card-row" style="margin-bottom:0">'+
+          '<textarea id="mg_b_'+i+'" rows="1" placeholder="Bemerkung (optional)…" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.maengel['+i+'].bem=this.value" style="font-size:12.5px;color:#888">'+esc(m.bem)+'</textarea>'+
+        '</div>'+
+        '<div class="rfoto-grid">'+thumb+'</div>'+
+      '</div>';
+    }).join("");
+
+    // Room fotos
+    var roomFotos=r.fotos.map(function(f,fi){
+      return '<div class="rfoto-item">'+
+        '<img class="rfoto-img" src="'+f.data+'">'+
+        '<button class="rfoto-del" onclick="delRaumFoto('+ri+','+fi+')" type="button">✕</button>'+
+        '<div class="rfoto-lbl">'+(f.bez||"Foto "+(fi+1))+'</div>'+
+      '</div>';
+    }).join("");
+
+    var isOpen=r.zustand==="schlecht"||D.maengel.some(function(m){return m._rsel===r.r;})||r._open;
+
+    return '<div class="raum-block" id="rb_'+ri+'">'+
+      '<div class="raum-block-hd'+(isOpen?" open":"")+'" onclick="toggleRb('+ri+')">'+
+        '<div class="rb-name">'+r.r+'</div>'+
+        (summary?'<span style="font-size:11px;color:#888">'+summary+'</span>':'')+
+        '<span class="rb-badge '+badgeCls+'">'+badgeLbl+'</span>'+
+        '<span class="rb-toggle">▾</span>'+
+      '</div>'+
+      '<div class="raum-block-body'+(isOpen?" open":"")+'" id="rbb_'+ri+'">'+
+        '<div style="margin-bottom:11px">'+
+          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Prüfpunkte</div>'+
+          '<div style="font-size:12px;color:#555;background:#f8f8f8;border:1px solid #ebebeb;padding:8px 10px;line-height:1.7">'+(RPUNKTE[r.r]||'–')+'</div>'+
+          '<label style="display:flex;align-items:center;gap:9px;margin-top:8px;cursor:pointer">'
+            +'<input type="checkbox" id="cl_'+ri+'"'+(r.ok?' checked':'')+' onchange="clToggle('+ri+',this)" style="width:22px;height:22px;accent-color:#2a9d3b;cursor:pointer">'
+            +'<span id="cl_lbl_'+ri+'" style="font-size:13.5px;font-weight:700;color:'+(r.ok?'#1b7a2e':'#555')+'">'+(r.ok?'✓ Geprüft':'Raum geprüft')+'</span>'
+            +'</label>'
+        +'</div>'+
+        '<div style="margin-bottom:10px">'+
+          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Zustand</div>'+
+          '<div class="zust-row">'+
+            ['gut','mittel','schlecht'].map(function(z){
+              var lbl={gut:'👍 Gut',mittel:'➡ Mittel',schlecht:'⚠ Schlecht'}[z];
+              return '<button class="zust-btn'+(r.zustand===z?" sel-"+z:"")+'" onclick="setZustand('+ri+',\''+z+'\')" type="button">'+lbl+'</button>';
+            }).join("")+
+          '</div>'+
+        '</div>'+
+
+        '<div style="margin-bottom:10px">'+
+          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Fotos</div>'+
+          '<div class="rfoto-grid">'+
+            roomFotos+
+            '<label class="rfoto-add"><span>📷</span>Foto<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addRaumFoto('+ri+',this)"></label>'+
+          '</div>'+
+        '</div>'+
+
+        (mangelCards?'<div style="margin-bottom:8px"><div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Mängel</div>'+mangelCards+'</div>':'')+
+        '<button class="btn-add" onclick="addMForRaum(\''+r.r+'\','+ri+')" type="button" style="margin-bottom:0;font-size:12px;padding:7px 13px">＋ Mangel erfassen</button>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+
+  return '<div class="sec-hd">Räume prüfen</div>'+
+    '<p style="font-size:13px;color:#777;margin-bottom:16px;line-height:1.5">Raum antippen → Prüfpunkte abhaken, Zustand, Fotos, Mängel erfassen.</p>'+
+    blocks+
+    navBar(true,true,"Weiter: Fotos →");
+}
+
+function toggleRb(ri){
+  D.raeume[ri]._open=!D.raeume[ri]._open;
+  var hd=document.querySelector("#rb_"+ri+" .raum-block-hd");
+  var bd=ge("rbb_"+ri);
+  if(hd)hd.classList.toggle("open");
+  if(bd)bd.classList.toggle("open");
+}
+
+function setZustand(ri,z){
+  D.raeume[ri].zustand=z;
+  // Auto-open if not already
+  D.raeume[ri]._open=true;
+  // Save and re-render just the badge + buttons efficiently
+  // For simplicity, full re-render
+  saveMangelStep();
+  render();
+  // Re-open after render
+  setTimeout(function(){
+    var bd=ge("rbb_"+ri);
+    if(bd&&!bd.classList.contains("open")){bd.classList.add("open");}
+    var hd=document.querySelector("#rb_"+ri+" .raum-block-hd");
+    if(hd&&!hd.classList.contains("open")){hd.classList.add("open");}
+  },20);
+}
+
+function saveMangelStep(){
+  // Save all mangel textarea values to D.maengel
+  for(var i=0;i<D.maengel.length;i++){
+    var me=ge("mg_m_"+i),be=ge("mg_b_"+i);
+    if(me)D.maengel[i].mangel=me.value;
+    if(be)D.maengel[i].bem=be.value;
+  }
+  // Persist to localStorage
+  try{localStorage.setItem("prisma_proto",JSON.stringify(D));}catch(e){}
+}
+
+function addMForRaum(raum,ri){
+  saveMangelStep();
+  D.maengel.push({raum:raum,_rsel:raum,mangel:"",bem:"",foto:null});
+  D.raeume[ri]._open=true;
+  render();
+  // Focus the new textarea
+  setTimeout(function(){
+    var last=ge("mg_m_"+(D.maengel.length-1));
+    if(last){last.focus();last.scrollIntoView({behavior:"smooth",block:"center"});}
+  },80);
+}
+
+function addRaumFoto(ri,inputEl){
+  if(!inputEl.files||!inputEl.files.length)return;
+  saveMangelStep();
+  loading(true);
+  D.raeume[ri]._open=true;
+  var files=Array.from(inputEl.files),done=0,total=files.length;
+  files.forEach(function(f){
+    resizeImg(f,function(d){
+      D.raeume[ri].fotos.push({data:d,bez:""});
+      done++;
+      if(done===total){
+        loading(false);
+        render();
+        setTimeout(function(){showSerialPrompt(ri);},150);
+      }
+    });
+  });
+}
+
+function showSerialPrompt(ri){
+  var old=ge("serial-prompt");if(old&&old.parentNode)old.parentNode.removeChild(old);
+  var wrap=document.createElement("div");
+  wrap.id="serial-prompt";
+  wrap.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:500;background:#1a1a1a;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -3px 16px rgba(0,0,0,.3)";
+  var lbl=document.createElement("span");
+  lbl.style.cssText="font-size:14px;font-weight:700";
+  lbl.textContent="Weiteres Foto aufnehmen?";
+  wrap.appendChild(lbl);
+  var btnWrap=document.createElement("div");
+  btnWrap.style.cssText="display:flex;gap:10px;flex-shrink:0";
+  var autoTimer=setTimeout(function(){if(wrap.parentNode)wrap.parentNode.removeChild(wrap);},8000);
+  var btnNo=document.createElement("button");
+  btnNo.textContent="Fertig";
+  btnNo.style.cssText="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;border-radius:3px;font-family:inherit;min-height:44px";
+  btnNo.onclick=function(){clearTimeout(autoTimer);wrap.parentNode.removeChild(wrap);};
+  var fileIn=document.createElement("input");
+  fileIn.type="file";fileIn.accept="image/*";fileIn.setAttribute("capture","environment");fileIn.style.display="none";
+  fileIn.onchange=function(){
+    if(wrap.parentNode)wrap.parentNode.removeChild(wrap);
+    clearTimeout(autoTimer);
+    addRaumFoto(ri,fileIn);
+  };
+  var btnYes=document.createElement("button");
+  btnYes.innerHTML="&#x1F4F7; Foto";
+  btnYes.style.cssText="background:#eb5b36;color:#fff;border:none;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;border-radius:3px;font-family:inherit;min-height:44px";
+  btnYes.onclick=function(){clearTimeout(autoTimer);document.body.appendChild(fileIn);fileIn.click();};
+  btnWrap.appendChild(btnNo);
+  btnWrap.appendChild(btnYes);
+  wrap.appendChild(btnWrap);
+  document.body.appendChild(wrap);
+}
+
+function delRaumFoto(ri,fi){
+  D.raeume[ri].fotos.splice(fi,1);
+  D.raeume[ri]._open=true;
+  render();
+}
+
+function addMFoto(i,inp){
+  if(!inp.files||!inp.files[0])return;
+  saveMangelStep();
+  loading(true);
+  resizeImg(inp.files[0],function(d){D.maengel[i].foto=d;loading(false);render();});
+}
+function delM(i){saveMangelStep();D.maengel.splice(i,1);toast("Mangel gelöscht");render();}
+
+// clToggle: inline checkbox in raum-block
+function clToggle(ri,el){
+  D.raeume[ri].ok=el.checked;
+  var lbl=ge("cl_lbl_"+ri);
+  if(lbl){lbl.textContent=el.checked?"✓ Geprüft":"Raum geprüft";lbl.style.color=el.checked?"#1b7a2e":"#555";}
+  saveMangelStep();
+}
+
+function step4(){
+  var cnt=D.fotos.length;
+  var cards=D.fotos.map(function(f,i){
+    return'<div class="foto-card">'+
+      '<img src="'+f.data+'" alt="">'+
+      '<div class="foto-card-foot">'+
+        '<input value="'+esc(f.bez)+'" placeholder="Bezeichnung…" onchange="D.fotos['+i+'].bez=this.value" style="border:none;font-size:12px;width:100%;background:transparent;outline:none;font-family:inherit;color:#555">'+
+        '<button class="btn-del" onclick="delFoto('+i+')" type="button" style="min-width:28px;min-height:28px;border-radius:50%;font-size:11px">✕</button>'+
+      '</div></div>';
+  }).join("");
+  return'<div class="sec-hd">Fotodokumentation ('+cnt+' Foto'+( cnt===1?"":"s")+')</div>'+
+    '<div class="hint">Hier können <strong>zusätzliche Fotos</strong> ergänzt werden: Eingangstüre, Außenbereich, Kellerabteil, Tiefgaragenplatz oder andere Bereiche außerhalb der Wohnung.</div>'+
+    '<div class="foto-grid">'+cards+'</div>'+
+    '<label class="btn-add" style="cursor:pointer;display:inline-flex">📷 Kamera<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addFotosSingle(this)"></label>'+
+    navBar(true,true,"Weiter: Abschluss →");
+}
+function addFotos(inputEl){
+  if(!inputEl.files||!inputEl.files.length)return;
+  saveStep();loading(true);
+  var files=Array.from(inputEl.files),done=0,total=files.length;
+  files.forEach(function(f){resizeImg(f,function(d){D.fotos.push({data:d,bez:""});done++;if(done===total){loading(false);render();}});});
+}
+function addFotosSingle(inputEl){addFotos(inputEl);}
+function delFoto(i){D.fotos.splice(i,1);render();}
+
+// ── STEP 6: ABSCHLUSS ─────────────────────────────────────────────────────
+function step5(c){
+  c.innerHTML=
+    '<div class="sec-hd">Unterschriften</div>'+
+    '<p style="font-size:13px;color:#666;margin-bottom:15px;line-height:1.65">Ich/Wir bestätige/n die ordnungsgemäße Übernahme der angeführten Einheit unter Berücksichtigung des Bestandvertrages. Die Einheit wurde mit Ausnahme der angeführten Mängel in einwandfreiem Zustand übernommen.</p>'+
+    '<div class="sig-grid">'+
+      '<div class="sig-col">'+
+        '<div class="sig-lbl">PRISMA – Übergabe erfolgt durch</div>'+
+        '<div class="sig-wrap" id="sw-v"><canvas id="cv-v" width="400" height="115"></canvas><span class="sig-hint">Hier unterschreiben</span></div>'+
+        '<button class="sig-clear" onclick="clrSig(\'v\')" type="button">Signatur löschen</button>'+
+      '</div>'+
+      '<div class="sig-col">'+
+        '<div class="sig-lbl">Mieter/in – Unterschrift</div>'+
+        '<div class="sig-wrap" id="sw-m"><canvas id="cv-m" width="400" height="115"></canvas><span class="sig-hint">Hier unterschreiben</span></div>'+
+        '<button class="sig-clear" onclick="clrSig(\'m\')" type="button">Signatur löschen</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="sec-hd">Protokoll erstellen &amp; versenden</div>'+
+    '<div class="hint"><strong>PDF drucken:</strong> "Protokoll drucken" tippen &rarr; neues Fenster &ouml;ffnet sich &rarr; Druckdialog erscheint &rarr; <strong>Als PDF speichern</strong> w&auml;hlen.<br><small style="color:#999">Falls Pop-up blockiert: Safari-Einstellungen &rarr; Pop-ups erlauben.</small></div>'+
+    '</div>'+
+    '<div id="pdf-warn"></div>'+
+    '<div class="nav-bar">'+
+      '<button class="btn-back" onclick="goStep(4)" type="button">← Zurück</button>'+
+      '<div class="nav-right">'+
+        '<button class="btn-email" onclick="doMail()" type="button">✉ E-Mail öffnen</button>'+
+        '<button class="btn-print" onclick="openPrintOverlay()" type="button">🖨 Protokoll drucken</button>'+
+      '</div>'+
+    '</div>';
+
+  setTimeout(function(){
+    padV=initPad("cv-v","sw-v");
+    padM=initPad("cv-m","sw-m");
+    if(D.sig_v){var i=new Image();i.onload=function(){padV.ctx.drawImage(i,0,0,padV.cv.width,padV.cv.height);updateSigHint("sw-v");};i.src=D.sig_v;}
+    if(D.sig_m){var i2=new Image();i2.onload=function(){padM.ctx.drawImage(i2,0,0,padM.cv.width,padM.cv.height);updateSigHint("sw-m");};i2.src=D.sig_m;}
+  },60);
+}
+
+function updateSigHint(wrapId){
+  var w=ge(wrapId);if(w){var h=w.querySelector(".sig-hint");if(h)h.style.display="none";}
+}
+
+function initPad(canvasId,wrapId){
+  var cv=ge(canvasId),ctx=cv.getContext("2d"),drawing=false,last=null,hasDrawn=false;
+  function pos(e){var r=cv.getBoundingClientRect(),src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*(cv.width/r.width),y:(src.clientY-r.top)*(cv.height/r.height)};}
+  function draw(p){ctx.strokeStyle="#111";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;}
+  cv.addEventListener("mousedown",function(e){drawing=true;last=pos(e);hasDrawn=true;updateSigHint(wrapId);});
+  cv.addEventListener("mousemove",function(e){if(drawing)draw(pos(e));});
+  cv.addEventListener("mouseup",function(){drawing=false;});
+  cv.addEventListener("mouseleave",function(){drawing=false;});
+  cv.addEventListener("touchstart",function(e){
+    e.preventDefault();
+    cv.style.touchAction="none";
+    drawing=true;last=pos(e);hasDrawn=true;updateSigHint(wrapId);
+  },{passive:false});
+  cv.addEventListener("touchmove",function(e){
+    e.preventDefault();
+    if(drawing)draw(pos(e));
+  },{passive:false});
+  cv.addEventListener("touchend",function(){
+    drawing=false;
+    cv.style.touchAction="auto";
+  });
+  cv.addEventListener("touchcancel",function(){
+    drawing=false;
+    cv.style.touchAction="auto";
+  });
+  return{
+    cv:cv,ctx:ctx,
+    toDataURL:function(){return cv.toDataURL("image/png");},
+    isEmpty:function(){if(!hasDrawn)return true;var d=ctx.getImageData(0,0,cv.width,cv.height).data;for(var i=3;i<d.length;i+=4){if(d[i]>10)return false;}return true;}
+  };
+}
+
+function clrSig(which){
+  var p=which==="v"?padV:padM;
+  if(p){p.ctx.clearRect(0,0,p.cv.width,p.cv.height);}
+  if(which==="v")D.sig_v=null;else D.sig_m=null;
+  var w=ge("sw-"+which);if(w){var h=w.querySelector(".sig-hint");if(h)h.style.display="";}
+  toast("Signatur gelöscht");
+}
+
+// ── MAIL ──────────────────────────────────────────────────────────────────
+function doMail(){
+  saveStep();
+  var to=ge("f_email_empf")?ge("f_email_empf").value:D.email_empf||"";
+  var subj=encodeURIComponent(protTitle()+" – "+(D.objekt||"Wohnung")+(D.top?" / "+D.top:"")+" – "+fmtDate(D.datum));
+  var body=encodeURIComponent(
+    "Sehr geehrte Damen und Herren,\n\n"+
+    "anbei das "+protTitle()+" für "+(D.objekt||"die Wohnung")+(D.top?", Top "+D.top:"")+", "+D.typ+" vom "+fmtDate(D.datum)+".\n\n"+
+    "Bitte das beigefügte PDF-Protokoll zur Kenntnis nehmen und bei Rückfragen melden.\n\n"+
+    "Mit freundlichen Grüßen\n"+(D.verwalter||"PRISMA Zentrum für Standort- und Regionalentwicklung GmbH")+"\n"+
+    "www.prisma-zentrum.com"
+  );
+  window.location.href="mailto:"+to+"?subject="+subj+"&body="+body;
+}
+
+// ── PDF / PRINT ───────────────────────────────────────────────────────────
+function buildPDF(){
+  saveStep();
+  var sv=padV&&!padV.isEmpty()?padV.toDataURL():D.sig_v;
+  var sm=padM&&!padM.isEmpty()?padM.toDataURL():D.sig_m;
+  var title=protTitle();
+  var docName=title+"  –  "+(D.objekt||"")+(D.top?" / Top "+D.top:"");
+  var datumStr=fmtDate(D.datum);
+  var nowStr=fmtNow();
+  var sub=D.typ+" · "+(D.objekt||"")+(D.top?" · Top "+D.top:"")+" · "+datumStr;
+  var lg=logoSVG();
+
+  // Checkboxen
+  var cbH=CB_LABELS.map(function(l,i){
+    return'<div style="display:flex;gap:9px;align-items:baseline;margin:4px 0;font-size:11px">'+
+      '<span style="font-size:14px;line-height:1;flex-shrink:0">'+( D.cb[i]?"☑":"☐")+'</span>'+
+      '<span>'+l+'</span></div>';
+  }).join("");
+
+  // Schlüssel
+  var skH=D.schluessel.filter(function(s){return s.anz;}).map(function(s){
+    return'<div style="margin:3px 0;font-size:11px"><b>'+esc(s.anz)+'</b> Stk. '+esc(s.art)+(s.nr?' · Nr. <b>'+esc(s.nr)+'</b>':"")+(s.foto?'<img src="'+s.foto+'" style="width:70px;height:52px;object-fit:cover;border:1px solid #ccc;margin:3px 0 0 6px;vertical-align:top">':"")+"</div>";
+  }).join("") || '<span style="font-size:11px;color:#aaa">–</span>';
+
+  // Zähler
+  var zH=D.zaehler.map(function(z){
+    return'<div style="display:flex;gap:12px;margin:4px 0;font-size:11px;align-items:flex-start">'+
+      '<span style="min-width:78px;font-weight:700">'+esc(z.art)+'</span>'+
+      '<span>Nr.&ensp;<u style="min-width:90px;display:inline-block">'+esc(z.nr||"")+"</u></span>"+
+      '<span>Stand&ensp;<u style="min-width:80px;display:inline-block">'+esc(z.stand||"")+"</u></span>"+
+      (z.foto?'<img src="'+z.foto+'" style="width:60px;height:45px;object-fit:cover;border:1px solid #ccc">':"")
+    +"</div>";
+  }).join("");
+
+  // Mängel
+  var mgH=D.maengel.length
+    ? D.maengel.map(function(m){
+        return'<tr><td style="font-weight:700;width:110px">'+esc(m.raum)+'</td>'+
+          '<td>'+esc(m.mangel)+(m.foto?'<br><img src="'+m.foto+'" style="width:88px;height:66px;object-fit:cover;border:1px solid #ccc;margin-top:3px">':"")+"</td>"+
+          '<td>'+esc(m.bem)+'</td></tr>';
+      }).join("")
+    : '<tr><td colspan="3" style="color:#aaa;font-style:italic;text-align:center">Keine Mängel erfasst.</td></tr>';
+
+  // Checkliste
+  var ZUST_COLORS={gut:"#1b7a2e",mittel:"#8a5c00",schlecht:"#c62828"};
+  var ZUST_BG={gut:"#e8f7ec",mittel:"#fff8e6",schlecht:"#fdecea"};
+  var clH=D.raeume.map(function(r){
+    var zBg=r.zustand?ZUST_BG[r.zustand]:"transparent";
+    var zColor=r.zustand?ZUST_COLORS[r.zustand]:"#ccc";
+    var zLbl=r.zustand?({gut:"Gut",mittel:"Mittel",schlecht:"Schlecht"}[r.zustand]||""):"–";
+    return'<tr><td style="font-weight:700;width:105px;font-size:10.5px">'+r.r+'</td>'+
+      '<td style="font-size:10px;color:#666">'+( RPUNKTE[r.r]||"")+'</td>'+
+      '<td style="text-align:center"><span style="background:'+zBg+';color:'+zColor+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:2px">'+zLbl+'</span></td>'+
+      '<td style="text-align:center;font-size:15px;color:'+( r.ok?"#1a7a1a":"#ccc")+'">'+( r.ok?"✓":"")+"</td></tr>";
+  }).join("");
+
+  // Fotos: erst Raum-Fotos, dann allgemeine
+  var allFotos=[];
+  D.raeume.forEach(function(r){
+    if(r.fotos&&r.fotos.length){
+      r.fotos.forEach(function(f){if(f&&f.data)allFotos.push({data:f.data,bez:(f.bez||r.r)});});
+    }
+  });
+  D.fotos.forEach(function(f){if(f&&f.data)allFotos.push({data:f.data,bez:(f.bez||"Foto")});});
+  // Also mangel fotos
+  D.maengel.forEach(function(m){
+    if(m&&m.foto)allFotos.push({data:m.foto,bez:esc(m.raum)+" – "+esc((m.mangel||"").substring(0,30))});
+  });
+
+  var fotoPgs="";
+  if(allFotos.length){
+    for(var fi=0;fi<allFotos.length;fi+=4){
+      var sl=allFotos.slice(fi,fi+4);
+      fotoPgs+='<div style="'+( fi>0?"page-break-before:always;padding-top:12mm;":"")+'display:grid;grid-template-columns:1fr 1fr;gap:7mm 10mm">';
+      sl.forEach(function(f,j){
+        fotoPgs+='<div style="break-inside:avoid"><img src="'+f.data+'" style="width:100%;height:58mm;object-fit:contain;display:block;border:1px solid #ddd">'+
+          '<div style="font-size:9px;color:#777;margin-top:3px">'+esc(f.bez)+'</div></div>';
+      });
+      fotoPgs+="</div>";
+    }
+  }else{
+    fotoPgs='<p style="font-style:italic;color:#bbb;font-size:11px">Keine Fotos erfasst.</p>';
+  }
+
+  var sigi=function(src,lbl){
+    return'<div style="flex:1"><div style="height:38px;'+( src&&src.length>100?"":" ")+ '">'+
+      (src&&src.length>100?'<img src="'+src+'" style="height:38px;width:100%;object-fit:contain;display:block">':"&nbsp;")+
+      '</div><div style="border-top:1px solid #222;padding-top:3px;font-size:9px;color:#666">'+lbl+'</div></div>';
+  };
+
+  var css=
+    '*{box-sizing:border-box;margin:0;padding:0}'+
+    'body{font-family:Arial,Helvetica,sans-serif;font-size:11.5px;color:#1a1a1a;background:#fff}'+
+    '.pg{padding:13mm 14mm 20mm}'+
+    '.bl{padding:13mm 14mm 20mm;page-break-before:always}'+
+    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4mm;padding-bottom:3mm;border-bottom:1.5px solid #ddd}'+
+    '.doc-title{font-size:16px;font-weight:700;color:#1a1a1a;letter-spacing:-.2px}'+
+    '.doc-sub{font-size:9px;color:#999;margin-top:2px}'+
+    '.s-hd{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#eb5b36;border-bottom:1px solid #fad5c9;padding-bottom:2px;margin:7px 0 4px}'+
+    '.obj{border:1px solid #ddd;padding:6px 10px;background:#fafafa;margin-bottom:7px}'+
+    '.or{display:flex;font-size:11px;margin-bottom:3px}'+
+    '.ol{font-weight:700;min-width:145px;flex-shrink:0;color:#666}'+
+    'table{width:100%;border-collapse:collapse;margin-bottom:5px}'+
+    'th{padding:5px 8px;font-size:10.5px;font-weight:700;text-align:left;background:#f3f3f3;border-bottom:1.5px solid #ccc}'+
+    'td{padding:5px 7px;font-size:11px;border-bottom:1px solid #ebebeb;vertical-align:top}'+
+    'tr:last-child td{border-bottom:none}'+
+    'tr{page-break-inside:avoid}'+
+    '.foot{position:fixed;bottom:4mm;left:0;right:0;padding:0 14mm;display:flex;justify-content:space-between;font-size:8.5px;color:#bbb;border-top:1px solid #e8e8e8;padding-top:2px}'+
+    '@page{margin:0;size:A4}'+
+    '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.foot{position:fixed;bottom:4mm}}';
+
+  return'<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>'+docName+'</title><style>'+css+'</style></head><body>'+
+    '<div class="foot"><span>'+docName+'</span><span>Erstellt: '+nowStr+'</span></div>'+
+
+    // SEITE 1
+    '<div class="pg">'+
+      '<div class="hdr"><div><div class="doc-title">'+title+'</div><div class="doc-sub">'+sub+'</div></div><div style="flex-shrink:0;margin-left:14px">'+lg+'</div></div>'+
+      '<div class="obj">'+
+        '<div class="or"><span class="ol">Objekt:</span><strong>'+esc(D.objekt)+'</strong></div>'+
+        '<div class="or"><span class="ol">Top:</span><strong>'+esc(D.top)+'</strong></div>'+
+        '<div class="or"><span class="ol">Eigentümer/in:</span>'+esc(D.eigentuemer)+'</div>'+
+        '<div class="or"><span class="ol">Mieter/in:</span><strong>'+esc(D.mieter)+'</strong></div>'+
+        '<div class="or"><span class="ol">E-Mail Mieter/in:</span>'+esc(D.email_mieter)+'</div>'+
+        '<div class="or"><span class="ol">Telefon:</span>'+esc(D.telefon)+'</div>'+
+        (D.kfz?'<div class="or"><span class="ol">KFZ-Kennzeichen:</span>'+esc(D.kfz)+'</div>':"")
+      +'</div>'+
+      '<div style="font-size:11px;margin-bottom:5px">Bei der Übergabe der Mieteinheit samt Nebenflächen am <b>'+datumStr+'</b> wurden:</div>'+
+      cbH+
+      '<div style="margin:6px 0;font-size:11px">Stromzähler-Anmeldung beim Anbieter <b>'+esc(D.anbieter||"–")+'</b> erfolgt durch '+esc(D.strom_person||"–")+(D.strom_bis?'. Erledigt bis <b>'+fmtDate(D.strom_bis)+'</b>':"")+".</div>"+
+      '<div class="s-hd">Schlüssel / Sender</div>'+skH+
+      '<div class="s-hd">Zählerstände</div>'+zH+
+      '<div style="margin:10px 0 4px;font-size:10.5px;font-style:italic;color:#555">Ich/Wir bestätige/n die ordnungsgemäße Übernahme der angeführten Einheit unter Berücksichtigung des Bestandvertrages. Die Einheit wurde mit Ausnahme der angeführten Mängel in einwandfreiem Zustand übernommen.</div>'+
+      '<div style="font-size:10.5px;margin-bottom:8px">'+( D.objekt?D.objekt.split(",")[0]+", ":"")+"am  ………………………</div>"+
+      '<div style="display:flex;gap:22px;margin-top:10px">'+sigi(sv,"PRISMA Zentrum für Standort- und Regionalentwicklung GmbH")+sigi(sm,"Mieter/in")+'</div>'+
+      '<div style="margin-top:10px;font-size:9.5px;color:#888;line-height:1.9">Beilage 1: Checkliste &ensp;·&ensp; Beilage 2: Mängelliste &ensp;·&ensp; Beilage 3: Fotodokumentation</div>'+
+    '</div>'+
+
+    // BEILAGE 1
+    '<div class="bl"><div class="hdr"><div><div class="doc-title">Beilage 1: Checkliste – Räume geprüft</div><div class="doc-sub">'+sub+'</div></div><div style="flex-shrink:0;margin-left:14px">'+lg+'</div></div>'+
+    '<table><thead><tr><th style="width:105px">Raum</th><th>Zu kontrollieren</th><th style="width:65px;text-align:center">Zustand</th><th style="width:52px;text-align:center">Geprüft</th></tr></thead><tbody>'+clH+'</tbody></table></div>'+
+
+    // BEILAGE 2
+    '<div class="bl"><div class="hdr"><div><div class="doc-title">Beilage 2: Mängelliste</div><div class="doc-sub">'+sub+'</div></div><div style="flex-shrink:0;margin-left:14px">'+lg+'</div></div>'+
+    '<table><thead><tr><th style="width:110px">Raum</th><th>Mangel / Schaden</th><th>Bemerkung</th></tr></thead><tbody>'+mgH+'</tbody></table></div>'+
+
+    // BEILAGE 3
+    '<div class="bl"><div class="hdr"><div><div class="doc-title">Beilage 3: Fotodokumentation</div><div class="doc-sub">'+sub+'</div></div><div style="flex-shrink:0;margin-left:14px">'+lg+'</div></div>'+fotoPgs+'</div>'+
+
+    "</body></html>";
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────
+// Drucken via window.open + document.write (wie v2, funktioniert in Safari).
+
+function doPrint(){
+  saveStep();
+  if(typeof saveMangelStep==="function")saveMangelStep();
+  var html=buildPDF();
+  var w=window.open("","_blank");
+  if(!w){
+    var warn=ge("pdf-warn");
+    if(warn)warn.innerHTML=
+      '<div class="warn-box" style="margin-top:12px">'+
+        '&#x26A0; Pop-up wurde blockiert. '+
+        'In Safari: Einstellungen (unten Adressleiste) &rarr; Pop-ups erlauben &rarr; nochmal tippen.'+
+      '</div>';
+    return;
+  }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.focus();w.print();},900);
+}
+
+function openPrintOverlay(){doPrint();}
+function doDownload(){doPrint();}
+function doMailFromOverlay(){doMail();}
+
+// ── OBJEKTE (im Code pflegen – von PRISMA direkt eingetragen) ────────────
+// Neue Objekte hier hinzufügen: {name:"Adresse", eigentuemer:"Eigentümer/in"}
+var OBJEKTE=[
+  {name:"Rheinstraße 10, 6900 Bregenz",         eigentuemer:"PRISMA Zentrum für Standort- und Regionalentwicklung GmbH"},
+  {name:"Marktgasse 4, 6850 Dornbirn",           eigentuemer:"PRISMA Finanzmanagement GmbH"},
+  {name:"Reichsstraße 1, 6800 Feldkirch",        eigentuemer:"PRISMA Zentrum für Standort- und Regionalentwicklung GmbH"}
+];
+
+function loadObjekte(){
+  // Objekte werden direkt im Code gepflegt (kein localStorage nötig)
+  // Diese Funktion bleibt für Kompatibilität
+}
+
+// ── AUTOCOMPLETE Objekt-Feld ───────────────────────────────────────────────
+var _acOpen=false;
+
+function acFilter(val,inputEl){
+  // Remove existing list
+  var old=ge("ac-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
+  if(!val||val.length<1||!OBJEKTE.length){_acOpen=false;return;}
+
+  var q=val.toLowerCase();
+  var matches=OBJEKTE.filter(function(o){
+    return o.name.toLowerCase().indexOf(q)>=0||
+           (o.eigentuemer&&o.eigentuemer.toLowerCase().indexOf(q)>=0);
+  });
+  if(!matches.length){_acOpen=false;return;}
+
+  var list=document.createElement("div");
+  list.id="ac-list";
+  list.className="ac-list";
+  matches.slice(0,8).forEach(function(o){
+    var item=document.createElement("div");
+    item.className="ac-item";
+    // Highlight matching part
+    var safe=q.replace(/[-.*+?^${}()|\[\]\\]/g,"\\$&");
+    var hl=o.name.replace(new RegExp("("+safe+")","gi"),"<strong>$1</strong>");
+    item.innerHTML=hl+(o.eigentuemer?'<small>'+esc(o.eigentuemer)+'</small>':'');
+    item.onmousedown=item.ontouchstart=function(e){
+      e.preventDefault();
+      acSelect(o);
+    };
+    list.appendChild(item);
+  });
+
+  // Insert after input
+  var wrap=inputEl.closest(".ac-wrap")||inputEl.parentNode;
+  wrap.appendChild(list);
+  _acOpen=true;
+}
+
+function acSelect(o){
+  var elName=ge("f_objekt");
+  var elOwner=ge("f_eigentuemer");
+  if(elName){elName.value=o.name;D.objekt=o.name;}
+  if(elOwner&&o.eigentuemer){elOwner.value=o.eigentuemer;D.eigentuemer=o.eigentuemer;}
+  var old=ge("ac-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
+  _acOpen=false;
+  toast("Objekt übernommen",1200);
+}
+
+function acClose(){
+  var old=ge("ac-list");
+  if(old&&old.parentNode)old.parentNode.removeChild(old);
+  _acOpen=false;
+}
+
+// ── LOCALSTORAGE RESTORE ──────────────────────────────────────────────────
+(function(){
+  try{
+    var saved=localStorage.getItem("prisma_proto");
+    if(saved){
+      var parsed=JSON.parse(saved);
+      // Nur wenn Daten vorhanden (objekt oder mieter gesetzt)
+      if(parsed&&(parsed.objekt||parsed.mieter)){
+        // Deep merge: preserve array structure for fotos
+        Object.keys(parsed).forEach(function(k){
+          if(k==="raeume"&&Array.isArray(parsed[k])){
+            // Merge raeume: keep structure, restore values
+            parsed[k].forEach(function(pr,i){
+              if(D.raeume[i]){
+                D.raeume[i].ok=pr.ok||false;
+                D.raeume[i].zustand=pr.zustand||"";
+                D.raeume[i].fotos=pr.fotos||[];
+              }
+            });
+          } else {
+            D[k]=parsed[k];
+          }
+        });
+        if(D.objekt||D.mieter||D.datum)visited[0]=true;
+        if(D.schluessel&&D.schluessel.some(function(s){return s.anz;}))visited[1]=true;
+        if(D.zaehler&&D.zaehler.some(function(z){return z.stand||z.nr;}))visited[2]=true;
+        if(D.raeume&&(D.raeume.some(function(r){return r.ok||r.zustand||(r.fotos&&r.fotos.length);})||D.maengel.length))visited[3]=true;
+        if(D.fotos&&D.fotos.length)visited[4]=true;
+        toast("Letzter Stand wiederhergestellt",2500);
+      }
+    }
+  }catch(e){}
+})();
+
+loadObjekte();
+render();
+
+// ── PWA: SERVICE WORKER ───────────────────────────────────────────────────
+if("serviceWorker" in navigator){
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      // Check for updates on each load
+      reg.addEventListener("updatefound",function(){
+        var nw=reg.installing;
+        nw.addEventListener("statechange",function(){
+          if(nw.state==="installed"&&navigator.serviceWorker.controller){
+            // New version available
+            toast("Neue Version verfügbar – App neu laden",4000);
+          }
+        });
+      });
+    }).catch(function(){});
+  });
+}
+</script>
+
+
+</body>
+</html>
