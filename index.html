@@ -10,7 +10,7 @@
 ║  (prisma-zentrum.com) – österreichischer Immobilienentwickler.              ║
 ║  Single-File HTML-App, läuft komplett im Browser, kein Backend.             ║
 ║                                                                              ║
-║  VERSION: v16-PWA – UX-Feinschliff (Startbildschirm, Karten-Design, Typografie), PDF formal-kompakt,
+║  VERSION: v17-PWA – Rollout-Feinschliff (graue Kopflinie, große Unterschriften, Bedienungsanleitungen, Start=Entwürfe),
 ║                                                                              ║
 ║  NEU in v8:                                                                  ║
 ║  • Tab-Haken korrigiert (kein Doppelhaken, nur bei echtem Inhalt)           ║
@@ -394,7 +394,7 @@ var D={
   iban:"",nachfolge:"",
   raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};}),
   fotos:[],
-  sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,
+  sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,ba:false,ba_art:"",
   email_empf:""
 };
 D.zaehler.forEach(function(z){z.ablese=D.datum;});
@@ -459,6 +459,8 @@ function saveStep(){
       D.zaehler.forEach(function(z){if(!z.ablese||z.ablese===prevDatum)z.ablese=D.datum;});
     }
     el=ge("cb_2");if(el)D.cb[2]=el.checked;
+  el=ge("cb_ba");if(el)D.ba=el.checked;
+  el=ge("f_ba_art");if(el)D.ba_art=el.value;
     var ttl=ge("app-title");if(ttl)ttl.textContent=protTitle();
   }
   if(cur===1){
@@ -581,7 +583,7 @@ function step0(){
     '</div>'+
     '<div class="sec-hd">Objekt</div>'+
     '<div class="grp-card">'+
-      '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Antippen oder tippen zum Suchen…" autocomplete="off" onfocus="acFilter(this.value,this)" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Top-Nummer</span><span class="obj-val">'+inp("f_top",D.top,"z.B. Top 12")+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Eigentümer/in</span><span class="obj-val">'+inp("f_eigentuemer",D.eigentuemer)+'</span></div>'+
     '</div>'+
@@ -598,8 +600,9 @@ function step0(){
     '</div>'+
     '<div class="sec-hd">Bei der '+typWort()+' festgestellt</div>'+
     '<div class="grp-card">'+
-      '<p style="font-size:13px;color:#666;margin-bottom:12px">Bei der '+typWort()+' der Mieteinheit samt Nebenflächen wurden:</p>'+
       '<div class="cb-group">'+cbs+'</div>'+
+      '<label class="cb-row'+(D.ba?' checked':"")+'" style="margin-top:4px"><input type="checkbox" id="cb_ba"'+(D.ba?' checked':"")+' onchange="baChange(this)">Bedienungsanleitungen '+(istRuecknahme()?"zurückgegeben":"übergeben")+'</label>'+
+      (D.ba?'<div class="field" style="margin:10px 2px 2px"><label>Art der Übergabe</label>'+inp("f_ba_art",D.ba_art,"z.B. digital, Hardcopy")+'</div>':"")+
     '</div>'+
     '<div class="sec-hd">Stromzähler-'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' (Smart Meter)</div>'+
     '<div class="grp-card">'+
@@ -614,6 +617,11 @@ function step0(){
     navBar(false,true,"Weiter: Schlüssel →");
 }
 function saveTyp(){var el=ge("f_typ");if(el){saveStep();D.typ=el.value;render();}}
+function baChange(el){
+  saveStep();
+  D.ba=el.checked;
+  persist();render();
+}
 function cbChange(i,el){
   D.cb[i]=el.checked;
   el.closest("label").classList.toggle("checked",el.checked);
@@ -752,7 +760,7 @@ function step3(){
   var blocks=D.raeume.map(function(r,ri){
     var fotoCount=(r.fotos||[]).length;
     var hatBeschr=r.beschreibung&&r.beschreibung.trim();
-    var summary=(hatBeschr?"Mangel/Schaden erfasst":"")+(fotoCount?(hatBeschr?" · ":"")+fotoCount+" Foto"+(fotoCount===1?"":"s"):"");
+    var summary=(r.zustand==="mangel"&&!hatBeschr?"Beschreibung fehlt":(hatBeschr?"Mangel/Schaden erfasst":""))+(fotoCount?(hatBeschr?" · ":"")+fotoCount+" Foto"+(fotoCount===1?"":"s"):"");
     var roomFotos=(r.fotos||[]).map(function(f,fi){
       return '<div class="rfoto-item">'+
         '<img class="rfoto-img" src="'+f.data+'">'+
@@ -782,6 +790,7 @@ function step3(){
         '</div>'+
         '<div style="margin-bottom:10px">'+
           '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Beschreibung (Mangel / Schaden)</div>'+
+          (r.zustand==="mangel"&&!(r.beschreibung&&r.beschreibung.trim())?'<div style="font-size:12px;color:#c05621;background:#fff8f0;border-left:3px solid #e8a33d;padding:7px 10px;margin-bottom:7px">Bitte Mangel/Schaden kurz beschreiben – ohne Beschreibung ist der Eintrag im Protokoll nicht nachvollziehbar.</div>':"")+
           '<textarea id="rb_desc_'+ri+'" rows="2" placeholder="Was wurde festgestellt…" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.raeume['+ri+'].beschreibung=this.value" style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 10px;font-size:16px;font-family:inherit;color:#1a1a1a;outline:none;resize:none;box-sizing:border-box">'+esc(r.beschreibung||"")+'</textarea>'+
         '</div>'+
         '<div style="margin-bottom:6px">'+
@@ -988,7 +997,7 @@ function step4(){
       '</div></div>';
   }).join("");
   return'<div class="sec-hd">Fotodokumentation ('+cnt+' Foto'+( cnt===1?"":"s")+')</div>'+
-    '<div class="hint">Eine vollständige Fotodokumentation sichert den Zustand der Einheit zum Übergabezeitpunkt nachvollziehbar ab. Jeden Raum und Gangbereich fotografieren, wenn möglich aus zwei Perspektiven. Eingangstüre, Küche, Balkon/Terrasse sowie Lager- und Kellerflächen nicht vergessen. Fotos aus den Tabs <strong>Schlüssel</strong> und <strong>Zähler</strong> werden der Fotodokumentation automatisch angehängt.</div>'+
+    '<div class="hint">Eine vollständige Fotodokumentation sichert den Zustand der Einheit zum Übergabezeitpunkt nachvollziehbar ab. Jeden Raum und Gangbereich fotografieren, wenn möglich aus zwei Perspektiven. Eingangstüre, Küche, Balkon/Terrasse sowie Lager- und Kellerflächen nicht vergessen.</div>'+
     '<div class="foto-grid">'+cards+'</div>'+
     '<button class="btn-burst" onclick="openBurst()" type="button">'+icn("burst",18)+' Serienaufnahme starten</button>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
@@ -1083,7 +1092,7 @@ function gutMitMangeldaten(){
   return D.raeume.filter(function(r){return r.zustand==="gut"&&((r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length));});
 }
 // Fotos aus Schlüssel- und Zähler-Tab für die Fotodokumentation (mit Bezeichnung)
-function skZaeFotos(){
+function schluesselFotos(){
   var out=[];
   (D.schluessel||[]).forEach(function(s){
     if(!s.foto)return;
@@ -1092,6 +1101,10 @@ function skZaeFotos(){
     if(s.nr)bez+=", Nr. "+s.nr;
     out.push({data:s.foto,bez:bez});
   });
+  return out;
+}
+function zaehlerFotos(){
+  var out=[];
   (D.zaehler||[]).forEach(function(z){
     if(!z.foto)return;
     var art=z.art||"Zähler";
@@ -1103,9 +1116,13 @@ function skZaeFotos(){
   });
   return out;
 }
+function skZaeFotos(){return zaehlerFotos().concat(schluesselFotos());} // Kompatibilität
+
 function konsistenzWarnung(){
   var g=gutMitMangeldaten();
   if(g.length)return g.map(function(r){return r.r;}).join(", ")+(g.length===1?" ist":" sind")+" als M\u00E4ngelfrei markiert, enth\u00E4lt aber noch Mangelbeschreibung oder Fotos.";
+  var ohneBeschr=D.raeume.filter(function(r){return r.zustand==="mangel"&&!(r.beschreibung&&r.beschreibung.trim());});
+  if(ohneBeschr.length)return "Beschreibung fehlt bei: "+ohneBeschr.map(function(r){return r.r;}).join(", ")+".";
   var ohneSchwere=D.raeume.filter(function(r){return r.zustand==="mangel"&&!r.schwere;});
   if(ohneSchwere.length)return "Schweregrad fehlt bei: "+ohneSchwere.map(function(r){return r.r;}).join(", ")+".";
   return null;
@@ -1166,7 +1183,7 @@ function updateSigHint(wrapId){
 function initPad(canvasId,wrapId){
   var cv=ge(canvasId),ctx=cv.getContext("2d"),drawing=false,last=null,hasDrawn=false;
   function pos(e){var r=cv.getBoundingClientRect(),src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*(cv.width/r.width),y:(src.clientY-r.top)*(cv.height/r.height)};}
-  var lw=2.5*(cv.width/Math.max(1,cv.getBoundingClientRect().width||cv.width)); // konstant kräftig, auch auf Retina
+  var lw=4*(cv.width/Math.max(1,cv.getBoundingClientRect().width||cv.width)); // kräftiger Strich, auch auf Retina
   function draw(p){ctx.strokeStyle="#111";ctx.lineWidth=lw;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;}
   function hint(){if(wrapId)updateSigHint(wrapId);else if(typeof sigOvHint==="function")sigOvHint(false);}
   cv.addEventListener("mousedown",function(e){drawing=true;last=pos(e);hasDrawn=true;hint();});
@@ -1325,6 +1342,7 @@ function buildPDF(){
   var cbH=CB_LABELS.map(function(l,i){
     return'<div class="cbl"><span class="cbx">'+(acb[i]?"☑":"☐")+'</span><span>'+cbLabel(i)+'</span></div>';
   }).join("");
+  if(D.ba)cbH+='<div class="cbl"><span class="cbx">☑</span><span>die Bedienungsanleitungen wurden '+(istRuecknahme()?"zurückgegeben":"übergeben")+(D.ba_art?" ("+esc(D.ba_art)+")":"")+'</span></div>';
 
   var stromH=(D.anbieter||D.strom_bis)
     ? '<p class="txt">Stromzähler-'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' (Smart Meter) beim Anbieter <b>'+esc(D.anbieter||"-")+'</b> wird erledigt durch '+esc(D.strom_person||"-")+(D.strom_bis?' mit Zählerstichtag <b>'+fmtDate(D.strom_bis)+'</b>':"")+'.</p>'
@@ -1344,8 +1362,7 @@ function buildPDF(){
     (r.fotos||[]).forEach(function(f){if(f&&f.data)rasterFotos.push({data:f.data,bez:f.bez||r.r});});
   });
   D.fotos.forEach(function(f){if(f&&f.data)rasterFotos.push({data:f.data,bez:f.bez||""});});
-  var detailFotos=skZaeFotos();
-  var hatFotos=(rasterFotos.length+detailFotos.length)>0;
+  var hatFotos=(rasterFotos.length+zaehlerFotos().length+schluesselFotos().length)>0;
   var beil=["Checkliste & Mängel/Schäden"];if(hatFotos)beil.push("Fotodokumentation");
 
   var best="Ich/Wir bestätige/n die ordnungsgemäße "+(istRuecknahme()?"Rückgabe":"Übernahme")+" der angeführten Einheit unter Berücksichtigung des Bestandvertrages. Die Einheit wurde mit Ausnahme der angeführten Mängel in einwandfreiem Zustand "+(istRuecknahme()?"zurückgegeben":"übernommen")+".";
@@ -1399,18 +1416,19 @@ function buildPDF(){
   if(hatFotos){
     var fb=beil.indexOf("Fotodokumentation")+1;
     var inner="";
-    if(detailFotos.length){
-      inner+='<div class="shd">Zähler- und Schlüsselfotos</div>'+
-        detailFotos.map(function(f){
-          return '<div class="fbig"><div class="fbigbox"><img src="'+f.data+'"></div><div class="fcap">'+esc(f.bez||"")+'</div></div>';
-        }).join("");
+    function fgrp(t,arr){
+      if(!arr.length)return "";
+      return '<div class="shd">'+t+'</div>'+arr.map(function(f){
+        return '<div class="fbig"><div class="fbigbox"><img src="'+f.data+'"></div><div class="fcap">'+esc(f.bez||"")+'</div></div>';
+      }).join("");
     }
+    inner+=fgrp("Zählerfotos",zaehlerFotos())+fgrp("Schlüsselfotos",schluesselFotos());
     if(rasterFotos.length){
       var cells="";
       rasterFotos.forEach(function(f,fi){
         cells+='<div class="fcell"><div class="fbox"><img src="'+f.data+'"></div><div class="fcap">Foto '+(fi+1)+(f.bez?" – "+esc(f.bez):"")+'</div></div>';
       });
-      inner+=(detailFotos.length?'<div class="shd" style="margin-top:6mm">Fotodokumentation der Einheit</div>':'')+'<div class="fgrid">'+cells+'</div>';
+      inner+=((zaehlerFotos().length||schluesselFotos().length)?'<div class="shd" style="margin-top:6mm">Fotodokumentation der Einheit</div>':'')+'<div class="fgrid">'+cells+'</div>';
     }
     blFo='<div class="bl">'+hdr("Beilage "+fb+": Fotodokumentation")+inner+'</div>';
   }
@@ -1419,7 +1437,7 @@ function buildPDF(){
     'body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#000;background:#fff}'+
     '.pg,.bl{padding:15mm 20mm 20mm;min-height:290mm;display:flex;flex-direction:column;position:relative}'+
     '.bl{page-break-before:always}'+
-    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:3mm;border-bottom:1.4pt solid #eb5b36;margin-bottom:8mm}'+
+    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:3mm;border-bottom:1pt solid #8c8c8c;margin-bottom:8mm}'+
     '.dt{font-size:16pt;font-weight:700}.ds{font-size:8.5pt;color:#666;margin-top:3px}'+
     '.obj{border:.6pt solid #666;padding:9px 12px}'+
     '.or{display:flex;font-size:10pt;line-height:1.6;margin:2px 0}.ol{font-weight:700;min-width:150px;color:#333}'+
@@ -1430,7 +1448,7 @@ function buildPDF(){
     '.sig-area{margin-top:auto;padding-top:12mm}'+
     '.best{font-size:10.5pt;font-weight:700;line-height:1.5}'+
     '.sgrid{display:flex;gap:24px}.scol{flex:1}'+
-    '.simg{height:42px;display:block;max-width:80%;object-fit:contain}'+
+    '.simg{height:62px;display:block;max-width:96%;object-fit:contain;object-position:left bottom}'+
     '.sline{border-bottom:.8pt solid #000;margin-top:4px}'+
     '.slbl{font-size:7.5pt;color:#555;margin-top:3px;line-height:1.5}.sname{font-size:8.5pt;color:#222}'+
     '.beil{margin-top:14px;font-size:9pt;color:#666;line-height:1.7}'+
@@ -1516,13 +1534,9 @@ var _acOpen=false;
 function acFilter(val,inputEl){
   // Remove existing list
   var old=ge("ac-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
-  if(!val||val.length<1||!OBJEKTE.length){_acOpen=false;return;}
-
-  var q=val.toLowerCase();
-  var matches=OBJEKTE.filter(function(o){
-    return o.name.toLowerCase().indexOf(q)>=0||
-           (o.eigentuemer&&o.eigentuemer.toLowerCase().indexOf(q)>=0);
-  });
+  if(!OBJEKTE.length){_acOpen=false;return;}
+  var q=(val||"").toLowerCase(); // leer = volle Liste (Antippen zeigt alle Objekte)
+  var matches=OBJEKTE.filter(function(o){return !q||o.toLowerCase().indexOf(q)>=0;});
   if(!matches.length){_acOpen=false;return;}
 
   var list=document.createElement("div");
@@ -1613,7 +1627,7 @@ function closeBurst(){
 
 // ── NATIVES PDF (für Teilen/Share – ohne Druckdialog) ─────────────────────
 // Erzeugt ein echtes PDF (PDF 1.4, Helvetica/WinAnsi, JPEG-Bilder) rein clientseitig.
-var APP_VERSION="v16";
+var APP_VERSION="v17";
 
 function jpegDim(bin){
   var i=2,L=bin.length;
@@ -1736,18 +1750,17 @@ function buildNativePDF(sigV,sigM){
   var datumStr=fmtDate(D.datum);
   var sub=D.typ+" · "+datumStr;
   var docName=title+" - "+objMitTop();
-  var ORA=[0.922,0.357,0.212]; // PRISMA-Orange #eb5b36
   function header(t,folge){
     logo(PW-M-84,yy+1);
     if(folge){
       // Folgeseiten: kompakter, grauer Kopf
       txt(M,yy+2,t,11,true,0.25);
-      hlineC(M,PW-M,yy+22,1.1,ORA[0],ORA[1],ORA[2]);
+      hline(M,PW-M,yy+22,0.9,0.55);
       yy+=36;
     }else{
       txt(M,yy,t,16,true);
       txt(M,yy+22,sub,8.5,false,0.4);
-      hlineC(M,PW-M,yy+34,1.3,ORA[0],ORA[1],ORA[2]);
+      hline(M,PW-M,yy+34,1.1,0.45);
       yy+=49;
     }
   }
@@ -1779,11 +1792,11 @@ function buildNativePDF(sigV,sigM){
   function estH(L){
     var e=49;                             // Kopf
     e+=rows.length*L+14+18;               // Objektbox
-    e+=(L+3)+3*(L+1)+10;                  // Feststellungssatz + 3 Checkboxen
+    e+=(L+3)+(3+(D.ba?1:0))*(L+1)+10;     // Feststellungssatz + Checkboxen (+Bedienungsanleitungen)
     if(stromDa)e+=2*L+10;                 // Stromsatz (max 2 Zeilen)
     if(sk.length)e+=24+sk.length*L+12;    // Schlüssel
     if(zf.length)e+=24+zf.length*L+12;    // Zähler
-    e+=3*14.5+14+18+50+sigZeilen*10.5+12+beilCnt*12+14; // offizieller Block
+    e+=3*14.5+14+16+68+sigZeilen*10.5+12+beilCnt*12+14; // offizieller Block
     return e;
   }
   var LH=17;
@@ -1800,6 +1813,10 @@ function buildNativePDF(sigV,sigM){
     checkbox(M,yy,acb[i]);
     txt(M+16,yy-1.5,cbLabel(i),FS);yy+=LH+1;
   });
+  if(D.ba){
+    checkbox(M,yy,true);
+    txt(M+16,yy-1.5,"die Bedienungsanleitungen wurden "+(istRuecknahme()?"zurückgegeben":"übergeben")+(D.ba_art?" ("+D.ba_art+")":""),FS);yy+=LH+1;
+  }
   yy+=10;
   // Stromanmeldung (nur wenn Angaben vorhanden)
   if(D.anbieter||D.strom_bis){
@@ -1832,8 +1849,8 @@ function buildNativePDF(sigV,sigM){
     (r.fotos||[]).forEach(function(f){if(f&&f.data)rasterFotos.push({data:f.data,bez:f.bez||r.r});});
   });
   D.fotos.forEach(function(f){if(f&&f.data)rasterFotos.push({data:f.data,bez:f.bez||""});});
-  var detailFotos=skZaeFotos(); // Zähler-/Schlüsselfotos: groß, Werte ablesbar
-  var hatFotos=(rasterFotos.length+detailFotos.length)>0;
+  var zaeF=zaehlerFotos(),skF=schluesselFotos(); // groß, Werte ablesbar
+  var hatFotos=(rasterFotos.length+zaeF.length+skF.length)>0;
   var beil=["Checkliste & Mängel/Schäden"];if(hatFotos)beil.push("Fotodokumentation");
 
   // ── Offizieller Teil am unteren Seitenrand verankert
@@ -1852,7 +1869,7 @@ function buildNativePDF(sigV,sigM){
   var mLbl=[{t:"Mieter/in",s:7.5,b:false,g:0.35}];
   if(D.mieter)mLbl.push({t:D.mieter,s:8.5,b:false,g:0.2});
   var lblH=Math.max(vLbl.length,mLbl.length)*10.5+6;
-  var blockH=bestLines.length*14.5+14+18+50+lblH+12+beil.length*12;
+  var blockH=bestLines.length*14.5+14+16+68+lblH+12+beil.length*12;
   var anchorY=PH-BOT-blockH;
   if(yy>anchorY){np();header(title);}
   if(yy<anchorY)yy=anchorY;
@@ -1861,10 +1878,10 @@ function buildNativePDF(sigV,sigM){
   // Ort aus PLZ der Objektadresse + Datum automatisch
   var ortM=(D.objekt||"").match(/\b\d{4,5}\s+([A-Za-zÄÖÜäöüß.\- ]+?)\s*$/);
   var ort=ortM?ortM[1].trim():"";
-  txt(M,yy,(ort?ort+", ":"")+"am "+datumStr,FS);yy+=18;
-  if(sigV)imgFit(sigV,M+4,yy+44,colW*0.85,44);
-  if(sigM)imgFit(sigM,M+colW+26,yy+44,colW*0.85,44);
-  yy+=46;
+  txt(M,yy,(ort?ort+", ":"")+"am "+datumStr,FS);yy+=16;
+  if(sigV)imgFit(sigV,M+2,yy+62,colW*0.96,62);
+  if(sigM)imgFit(sigM,M+colW+24,yy+62,colW*0.96,62);
+  yy+=64;
   hline(M,M+colW,yy,0.7);hline(M+colW+22,PW-M,yy,0.7);
   var vy=yy+3;vLbl.forEach(function(L){txt(M,vy,L.t,L.s,L.b,L.g);vy+=10.5;});
   var my=yy+3;mLbl.forEach(function(L){txt(M+colW+22,my,L.t,L.s,L.b,L.g);my+=10.5;});
@@ -1885,7 +1902,7 @@ function buildNativePDF(sigV,sigM){
   }
   clHead();
   D.raeume.forEach(function(r,idx){
-    if(yy+RH>PH-BOT){np();header("Beilage 1: Checkliste & Mängel/Schäden (Forts.)",true);yy+=6;clHead();}
+    if(yy+RH>PH-BOT){np();header("Beilage 1: Checkliste & Mängel/Schäden (Fortsetzung)",true);yy+=6;clHead();}
     if(idx%2===1)frect(M,yy-3,CW,RH,0.966,0.966,0.966);
     txt(M+8,yy+1,r.r,9.5,true);
     if(r.ok){o("0 G 1.2 w "+(M+CW-215).toFixed(2)+" "+Y(yy+6)+" m "+(M+CW-211).toFixed(2)+" "+Y(yy+10)+" l "+(M+CW-204.5).toFixed(2)+" "+Y(yy+1.5)+" l S");}
@@ -1904,7 +1921,7 @@ function buildNativePDF(sigV,sigM){
   if(mrDet.length){
     var FW=(CW-14)/2, FH=FW*0.67; // ~200x134pt, gut erkennbar
     yy+=14;
-    if(yy+40>PH-BOT){np();header("Beilage 1: Checkliste & Mängel/Schäden (Forts.)",true);yy+=2;}
+    if(yy+40>PH-BOT){np();header("Beilage 1: Checkliste & Mängel/Schäden (Fortsetzung)",true);yy+=2;}
     frect(M,yy,CW,16,0.93,0.93,0.93);
     txt(M+7,yy+2.5,"Mängel/Schäden im Detail",9.5,true,0.15);
     yy+=24;
@@ -1918,14 +1935,14 @@ function buildNativePDF(sigV,sigM){
       var fRows=Math.ceil(fotos.length/2);
       var bh=14+lines.length*12.5+(fotos.length?6+fRows*(FH+8):0)+16;
       // Block nie mitten teilen; sehr hohe Blöcke (viele Fotos) dürfen fließen
-      if(yy+Math.min(bh,PH-BOT-M-60)>PH-BOT){np();header("Beilage 1: Mängel/Schäden im Detail (Forts.)",true);yy+=2;}
+      if(yy+Math.min(bh,PH-BOT-M-60)>PH-BOT){np();header("Beilage 1: Mängel/Schäden im Detail (Fortsetzung)",true);yy+=2;}
       txt(M,yy,r.r+(r.schwere?"  –  Schweregrad: "+SCHWERE_WORT[r.schwere]:""),10,true);yy+=14;
       lines.forEach(function(L){txt(M,yy,L,9.5,false,0.1);yy+=12.5;});
       if(fotos.length){
         yy+=6;
         var fc=0;
         fotos.forEach(function(f){
-          if(yy+FH>PH-BOT){np();header("Beilage 1: Mängel/Schäden im Detail (Forts.)",true);yy+=2;fc=0;}
+          if(yy+FH>PH-BOT){np();header("Beilage 1: Mängel/Schäden im Detail (Fortsetzung)",true);yy+=2;fc=0;}
           rect(M+fc*(FW+14),yy,FW,FH,0.4,0.8);
           imgBox(f.data,M+fc*(FW+14)+1,yy+1,FW-2,FH-2);
           fc++;
@@ -1947,29 +1964,33 @@ function buildNativePDF(sigV,sigM){
       txt(M+7,yy+2.5,t,9.5,true,0.15);
       yy+=24;
     }
-    // 1) Zähler- und Schlüsselfotos: 2 große pro Seite, Werte am Foto ablesbar
-    if(detailFotos.length){
-      foSub("Zähler- und Schlüsselfotos");
-      var phBig=290;
-      detailFotos.forEach(function(f){
-        if(yy+phBig+16>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Forts.)",true);yy+=2;}
+    // 1) Zählerfotos, dann Schlüsselfotos: je eigener Balken, 2 große pro Seite
+    var phBig=290;
+    function fotoGruppe(t,arr){
+      if(!arr.length)return;
+      if(yy+phBig+40>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Fortsetzung)",true);yy+=2;}
+      foSub(t);
+      arr.forEach(function(f){
+        if(yy+phBig+16>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Fortsetzung)",true);yy+=2;}
         rect(M,yy,CW,phBig,0.5,0.8);
         imgBox(f.data,M+2,yy+2,CW-4,phBig-4);
         txt(M,yy+phBig+3,twrap(f.bez||"",8.5,false,CW)[0],8.5,false,0.4);
         yy+=phBig+20;
       });
     }
+    fotoGruppe("Zählerfotos",zaeF);
+    fotoGruppe("Schlüsselfotos",skF);
     // 2) Allgemeine Fotodokumentation: 4 Fotos pro Seite (2×2), nummeriert
     if(rasterFotos.length){
-      if(detailFotos.length){
+      if(zaeF.length||skF.length){
         yy+=4;
-        if(yy+240>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Forts.)",true);yy+=2;}
+        if(yy+240>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Fortsetzung)",true);yy+=2;}
         foSub("Fotodokumentation der Einheit");
       }
       var GW=(CW-16)/2, GH=GW*0.75, rowH=GH+18; // 4:3-Raster
       var col=0;
       rasterFotos.forEach(function(f,fi){
-        if(col===0&&yy+rowH>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Forts.)",true);yy+=2;}
+        if(col===0&&yy+rowH>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Fortsetzung)",true);yy+=2;}
         var x=M+col*(GW+16);
         rect(x,yy,GW,GH,0.5,0.8);
         imgBox(f.data,x+1.5,yy+1.5,GW-3,GH-3);
@@ -2062,6 +2083,8 @@ function sharePDF(){
   if(!D.datum)kern.push("Datum");
   if(!D.sig_v)kern.push("Unterschrift PRISMA");
   if(!D.sig_m)kern.push("Unterschrift Mieter/in");
+  var mob=D.raeume.filter(function(r){return r.zustand==="mangel"&&!(r.beschreibung&&r.beschreibung.trim());});
+  if(mob.length)kern.push("Mangelbeschreibung ("+mob.map(function(r){return r.r;}).join(", ")+")");
   if(kern.length&&!confirm("Es fehlen noch: "+kern.join(", ")+".\n\nProtokoll trotzdem erstellen und senden?"))return;
   var sv=D.sig_v;
   var sm=D.sig_m;
@@ -2144,6 +2167,8 @@ function migrateData(d){
   });
   if(d.sig_v_ts===undefined)d.sig_v_ts=null;
   if(d.sig_m_ts===undefined)d.sig_m_ts=null;
+  if(d.ba===undefined)d.ba=false;
+  if(d.ba_art===undefined)d.ba_art="";
   return d;
 }
 function loadDrafts(){
@@ -2194,7 +2219,7 @@ function newDraft(){
     maengel:[],
     iban:"",nachfolge:"",
     raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};}),
-    fotos:[],sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,email_empf:""
+    fotos:[],sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,ba:false,ba_art:"",email_empf:""
   };
   D.zaehler.forEach(function(z){z.ablese=D.datum;});
   cur=0;visited={};
@@ -2217,48 +2242,21 @@ function loadDraft(id){
 }
 function deleteDraft(id,ev){
   if(ev)ev.stopPropagation();
+  if(!confirm("Diesen Entwurf endgültig löschen?"))return;
   var map=loadDrafts();
   delete map[id];
   saveDrafts(map);
   var c=null;try{c=localStorage.getItem(CURRENT_KEY);}catch(e){}
   if(c===id){try{localStorage.removeItem(CURRENT_KEY);}catch(e){}}
-  openDraftPanel(); // neu rendern
+  showStart(); // Übersicht neu aufbauen
   toast("Entwurf gelöscht");
 }
 function openDraftPanel(){
-  persist(); // aktuellen Stand sichern, damit er in der Liste erscheint
-  var map=loadDrafts();
-  var ids=Object.keys(map).sort(function(a,b){return map[b].ts-map[a].ts;});
-  var curIdv=null;try{curIdv=localStorage.getItem(CURRENT_KEY);}catch(e){}
-  var old=ge("draft-ov");if(old)old.parentNode.removeChild(old);
-  var ov=document.createElement("div");
-  ov.id="draft-ov";
-  ov.style.cssText="position:fixed;inset:0;z-index:1600;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center";
-  var list=ids.length
-    ? ids.map(function(id){
-        var d=map[id];
-        var isCur=(id===curIdv);
-        return '<div onclick="loadDraft(\''+id+'\')" style="display:flex;align-items:center;gap:10px;padding:13px 14px;margin-bottom:7px;border:1px solid '+(isCur?"#eb5b36":"#e0e0e0")+';border-radius:8px;cursor:pointer;background:'+(isCur?"#fff8f6":"#fff")+'">'+
-          '<div style="flex:1;min-width:0">'+
-            '<div style="font-size:13.5px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(d.title)+(isCur?' <span style="color:#eb5b36;font-size:11px">• aktuell</span>':'')+'</div>'+
-            '<div style="font-size:11px;color:#999;margin-top:2px">zuletzt: '+new Date(d.ts).toLocaleString("de-AT",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})+'</div>'+
-          '</div>'+
-          '<button onclick="deleteDraft(\''+id+'\',event)" type="button" style="flex-shrink:0;background:none;border:1px solid #e0e0e0;color:#c00;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:13px">✕</button>'+
-        '</div>';
-      }).join("")
-    : '<div style="text-align:center;color:#aaa;font-size:13px;padding:24px 0">Noch keine gespeicherten Entwürfe.</div>';
-  ov.innerHTML='<div style="background:#fff;width:100%;max-width:560px;border-radius:14px 14px 0 0;padding:18px 18px 26px;max-height:80vh;overflow-y:auto">'+
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
-      '<div style="font-size:15px;font-weight:700">Gespeicherte Protokolle</div>'+
-      '<button onclick="newDraft()" type="button" style="background:#eb5b36;color:#fff;border:none;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">＋ Neu</button>'+
-    '</div>'+
-    list+
-    '<button onclick="closeDraftPanel()" type="button" style="display:block;width:100%;padding:13px;margin-top:8px;border:none;background:#f0f0f0;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:700">Schließen</button>'+
-  '</div>';
-  ov.onclick=function(e){if(e.target===ov)closeDraftPanel();};
-  document.body.appendChild(ov);
+  // v17: kein Overlay mehr – Entwürfe = Startbildschirm
+  saveStep();persist();
+  showStart();
 }
-function closeDraftPanel(){var ov=ge("draft-ov");if(ov)ov.parentNode.removeChild(ov);}
+function closeDraftPanel(){}
 
 // ── RESTORE beim Start: aktuellen Entwurf laden, sonst Altformat migrieren ──
 var START_SHOW=true; // Startbildschirm nur, wenn kein Entwurf offen ist
@@ -2298,19 +2296,24 @@ function draftProgress(d){
 }
 function showStart(){
   var map=loadDrafts();
+  var curIdv=null;try{curIdv=localStorage.getItem(CURRENT_KEY);}catch(e){}
   var ids=Object.keys(map).sort(function(a,b){return (map[b].ts||0)-(map[a].ts||0);});
   var cards=ids.map(function(id){
     var e=map[id],d=e.data||{};
     var p=draftProgress(d);
+    var isCur=(id===curIdv);
     var obj=(d.objekt?d.objekt.split(",")[0]:"Ohne Objekt")+(d.top?" · Top "+d.top:"");
     var meta=(d.typ||"Übergabe")+(d.datum?" · "+fmtDate(d.datum):"");
-    return '<div onclick="startOpenDraft(\''+id+'\')" style="background:#fff;border:1px solid #ececec;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:14px 15px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent">'+
+    return '<div onclick="startOpenDraft(\''+id+'\')" style="background:'+(isCur?"#fff8f6":"#fff")+';border:1.5px solid '+(isCur?"#eb5b36":"#ececec")+';border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:14px 15px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">'+
         '<div style="min-width:0">'+
-          '<div style="font-size:14.5px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(obj)+'</div>'+
+          '<div style="font-size:14.5px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(obj)+(isCur?' <span style="font-size:10px;font-weight:700;color:#eb5b36;letter-spacing:.5px;vertical-align:1px">GEÖFFNET</span>':'')+'</div>'+
           '<div style="font-size:12px;color:#999;margin-top:2px">'+esc(meta)+'</div>'+
         '</div>'+
-        '<div style="flex-shrink:0;font-size:11.5px;font-weight:700;color:'+(p===6?"#1b7a2e":"#888")+'">'+p+'/6</div>'+
+        '<div style="flex-shrink:0;display:flex;align-items:center;gap:12px">'+
+          '<span style="font-size:11.5px;font-weight:700;color:'+(p===6?"#1b7a2e":"#888")+'">'+p+'/6</span>'+
+          '<button type="button" onclick="deleteDraft(\''+id+'\',event)" title="Entwurf löschen" style="border:none;background:#f4f4f4;color:#999;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none;line-height:1">✕</button>'+
+        '</div>'+
       '</div>'+
       '<div style="height:4px;background:#f0f0f0;border-radius:2px;margin-top:10px;overflow:hidden"><div style="height:100%;width:'+Math.round(p/6*100)+'%;background:'+(p===6?"#4caf50":"#eb5b36")+';border-radius:2px"></div></div>'+
     '</div>';
