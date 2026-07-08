@@ -1,4 +1,3 @@
-  if(istEinseiter())saveSingle();
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -11,7 +10,7 @@
 ║  (prisma-zentrum.com) – österreichischer Immobilienentwickler.              ║
 ║  Single-File HTML-App, läuft komplett im Browser, kein Backend.             ║
 ║                                                                              ║
-║  VERSION: v18-PWA – Protokollarten Wohnung/Gewerbe/Schlüssel/Parkkarte × Übergabe/Rücknahme,
+║  VERSION: v19-PWA – Startseiten-Flow, Meta-Zeile, Wischgesten, Senden-Helfer, Einseiter-Feinschliff,
 ║                                                                              ║
 ║  NEU in v8:                                                                  ║
 ║  • Tab-Haken korrigiert (kein Doppelhaken, nur bei echtem Inhalt)           ║
@@ -322,7 +321,7 @@ input:focus,select:focus,textarea:focus{border-bottom-color:#eb5b36 !important}
         <div class="app-sub" id="prog-lbl">Schritt 1 von 6</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
-        <button onclick="openDraftPanel()" type="button" title="Gespeicherte Protokolle" style="background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;font-family:inherit;color:#444;cursor:pointer;display:flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none" aria-hidden="true"><path d="M3.5 7A1.5 1.5 0 0 1 5 5.5h4.5l2 2.5H19A1.5 1.5 0 0 1 20.5 9.5v8A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg> Entwürfe</button>
+        <button onclick="openDraftPanel()" type="button" title="Zur Startseite" style="background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;font-family:inherit;color:#444;cursor:pointer;display:flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5"/><path d="M6 9.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5"/></svg> Start</button>
         <div id="header-logo">
           <img src="data:image/png;base64,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" alt="PRISMA" style="height:26px;width:auto;display:block">
         </div>
@@ -432,7 +431,11 @@ function icn(name,size){
     send:'<path d="M12 15V4"/><path d="M8 7.5L12 3.5l4 4"/><path d="M4.5 12v7a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-7"/>',
     folder:'<path d="M3.5 7A1.5 1.5 0 0 1 5 5.5h4.5l2 2.5H19A1.5 1.5 0 0 1 20.5 9.5v8A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/>',
     copy:'<rect x="8.5" y="8.5" width="11" height="11" rx="1.5"/><path d="M5.5 15.5h-1A1.5 1.5 0 0 1 3 14V5.5A1.5 1.5 0 0 1 4.5 4H13a1.5 1.5 0 0 1 1.5 1.5v1"/>',
-    pen:'<path d="M4 20l1-4.5L16.5 4a1.8 1.8 0 0 1 2.5 0l1 1a1.8 1.8 0 0 1 0 2.5L8.5 19z"/><path d="M14.5 6l3.5 3.5"/>'
+    pen:'<path d="M4 20l1-4.5L16.5 4a1.8 1.8 0 0 1 2.5 0l1 1a1.8 1.8 0 0 1 0 2.5L8.5 19z"/><path d="M14.5 6l3.5 3.5"/>',
+    home:'<path d="M4 10.5L12 4l8 6.5"/><path d="M6 9.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5"/>',
+    office:'<rect x="5" y="4" width="10" height="16" rx="1"/><path d="M15 9h4a1 1 0 0 1 1 1v10"/><path d="M8 8h1.5M8 11.5h1.5M8 15h1.5M11.5 8H13M11.5 11.5H13M11.5 15H13"/><path d="M3.5 20h17"/>',
+    key:'<circle cx="15.5" cy="8.5" r="4"/><path d="M12.5 11.5L4.5 19.5"/><path d="M7 17l2 2M9.5 14.5l2 2"/>',
+    park:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9.5 17V7h3.8a3 3 0 0 1 0 6H9.5"/>'
   }[name]||"";
   return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex:none" aria-hidden="true">'+P+'</svg>';
 }
@@ -444,6 +447,12 @@ function protTitle(){
   return (istRuecknahme()?"Rücknahmeprotokoll":"Übergabeprotokoll")+" "+a.label;
 }
 
+
+function toast(msg,dur){
+  var t=ge("toast");if(!t)return;
+  t.textContent=msg;t.classList.add("show");
+  setTimeout(function(){t.classList.remove("show");},dur||1800);
+}
 
 function loading(on){ge("loading").classList[on?"add":"remove"]("active");}
 
@@ -534,10 +543,9 @@ function stepHasContent(i){
 var STEP_FNS=null;
 // ── EINSEITER: Schlüssel- & Parkkartenprotokoll (v18) ──────────────────────
 function saveSingle(){
-  var f=["f_datum","f_top","f_eigentuemer","f_mieter","f_mieter_vd","f_kfz","f_bestandsobjekt","f_verlust_eur","f_verwalter","f_objekt"];
-  var map={f_datum:"datum",f_top:"top",f_eigentuemer:"eigentuemer",f_mieter:"mieter",f_mieter_vd:"mieter_vd",f_kfz:"kfz",f_bestandsobjekt:"bestandsobjekt",f_verlust_eur:"verlust_eur",f_verwalter:"verwalter",f_objekt:"objekt"};
+  var f=["f_top","f_eigentuemer","f_mieter","f_mieter_vd","f_kfz","f_verlust_eur","f_verwalter","f_objekt"];
+  var map={f_top:"top",f_eigentuemer:"eigentuemer",f_mieter:"mieter",f_mieter_vd:"mieter_vd",f_kfz:"kfz",f_verlust_eur:"verlust_eur",f_verwalter:"verwalter",f_objekt:"objekt"};
   f.forEach(function(id){var el=ge(id);if(el)D[map[id]]=el.value;});
-  var el=ge("f_typ");if(el)D.typ=el.value;
   // Schlüsselzeilen
   D.schluessel.forEach(function(s,i){
     var a=ge("sk_art_"+i),n=ge("sk_anz_"+i),r=ge("sk_nr_"+i);
@@ -545,8 +553,8 @@ function saveSingle(){
   });
   // Kartenzeilen
   D.karten.forEach(function(k,i){
-    var n=ge("ka_nr_"+i),b=ge("ka_bez_"+i);
-    if(n)k.nr=n.value;if(b)k.bez=b.value;
+    var n=ge("ka_nr_"+i);
+    if(n)k.nr=n.value;
   });
   persist();
 }
@@ -560,24 +568,20 @@ function renderSingle(){
   var istPK=(D.art==="parkkarte");
   var kern=
     '<div class="sec-hd">Protokoll</div>'+
+    metaLine()+
     '<div class="grp-card">'+
-      '<div class="field-row field-row-aligned" style="margin-bottom:14px">'+
-        '<div class="field"><label>Art des Protokolls</label>'+sel("f_typ",["Übergabe","Rücknahme"],D.typ,"saveSingle();render()")+'</div>'+
-        '<div class="field"><label>Datum</label>'+inp("f_datum",D.datum,"","date")+'</div>'+
-      '</div>'+
       '<div class="field field-full ac-wrap" style="position:relative"><label>'+typWort()+' durchgeführt durch (PRISMA)</label>'+
-        '<input type="text" id="f_verwalter" value="'+esc(D.verwalter)+'" placeholder="Name tippen oder auswählen…" autocomplete="off" onfocus="vwFilter(this.value,this)" oninput="vwFilter(this.value,this)" onblur="setTimeout(vwClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
+        '<input type="text" id="f_verwalter" value="'+esc(D.verwalter)+'" placeholder="Name tippen oder auswählen…" autocomplete="off" oninput="vwFilter(this.value,this)" onblur="setTimeout(vwClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
       '</div>'+
     '</div>'+
     '<div class="sec-hd">Objekt & Mieter</div>'+
     '<div class="grp-card">'+
-      '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Antippen oder tippen zum Suchen…" autocomplete="off" onfocus="acFilter(this.value,this)" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
       (istPK?"":'<div class="obj-row"><span class="obj-lbl">Top-Nummer</span><span class="obj-val">'+inp("f_top",D.top,"z.B. Top 12")+'</span></div>')+
       '<div class="obj-row"><span class="obj-lbl">Eigentümer/in</span><span class="obj-val">'+inp("f_eigentuemer",D.eigentuemer)+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Firma / Name</span><span class="obj-val">'+inp("f_mieter",D.mieter)+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">vertreten durch</span><span class="obj-val">'+inp("f_mieter_vd",D.mieter_vd,"handelnde Person")+'</span></div>'+
-      (istPK?'<div class="obj-row"><span class="obj-lbl">KFZ-Kennzeichen</span><span class="obj-val">'+inp("f_kfz",D.kfz)+'</span></div>'
-            :'<div class="obj-row"><span class="obj-lbl">für das Bestandsobjekt</span><span class="obj-val">'+inp("f_bestandsobjekt",D.bestandsobjekt,"z.B. Lager UG 1, Büro 8. OG")+'</span></div>')+
+      (istPK?'<div class="obj-row"><span class="obj-lbl">KFZ-Kennzeichen</span><span class="obj-val">'+inp("f_kfz",D.kfz)+'</span></div>':"")+
     '</div>';
   var liste;
   if(istPK){
@@ -585,7 +589,6 @@ function renderSingle(){
       D.karten.map(function(k,i){
         return '<div class="grp-card" style="display:flex;gap:10px;align-items:flex-end;padding:13px 14px">'+
           '<div class="field" style="flex:1"><label>Karten-Nr.</label><input id="ka_nr_'+i+'" inputmode="numeric" value="'+esc(k.nr)+'" placeholder="Nr." style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>'+
-          '<div class="field" style="flex:1.4"><label>Bezeichnung (optional)</label><input id="ka_bez_'+i+'" value="'+esc(k.bez)+'" placeholder="z.B. Stellplatz 12" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>'+
           '<button type="button" onclick="delKarte('+i+')" style="border:none;background:#f4f4f4;color:#999;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;flex:none;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">✕</button>'+
         '</div>';
       }).join("")+
@@ -678,23 +681,19 @@ function logoSVG(){
 // ── STEP 0: STAMMDATEN ────────────────────────────────────────────────────
 function step0(){
   // v15: Mängel-Checkboxen entfallen (werden im Protokoll automatisch aus der Raumbeurteilung abgeleitet)
-  var cbs='<label class="cb-row'+(D.cb[2]?' checked':"")+'"><input type="checkbox" id="cb_2"'+(D.cb[2]?' checked':"")+' onchange="cbChange(2,this)">'+cbLabel(2)+'</label>'+
-    '<p style="font-size:12px;color:#999;margin-top:8px;line-height:1.5">„Mängel/Schäden festgestellt" bzw. „keine Mängel/Schäden" wird im Protokoll automatisch aus der Raumbeurteilung (Tab Mängel) übernommen.</p>';
+  var cbs='<label class="cb-row'+(D.cb[2]?' checked':"")+'"><input type="checkbox" id="cb_2"'+(D.cb[2]?' checked':"")+' onchange="cbChange(2,this)">'+cbLabel(2)+'</label>';
   return'<div class="sec-hd">Protokoll</div>'+
+    metaLine()+
     '<div class="grp-card">'+
-      '<div class="field-row field-row-aligned" style="margin-bottom:14px">'+
-        '<div class="field"><label>Art des Protokolls</label>'+sel("f_typ",["Übergabe","Rücknahme"],D.typ,"saveTyp()")+'</div>'+
-        '<div class="field"><label>Datum der '+typWort()+'</label>'+inp("f_datum",D.datum,"","date")+'</div>'+
-      '</div>'+
       '<div class="field-row" style="margin-bottom:2px">'+
         '<div class="field field-full ac-wrap" style="position:relative"><label>'+typWort()+' durchgeführt durch (PRISMA)</label>'+
-          '<input type="text" id="f_verwalter" value="'+esc(D.verwalter)+'" placeholder="Name tippen oder auswählen…" autocomplete="off" onfocus="vwFilter(this.value,this)" oninput="vwFilter(this.value,this)" onblur="setTimeout(vwClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
+          '<input type="text" id="f_verwalter" value="'+esc(D.verwalter)+'" placeholder="Name tippen oder auswählen…" autocomplete="off" oninput="vwFilter(this.value,this)" onblur="setTimeout(vwClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
         '</div>'+
       '</div>'+
     '</div>'+
     '<div class="sec-hd">Objekt</div>'+
     '<div class="grp-card">'+
-      '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Antippen oder tippen zum Suchen…" autocomplete="off" onfocus="acFilter(this.value,this)" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Top-Nummer</span><span class="obj-val">'+inp("f_top",D.top,"z.B. Top 12")+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Eigentümer/in</span><span class="obj-val">'+inp("f_eigentuemer",D.eigentuemer)+'</span></div>'+
     '</div>'+
@@ -722,14 +721,39 @@ function step0(){
     '<div class="grp-card">'+
     '<div class="field-row" style="margin-bottom:2px">'+
       '<div class="field ac-wrap"><label>Anbieter</label>'+
-        '<input type="text" id="f_anbieter" value="'+esc(D.anbieter)+'" placeholder="Anbieter tippen oder auswählen…" autocomplete="off" onfocus="anbFilter(this.value,this)" oninput="D.anbieter=this.value;anbFilter(this.value,this)" onblur="setTimeout(anbClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
+        '<input type="text" id="f_anbieter" value="'+esc(D.anbieter)+'" placeholder="Anbieter tippen oder auswählen…" autocomplete="off" oninput="D.anbieter=this.value;anbFilter(this.value,this)" onblur="setTimeout(anbClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
       '</div>'+
       '<div class="field"><label>wird erledigt durch</label>'+sel("f_strom_person",["Mieter","Vermieter"],D.strom_person)+'</div>'+
-      '<div class="field"><label>wird erledigt mit Zählerstichtag</label>'+inp("f_strom_bis",D.strom_bis,"","date")+'</div>'+
+      '<div class="field"><label>Zählerstichtag</label>'+inp("f_strom_bis",D.strom_bis,"","date")+'</div>'+
     '</div>'+
     '</div>'+
     navBar(false,true,"Weiter: Schlüssel →");
 }
+// ── Meta-Zeile: Richtung & Datum kompakt, änderbar bei Bedarf (v19) ─────────
+var VW_KEY="prisma_uebergabe_verwalter";
+function gespeicherterVerwalter(){try{return localStorage.getItem(VW_KEY)||"";}catch(e){return "";}}
+function setzeVerwalter(name){try{localStorage.setItem(VW_KEY,name);}catch(e){}}
+var _metaOpen=false;
+function metaLine(){
+  return '<div class="grp-card" style="padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px">'+
+      '<div style="font-size:13.5px;color:#333;min-width:0"><b>'+D.typ+'</b><span style="color:#999"> · </span>'+fmtDate(D.datum)+'</div>'+
+      '<button type="button" onclick="toggleMeta()" style="border:none;background:none;color:#eb5b36;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;flex:none;padding:4px 2px;-webkit-tap-highlight-color:transparent">'+(_metaOpen?"fertig":"ändern")+'</button>'+
+    '</div>'+
+    (_metaOpen?
+      '<div class="grp-card" style="margin-top:-2px">'+
+        '<div style="display:flex;gap:8px;margin-bottom:13px">'+
+          ["Übergabe","Rücknahme"].map(function(t){
+            var on=D.typ===t;
+            return '<button type="button" onclick="setTyp(\''+t+'\')" style="flex:1;padding:10px 4px;border:1.5px solid '+(on?"#eb5b36":"#ddd")+';background:'+(on?"#eb5b36":"#fff")+';color:'+(on?"#fff":"#666")+';font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;border-radius:8px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+t+'</button>';
+          }).join("")+
+        '</div>'+
+        '<div class="field"><label>Datum der '+typWort()+'</label><input type="date" id="f_meta_datum" value="'+esc(D.datum)+'" onchange="setMetaDatum(this.value)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>'+
+      '</div>'
+    :"");
+}
+function toggleMeta(){if(istEinseiter())saveSingle();else saveStep();_metaOpen=!_metaOpen;render();}
+function setTyp(t){if(istEinseiter())saveSingle();else saveStep();D.typ=t;persist();render();}
+function setMetaDatum(v){D.datum=v;persist();}
 function saveTyp(){var el=ge("f_typ");if(el){saveStep();D.typ=el.value;render();}}
 function baChange(el){
   saveStep();
@@ -743,6 +767,7 @@ function cbChange(i,el){
 // Mitarbeiter-Autocomplete (bei Fokus alle anzeigen, beim Tippen filtern)
 function vwFilter(val,inputEl){
   var old=ge("vw-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
+  if(!val||val.length<1)return;
   var q=(val||"").toLowerCase();
   var matches=VERWALTER.filter(function(n){return !q||n.toLowerCase().indexOf(q)>=0;});
   if(!matches.length)return;
@@ -768,8 +793,9 @@ function vwClose(){var old=ge("vw-list");if(old&&old.parentNode)old.parentNode.r
 var ANBIETER=["Salzburg AG","Verbund","KELAG","Energie AG","oekostrom AG","Wien Energie","MyElectric","aWATTar"];
 function anbFilter(val,inputEl){
   var old=ge("anb-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
-  var q=(val||"").toLowerCase();
-  var matches=ANBIETER.filter(function(n){return !q||n.toLowerCase().indexOf(q)>=0;});
+  if(!val||val.length<1)return;
+  var q=val.toLowerCase();
+  var matches=ANBIETER.filter(function(n){return n.toLowerCase().indexOf(q)>=0;});
   if(!matches.length)return;
   var list=document.createElement("div");
   list.id="anb-list";list.className="ac-list";
@@ -808,19 +834,18 @@ function skRows(){
       (i>0?'<button class="btn-del" onclick="delSk('+i+')" type="button">✕</button>':"")
     +'</div>';
   }).join("");
-  return rows+'<button class="btn-add" onclick="addSchluessel()" type="button">＋ Schlüssel hinzufügen</button>';
+  return rows+'<button class="btn-add" onclick="addSk()" type="button" style="margin-top:10px">＋ Schlüssel hinzufügen</button>';
 }
 function step1(){
   var rows=skRows(); // v18: geteilt mit Einseiter
   return'<div class="sec-hd">Schlüssel / Sender übergeben</div>'+rows+
-    '<button class="btn-add" onclick="addSk()" style="margin-top:10px">＋ Schlüssel hinzufügen</button>'+
     (istRuecknahme()?'<div class="grp-card" style="margin-top:14px"><div class="field field-full"><label>folgende Schlüssel fehlen</label>'+inp("f_sk_fehlen",D.sk_fehlen,"z.B. 1 Stk. Briefkastenschlüssel")+'</div></div>':"")+
     navBar(true,true,"Weiter: Zähler →");
 }
 function skChange(i){saveStep();render();}
-function addSk(){saveStep();D.schluessel.push({art:"Briefkasten",_sel:"Briefkasten",anz:"",nr:"",foto:null});render();}
-function delSk(i){saveStep();D.schluessel.splice(i,1);toast("Zeile gelöscht");render();}
-function addSkFoto(i,inp){if(!inp.files||!inp.files[0])return;saveStep();loading(true);resizeImg(inp.files[0],function(d){D.schluessel[i].foto=d;loading(false);render();});}
+function addSk(){if(istEinseiter())saveSingle();else saveStep();D.schluessel.push({art:"Briefkasten",_sel:"Briefkasten",anz:"",nr:"",foto:null});render();}
+function delSk(i){if(istEinseiter())saveSingle();else saveStep();D.schluessel.splice(i,1);toast("Zeile gelöscht");render();}
+function addSkFoto(i,inp){if(!inp.files||!inp.files[0])return;if(istEinseiter())saveSingle();else saveStep();loading(true);resizeImg(inp.files[0],function(d){D.schluessel[i].foto=d;loading(false);render();});}
 function delSkFoto(i){D.schluessel[i].foto=null;render();}
 
 // ── STEP 2: ZÄHLER ────────────────────────────────────────────────────────
@@ -888,7 +913,9 @@ function step3(){
     }).join("");
     var isOpen=!!r._open;
     return '<div class="raum-block" id="rb_'+ri+'">'+
-      '<div class="raum-block-hd'+(isOpen?" open":"")+'" onclick="toggleRb('+ri+')">'+
+      '<div class="rb-swipe" style="position:relative;overflow:hidden">'+
+        '<button type="button" class="rb-del" onclick="delRaum('+ri+',event)" style="position:absolute;top:0;right:0;bottom:0;width:86px;border:none;background:#d9534f;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-appearance:none;-webkit-tap-highlight-color:transparent">Löschen</button>'+
+      '<div class="raum-block-hd'+(isOpen?" open":"")+'" id="rbhd_'+ri+'" style="position:relative;background:#fff;transition:transform .18s ease" onclick="toggleRb('+ri+')" ontouchstart="rbTS('+ri+',event)" ontouchmove="rbTM('+ri+',event)" ontouchend="rbTE('+ri+',event)">'+
         '<div class="rb-name">'+r.r+(summary?'<div style="font-size:10.5px;color:#999;font-weight:400;margin-top:2px">'+summary+'</div>':'')+'</div>'+
         '<span class="zust-mini-row" onclick="event.stopPropagation()">'+
           ['gut','mangel'].map(function(z){
@@ -896,6 +923,7 @@ function step3(){
           }).join("")+
         '</span>'+
         '<span class="rb-toggle">▾</span>'+
+      '</div>'+
       '</div>'+
       '<div class="raum-block-body'+(isOpen?" open":"")+'" id="rbb_'+ri+'">'+
         '<div style="margin-bottom:10px">'+
@@ -941,6 +969,52 @@ function step3(){
 }
 
 // Optionalen Raum hinzufügen
+// ── Wischgeste: Raum nach links wischen legt Löschen frei (v19) ────────────
+var _rbSwipe={i:-1,x0:0,y0:0,dx:0,open:-1,drag:false};
+function rbOffen(i,offen){
+  var el=ge("rbhd_"+i);if(!el)return;
+  el.style.transform=offen?"translateX(-86px)":"translateX(0)";
+  _rbSwipe.open=offen?i:(_rbSwipe.open===i?-1:_rbSwipe.open);
+}
+function rbTS(i,ev){
+  var t=ev.touches[0];
+  _rbSwipe.i=i;_rbSwipe.x0=t.clientX;_rbSwipe.y0=t.clientY;_rbSwipe.dx=0;_rbSwipe.drag=false;
+  if(_rbSwipe.open>=0&&_rbSwipe.open!==i)rbOffen(_rbSwipe.open,false);
+}
+function rbTM(i,ev){
+  var t=ev.touches[0];
+  var dx=t.clientX-_rbSwipe.x0,dy=t.clientY-_rbSwipe.y0;
+  if(!_rbSwipe.drag){
+    if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.4)_rbSwipe.drag=true;else return;
+  }
+  ev.preventDefault();
+  _rbSwipe.dx=dx;
+  var base=(_rbSwipe.open===i?-86:0);
+  var x=Math.max(-86,Math.min(0,base+dx));
+  var el=ge("rbhd_"+i);
+  if(el){el.style.transition="none";el.style.transform="translateX("+x+"px)";}
+}
+function rbTE(i,ev){
+  var el=ge("rbhd_"+i);
+  if(el)el.style.transition="transform .18s ease";
+  if(!_rbSwipe.drag)return;
+  var base=(_rbSwipe.open===i?-86:0);
+  var x=base+_rbSwipe.dx;
+  rbOffen(i,x<-40);
+  // Klick nach Drag unterdrücken
+  if(el){el.dataset.noclick="1";setTimeout(function(){delete el.dataset.noclick;},350);}
+}
+function delRaum(i,ev){
+  if(ev)ev.stopPropagation();
+  saveMangelStep();
+  var r=D.raeume[i];
+  var hatDaten=(r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length);
+  if(hatDaten&&!confirm(r.r+" samt Mangel-Daten löschen?")){rbOffen(i,false);return;}
+  D.raeume.splice(i,1);
+  _rbSwipe.open=-1;
+  persist();render();
+  toast("Raum entfernt");
+}
 function addRaumDialog(){
   saveMangelStep();
   var verfuegbar=ROOMS_OPTIONAL.slice();
@@ -952,11 +1026,21 @@ function addRaumDialog(){
     '<div style="font-size:15px;font-weight:700;margin-bottom:4px">Raum hinzufügen</div>'+
     '<div style="font-size:12.5px;color:#888;margin-bottom:14px">Raumtyp wählen – wird der Liste hinzugefügt.</div>'+
     verfuegbar.map(function(r){return '<button type="button" onclick="addRaum(\''+r.replace(/'/g,"\\'")+'\')" style="display:block;width:100%;text-align:left;padding:13px 14px;margin-bottom:7px;border:1px solid #e0e0e0;background:#fff;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:600;color:#1a1a1a">'+r+'</button>';}).join("")+
+    '<div style="display:flex;gap:8px;margin-top:10px">'+
+      '<input type="text" id="raum-frei" placeholder="Eigene Bezeichnung…" style="flex:1;border:1px solid #e0e0e0;border-radius:8px;padding:12px 13px;font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none">'+
+      '<button type="button" onclick="addRaumFrei()" style="border:none;background:#eb5b36;color:#fff;border-radius:8px;padding:12px 16px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-appearance:none">＋</button>'+
+    '</div>'+
     '<button type="button" onclick="closeRaumDialog()" style="display:block;width:100%;padding:13px;margin-top:6px;border:none;background:#f0f0f0;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:700">Abbrechen</button>'+
   '</div>';
   ov.innerHTML=box;
   ov.onclick=function(e){if(e.target===ov)closeRaumDialog();};
   document.body.appendChild(ov);
+}
+function addRaumFrei(){
+  var el=ge("raum-frei");
+  var name=(el&&el.value||"").trim();
+  if(!name){if(el)el.focus();return;}
+  addRaum(name.toUpperCase());
 }
 function closeRaumDialog(){var ov=ge("raum-add-ov");if(ov)ov.parentNode.removeChild(ov);}
 
@@ -1007,6 +1091,8 @@ function addRaum(name){
 }
 
 function toggleRb(ri){
+  var hd=ge("rbhd_"+ri);if(hd&&hd.dataset.noclick)return;
+  if(_rbSwipe.open>=0){rbOffen(_rbSwipe.open,false);return;}
   D.raeume[ri]._open=!D.raeume[ri]._open;
   var hd=document.querySelector("#rb_"+ri+" .raum-block-hd");
   var bd=ge("rbb_"+ri);
@@ -1281,13 +1367,13 @@ function step5(c){
       '</div>'+
     '</div>'+
     '<div class="sec-hd">Protokoll senden</div>'+
-    '<div class="hint">„Protokoll senden" erstellt das PDF und &ouml;ffnet das Teilen-Men&uuml; &ndash; dort Mail, Teams usw. w&auml;hlen, das PDF wird angeh&auml;ngt. Drucken und „In Dateien sichern" sind ebenfalls im Teilen-Men&uuml; enthalten.</div>'+
+    
     (D.email_mieter?'<div style="display:flex;align-items:center;gap:9px;margin-bottom:18px;flex-wrap:wrap"><span style="font-size:13px;color:#666">E-Mail Mieter/in:</span><strong style="font-size:14px">'+esc(D.email_mieter)+'</strong><button type="button" onclick="copyEmail()" style="border:1.5px solid #ccc;background:#fff;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">'+icn("copy",13)+' Kopieren</button></div>':"")+
     '<div id="pdf-warn"></div>'+
     '<div class="nav-bar">'+
       '<button class="btn-back" onclick="goStep(4)" type="button">← Zurück</button>'+
       '<div class="nav-right">'+
-        '<button onclick="openPreview()" type="button" style="background:#fff;border:1.5px solid #ccc;color:#333;padding:12px 18px;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">'+icn("eye",15)+' Vorschau / Drucken</button>'+
+        '<button onclick="openPreview()" type="button" style="background:#fff;border:1.5px solid #ccc;color:#333;padding:12px 18px;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">'+icn("eye",15)+' Vorschau</button>'+
         '<button class="btn-dl" onclick="sharePDF()" type="button" style="font-size:15px;padding:13px 22px">'+icn("send",16)+' Protokoll senden</button>'+
       '</div>'+
     '</div>'+
@@ -1502,8 +1588,8 @@ function buildPDF(){
       liste='<div class="shd">Schlüssel</div>'+(skf.length?skf.map(function(s){return '<p class="txt">'+esc(s.anz)+' Stk. '+esc(s.art||"Schlüssel")+(s.nr?' &middot; Nr. '+esc(s.nr):'')+'</p>';}).join(""):'<p class="txt dim">-</p>')+
         '<p class="txt" style="font-size:9pt;color:#444;margin-top:5mm">Bei Verlust eines Schlüssels muss aus Sicherheitsgründen die gesamte Schließanlage auf Kosten des Mieters ausgetauscht werden.</p>';
     }else{
-      var kf=D.karten.filter(function(k){return k.nr||k.bez;});
-      liste='<div class="shd">Parkkarten</div>'+(kf.length?kf.map(function(k){return '<p class="txt">Parkkarte Nr. '+esc(k.nr||"-")+(k.bez?' &middot; '+esc(k.bez):'')+'</p>';}).join(""):'<p class="txt dim">-</p>')+
+      var kf=D.karten.filter(function(k){return k.nr;});
+      liste='<div class="shd">Parkkarten</div>'+(kf.length?kf.map(function(k){return '<p class="txt">Parkkarte Nr. '+esc(k.nr||"-")+'</p>';}).join(""):'<p class="txt dim">-</p>')+
         '<p class="txt" style="font-size:9pt;color:#444;margin-top:5mm">Bei Verlust einer Parkkarte wird ein Kostenersatz von EUR '+esc(D.verlust_eur||"15")+',&ndash; verrechnet.</p>';
     }
     var rowsK='<div class="or"><span class="ol">Objekt:</span><b>'+esc(D.objekt||"-")+'</b></div>'+
@@ -1512,7 +1598,7 @@ function buildPDF(){
       '<div class="or"><span class="ol">Mieter:</span><b>'+esc(D.mieter||"-")+'</b></div>'+
       (D.mieter_vd?'<div class="or"><span class="ol">vertreten durch:</span>'+esc(D.mieter_vd)+'</div>':'')+
       (D.art==="parkkarte"&&D.kfz?'<div class="or"><span class="ol">KFZ-Kennzeichen:</span>'+esc(D.kfz)+'</div>':'')+
-      (D.art==="schluessel"&&D.bestandsobjekt?'<div class="or"><span class="ol">Bestandsobjekt:</span>'+esc(D.bestandsobjekt)+'</div>':'')+
+      
       (D.verwalter?'<div class="or"><span class="ol">'+typWort()+' durch:</span>'+esc(D.verwalter)+'</div>':'');
     var sv=D.sig_v,sm=D.sig_m;
     var kurz='<div class="pg">'+
@@ -1707,8 +1793,8 @@ var _acOpen=false;
 function acFilter(val,inputEl){
   // Remove existing list
   var old=ge("ac-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
-  if(!OBJEKTE.length){_acOpen=false;return;}
-  var q=(val||"").toLowerCase(); // leer = volle Liste (Antippen zeigt alle Objekte)
+  if(!val||val.length<1||!OBJEKTE.length){_acOpen=false;return;}
+  var q=val.toLowerCase();
   var matches=OBJEKTE.filter(function(o){return !q||o.toLowerCase().indexOf(q)>=0;});
   if(!matches.length){_acOpen=false;return;}
 
@@ -1800,7 +1886,7 @@ function closeBurst(){
 
 // ── NATIVES PDF (für Teilen/Share – ohne Druckdialog) ─────────────────────
 // Erzeugt ein echtes PDF (PDF 1.4, Helvetica/WinAnsi, JPEG-Bilder) rein clientseitig.
-var APP_VERSION="v18";
+var APP_VERSION="v19";
 
 function jpegDim(bin){
   var i=2,L=bin.length;
@@ -1956,7 +2042,6 @@ function buildNativePDF(sigV,sigM){
     rowsK.push(["Mieter:",D.mieter,1]);
     if(D.mieter_vd)rowsK.push(["vertreten durch:",D.mieter_vd,0]);
     if(D.art==="parkkarte"&&D.kfz)rowsK.push(["KFZ-Kennzeichen:",D.kfz,0]);
-    if(D.art==="schluessel"&&D.bestandsobjekt)rowsK.push(["für das Bestandsobjekt:",D.bestandsobjekt,0]);
     if(D.verwalter)rowsK.push([typWort()+" durch:",D.verwalter,0]);
     var bx=rowsK.length*17+14;
     rect(M,yy,CW,bx,0.8,0.6);
@@ -1972,7 +2057,7 @@ function buildNativePDF(sigV,sigM){
     var satz;
     if(D.art==="schluessel"){
       var skf=D.schluessel.filter(function(s){return s.anz;});
-      satz="Hiermit bestätigt "+wer+" die "+(istRuecknahme()?"Rückgabe":"Übernahme")+" der nachstehend angeführten Schlüssel"+(D.bestandsobjekt?" für das Bestandsobjekt "+D.bestandsobjekt:"")+":";
+      satz="Hiermit bestätigt "+wer+" die "+(istRuecknahme()?"Rückgabe":"Übernahme")+" der nachstehend angeführten Schlüssel:";
       twrap(satz,FSk,false,CW).forEach(function(L){txt(M,yy,L,FSk);yy+=15;});
       yy+=6;
       secHd("Schlüssel");
@@ -1984,18 +2069,41 @@ function buildNativePDF(sigV,sigM){
       yy+=8;
       twrap("Bei Verlust eines Schlüssels muss aus Sicherheitsgründen die gesamte Schließanlage auf Kosten des Mieters ausgetauscht werden.",9,false,CW).forEach(function(L){txt(M,yy,L,9,false,0.25);yy+=12.5;});
     }else{
-      var kf=D.karten.filter(function(k){return k.nr||k.bez;});
+      var kf=D.karten.filter(function(k){return k.nr;});
       satz="Hiermit bestätigt "+wer+" die "+(istRuecknahme()?"Rückgabe":"Übernahme")+" von "+kf.length+" Stk. Parkkarte"+(kf.length===1?"":"n")+":";
       twrap(satz,FSk,false,CW).forEach(function(L){txt(M,yy,L,FSk);yy+=15;});
       yy+=6;
       secHd("Parkkarten");
       if(kf.length){
         kf.forEach(function(k){
-          txt(M,yy,"Parkkarte Nr. "+(k.nr||"-")+(k.bez?"  ·  "+k.bez:""),FSk);yy+=16;
+          txt(M,yy,"Parkkarte Nr. "+(k.nr||"-"),FSk);yy+=16;
         });
       }else{txt(M,yy,"-",FSk,false,0.5);yy+=16;}
       yy+=8;
       twrap("Bei Verlust einer Parkkarte wird ein Kostenersatz von EUR "+(D.verlust_eur||"15")+",– verrechnet.",9,false,CW).forEach(function(L){txt(M,yy,L,9,false,0.25);yy+=12.5;});
+    }
+    // Schlüsselfotos kompakt auf Seite 1 (v19: strikt einseitig)
+    if(D.art==="schluessel"){
+      var skFo=schluesselFotos();
+      if(skFo.length){
+        yy+=12;
+        var avail=PH-BOT-yy-150; // Platz bis zum Unterschriftenblock
+        var perRow=skFo.length===1?1:2;
+        var fw=(CW-(perRow-1)*12)/perRow;
+        var fh=Math.min(fw*0.7,Math.max(80,(avail-14)/Math.ceil(skFo.length/perRow)-16));
+        if(fh>40){
+          var fc=0,fx=M;
+          skFo.forEach(function(f){
+            if(yy+fh>PH-BOT-150)return; // Seite bleibt einseitig — Überzählige entfallen
+            rect(fx,yy,fw,fh,0.4,0.8);
+            imgBox(f.data,fx+1,yy+1,fw-2,fh-2);
+            txt(fx,yy+fh+3,twrap(f.bez||"",7.5,false,fw)[0],7.5,false,0.45);
+            fc++;fx+=fw+12;
+            if(fc===perRow){fc=0;fx=M;yy+=fh+16;}
+          });
+          if(fc>0)yy+=fh+16;
+        }
+      }
     }
     // Unterschriften am Seitenende verankert (gleiche Optik wie Vollprotokoll)
     var colW=(CW-22)/2;
@@ -2028,21 +2136,6 @@ function buildNativePDF(sigV,sigM){
     hline(M,M+colW,yy,0.7);hline(M+colW+22,PW-M,yy,0.7);
     var vy=yy+3;vLbl.forEach(function(L){txt(M,vy,L.t,L.s,L.b,L.g);vy+=10.5;});
     var my=yy+3;mLbl.forEach(function(L){txt(M+colW+22,my,L.t,L.s,L.b,L.g);my+=10.5;});
-    // Schlüsselfotos als Anhangseite
-    if(D.art==="schluessel"){
-      var skFo=schluesselFotos();
-      if(skFo.length){
-        np();header("Beilage: Schlüsselfotos");
-        var phB=290;
-        skFo.forEach(function(f){
-          if(yy+phB+16>PH-BOT){np();header("Beilage: Schlüsselfotos (Fortsetzung)",true);yy+=2;}
-          rect(M,yy,CW,phB,0.5,0.8);
-          imgBox(f.data,M+2,yy+2,CW-4,phB-4);
-          txt(M,yy+phB+3,twrap(f.bez||"",8.5,false,CW)[0],8.5,false,0.4);
-          yy+=phB+20;
-        });
-      }
-    }
     // Fußzeilen + Ausgabe wie unten
     var totalK=pages.length;
     pages.forEach(function(p,i){
@@ -2382,8 +2475,41 @@ function mailBody(){
     (D.verwalter?D.verwalter+"\n":"")+
     "PRISMA Zentrum für Standort- und Regionalentwicklung GmbH";
 }
+function kopiere(txt,btn){
+  var done=function(){if(btn){var o=btn.textContent;btn.textContent="Kopiert ✓";setTimeout(function(){btn.textContent=o;},1400);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(function(){});}
+  else{try{var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);done();}catch(e){}}
+}
+function zeigeSendeHelfer(){
+  var old=ge("send-ov");if(old)old.parentNode.removeChild(old);
+  var ov=document.createElement("div");
+  ov.id="send-ov";
+  ov.style.cssText="position:fixed;inset:0;z-index:2500;background:rgba(20,20,20,.45);display:flex;align-items:flex-end;justify-content:center";
+  ov.onclick=function(e){if(e.target===ov)ov.parentNode.removeChild(ov);};
+  var chip='border:1.5px solid #ddd;background:#fff;border-radius:9px;padding:11px 13px;font-size:13px;font-weight:700;font-family:inherit;color:#444;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none;text-align:left';
+  ov.innerHTML='<div style="background:#f7f7f8;border-radius:18px 18px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:520px">'+
+    '<div class="sec-hd" style="margin:0 0 6px">Für die E-Mail kopieren</div>'+
+    '<p style="font-size:12px;color:#999;margin-bottom:12px;line-height:1.5">Mail übernimmt Empfänger und Betreff nicht automatisch – hier antippen und dort einfügen.</p>'+
+    '<div style="display:grid;gap:9px">'+
+      (D.email_mieter?'<button type="button" style="'+chip+'" onclick="kopiere(D.email_mieter,this)">✉ '+esc(D.email_mieter)+'</button>':'')+
+      '<button type="button" style="'+chip+'" onclick="kopiere(mailSubject(),this)">⧉ Betreff: '+esc(mailSubject())+'</button>'+
+    '</div>'+
+    '<button type="button" class="btn-send" style="width:100%;margin-top:15px" onclick="sendeHelferWeiter()">Weiter zum Teilen</button>'+
+  '</div>';
+  document.body.appendChild(ov);
+}
+function sendeHelferWeiter(){
+  var ov=ge("send-ov");if(ov)ov.parentNode.removeChild(ov);
+  sharePDF._skip=true;
+  sharePDF();
+}
 function sharePDF(){
-  saveStep();if(typeof saveMangelStep==="function")saveMangelStep();
+  if(istEinseiter())saveSingle();else{saveStep();if(typeof saveMangelStep==="function")saveMangelStep();}
+  // v19: Kopier-Helfer vor dem Teilen (Mail übernimmt Betreff/Empfänger nicht automatisch)
+  if(!sharePDF._skip&&(D.email_mieter||mailSubject())){
+    zeigeSendeHelfer();return;
+  }
+  sharePDF._skip=false;
   var kern=[];
   if(!D.objekt)kern.push("Objekt");
   if(!D.datum)kern.push("Datum");
@@ -2545,6 +2671,7 @@ function newDraft(art,typ){
     if(rc.rooms)D.raeume=rc.rooms.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};});
   }
   if(typ)D.typ=typ;
+  if(!D.verwalter)D.verwalter=gespeicherterVerwalter();
   persist();
   render();
   toast("Neues Protokoll");
@@ -2644,42 +2771,58 @@ function showStart(){
   ge("prog-lbl").textContent="";
   ge("prog-fill").style.width="0";
   var ttl=ge("app-title");if(ttl)ttl.textContent="Übergabeprotokolle";
+  // Art-Kacheln
+  var ICO={wohnung:"home",gewerbe:"office",schluessel:"key",parkkarte:"park"};
+  var tiles=Object.keys(ARTEN).map(function(k){
+    var on=(_startArt===k);
+    return '<button type="button" onclick="waehlArt(\''+k+'\')" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:'+(on?"#fff8f6":"#fff")+';border:1.5px solid '+(on?"#eb5b36":"#ececec")+';border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:16px 8px 13px;font-size:13.5px;font-weight:700;font-family:inherit;color:'+(on?"#eb5b36":"#333")+';cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+icn(ICO[k],26)+ARTEN[k].label+'</button>';
+  }).join("");
+  var richtung=_startArt
+    ? '<div style="display:flex;gap:10px;margin-top:12px">'+
+        '<button type="button" onclick="artGo(\'Übergabe\')" class="btn-send" style="flex:1">Übergabe</button>'+
+        '<button type="button" onclick="artGo(\'Rücknahme\')" style="flex:1;background:#fff;border:1.5px solid #575656;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:inherit;color:#575656;cursor:pointer;min-height:50px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">Rücknahme</button>'+
+      '</div>'
+    : '';
+  var vw=gespeicherterVerwalter();
+  var person='<div onclick="startPersonWahl()" style="display:flex;justify-content:space-between;align-items:center;padding:10px 3px 0;cursor:pointer;-webkit-tap-highlight-color:transparent">'+
+    '<span style="font-size:12.5px;color:#888">Durchgeführt von: <b style="color:#444">'+(vw?esc(vw):"—")+'</b></span>'+
+    '<span style="font-size:12px;font-weight:700;color:#eb5b36">'+(vw?"ändern":"wählen")+'</span>'+
+  '</div>';
   c.innerHTML=
     '<div style="padding-top:6px">'+
-      '<button type="button" onclick="startNew()" class="btn-burst" style="border-radius:12px">＋ Neues Protokoll</button>'+
+      '<div class="sec-hd" style="margin-top:4px">Neues Protokoll</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+tiles+'</div>'+
+      richtung+
+      person+
       (cards?'<div class="sec-hd" style="margin-top:24px">Entwürfe</div>'+cards:
-        '<p style="text-align:center;color:#aaa;font-size:13px;margin-top:34px;line-height:1.7">Noch keine Entwürfe.<br>Mit „Neues Protokoll" starten.</p>')+
+        '<p style="text-align:center;color:#aaa;font-size:13px;margin-top:30px;line-height:1.7">Noch keine Entwürfe.</p>')+
     '</div>';
 }
-function startNew(){
-  // Zweistufige Auswahl: Art → Richtung
-  var old=ge("art-ov");if(old)old.parentNode.removeChild(old);
+var _startArt=null;
+function startNew(){} // entfällt: Auswahl liegt direkt auf der Startseite (v19)
+function waehlArt(k){_startArt=(_startArt===k?null:k);showStart();}
+function artGo(typ){
+  var a=_startArt;_startArt=null;
+  newDraft(a,typ);
+}
+function startPersonWahl(){
+  var old=ge("vw-ov");if(old)old.parentNode.removeChild(old);
   var ov=document.createElement("div");
-  ov.id="art-ov";
+  ov.id="vw-ov";
   ov.style.cssText="position:fixed;inset:0;z-index:2500;background:rgba(20,20,20,.45);display:flex;align-items:flex-end;justify-content:center";
   ov.onclick=function(e){if(e.target===ov)ov.parentNode.removeChild(ov);};
-  var tiles=Object.keys(ARTEN).map(function(k){
-    return '<button type="button" onclick="artStep2(\''+k+'\')" style="background:#fff;border:1.5px solid #e4e4e4;border-radius:12px;padding:18px 8px;font-size:14px;font-weight:700;font-family:inherit;color:#333;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+ARTEN[k].label+'</button>';
-  }).join("");
-  ov.innerHTML='<div style="background:#f7f7f8;border-radius:18px 18px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:520px">'+
-    '<div class="sec-hd" style="margin:0 0 13px">Neues Protokoll – Art wählen</div>'+
-    '<div id="art-step" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+tiles+'</div>'+
+  ov.innerHTML='<div style="background:#f7f7f8;border-radius:18px 18px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:520px;max-height:70vh;overflow:auto">'+
+    '<div class="sec-hd" style="margin:0 0 13px">Wer führt die Protokolle durch?</div>'+
+    VERWALTER.map(function(n){
+      return '<div onclick="startPersonSet(\''+n.replace(/'/g,"\\'")+'\')" style="background:#fff;border:1px solid #ececec;border-radius:10px;padding:13px 15px;margin-bottom:8px;font-size:14.5px;font-weight:600;color:#333;cursor:pointer;-webkit-tap-highlight-color:transparent">'+n+'</div>';
+    }).join("")+
   '</div>';
   document.body.appendChild(ov);
 }
-var _artWahl=null;
-function artStep2(art){
-  _artWahl=art;
-  var st=ge("art-step");
-  st.style.gridTemplateColumns="1fr";
-  st.innerHTML=
-    '<div style="font-size:13px;color:#888;margin:2px 0 4px">'+ARTEN[art].label+' – Richtung wählen:</div>'+
-    '<button type="button" onclick="artGo(\'Übergabe\')" class="btn-burst" style="border-radius:12px;margin-bottom:0">Übergabe</button>'+
-    '<button type="button" onclick="artGo(\'Rücknahme\')" style="background:#fff;border:1.5px solid #575656;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:inherit;color:#575656;cursor:pointer;min-height:50px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">Rücknahme</button>';
-}
-function artGo(typ){
-  var ov=ge("art-ov");if(ov)ov.parentNode.removeChild(ov);
-  newDraft(_artWahl,typ);
+function startPersonSet(n){
+  setzeVerwalter(n);
+  var ov=ge("vw-ov");if(ov)ov.parentNode.removeChild(ov);
+  showStart();
 }
 function startOpenDraft(id){loadDraft(id);}
 
