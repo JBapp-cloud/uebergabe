@@ -1,62 +1,33 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  PRISMA ÜBERGABEPROTOKOLL – PROJEKTKONTEXT FÜR KI-ASSISTENT                ║
-║  Diese Datei einfach hochladen – Claude ist sofort im Bild.                ║
+║  PRISMA ÜBERGABEPROTOKOLL – Version 1.0                                      ║
+║  Projektkontext: Diese Datei hochladen, dann ist Claude sofort im Bild.      ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  PRODUKT                                                                     ║
-║  Digitale Wohnungsübergabe-App für PRISMA Unternehmensgruppe                ║
-║  (prisma-zentrum.com) – österreichischer Immobilienentwickler.              ║
-║  Single-File HTML-App, läuft komplett im Browser, kein Backend.             ║
+║  Digitale Protokoll-App der PRISMA Unternehmensgruppe (prisma-zentrum.com), ║
+║  entwickelt von Jakob Bonomo auf Grundlage seiner Erfahrung aus der Praxis, ║
+║  mit dem Ziel, Übergabe-Abläufe produktiver und besser zu gestalten.        ║
+║  Single-File HTML-PWA, läuft komplett im Browser, kein Backend.             ║
 ║                                                                              ║
-║  VERSION: v19-PWA – Startseiten-Flow, Meta-Zeile, Wischgesten, Senden-Helfer, Einseiter-Feinschliff,
+║  PROTOKOLLARTEN (je Übergabe / Rücknahme)                                    ║
+║  • Wohnung und Gewerbe: 6-Schritt-Wizard                                     ║
+║    (Daten · Schlüssel · Zähler · Fotos · Mängel · Abschluss)                ║
+║  • Schlüssel und Parkkarte: Einseiten-Formular, PDF strikt 1 Seite          ║
 ║                                                                              ║
-║  NEU in v8:                                                                  ║
-║  • Tab-Haken korrigiert (kein Doppelhaken, nur bei echtem Inhalt)           ║
-║  • Räume reduziert + "Raum hinzufügen"/"entfernen"                          ║
-║  • Tab "Räume" -> "Mängel"; Datum auto-heute; Art/Datum bündig              ║
-║  • Zähler: Einheit (kWh/m³) + Ablesedatum                                    ║
-║  • Kaution: Betragsfeld bei aktivierter Checkbox                            ║
-║  • Mehrere Entwürfe speichern/laden (Button "Entwürfe")                     ║
-║  • Abschluss: "Was fehlt noch?"-Übersicht                                    ║
-║  • PDF: Logo, klassischer S/W-Look (Arial), Unterschriften am Seitenende,   ║
-║    Seitenzahlen, leere Beilagen weggelassen, Mängelfotos nicht mehr doppelt ║
+║  KERNFUNKTIONEN                                                              ║
+║  • Startbildschirm: Art-Kacheln + Richtung, Entwürfe separat (Header)       ║
+║  • Objekt-/Mitarbeiter-/Anbieter-Suche (tippen = filtern)                   ║
+║  • Mängel: Wischgesten (links löschen, rechts umbenennen), freie Räume,     ║
+║    Schweregrade, Fotopflicht-Hinweise                                        ║
+║  • Unterschriften im Vollbild (rotationsfest, Zusammenfassung eingeblendet) ║
+║  • Natives PDF ohne Fremdbibliotheken, Auto-Fit Seite 1, Beilagen           ║
+║  • Entwürfe in localStorage, mehrgenerationige Datenmigration               ║
+║  • Senden-Helfer (E-Mail/Betreff kopieren) + navigator.share mit PDF        ║
 ║                                                                              ║
-║  EINSATZ                                                                     ║
-║  • Hauptsächlich iPhone Safari vor Ort bei Wohnungsübergaben                ║
-║  • Auch Mac/Desktop möglich                                                  ║
-║                                                                              ║
-║  WORKFLOW (6 Schritte)                                                       ║
-║  1. Stammdaten  2. Schlüssel  3. Zähler  4. Räume (Prüfung+Zustand+Mängel) ║
-║  5. Weitere Fotos  6. Unterschriften + Export                                ║
-║                                                                              ║
-║  FEATURES (implementiert)                                                    ║
-║  • Raumbasierte Mängel-Erfassung mit Zustand gut/mittel/schlecht            ║
-║  • Fotos je Raum + je Mangel + allgemeine Fotos                             ║
-║  • Signaturen (Canvas, touch-optimiert)                                      ║
-║  • LocalStorage-Persistenz (auto-save + restore)                            ║
-║  • PDF-Export: iOS-sicherer Fullscreen-Iframe (kein window.open)           ║
-║  • E-Mail-Funktion (mailto:)                                                 ║
-║  • PRISMA Branding (#eb5b36)                                                 ║
-║                                                                              ║
-║  OBJEKTE PFLEGEN                                                              ║
-║  var OBJEKTE=[...] im JS direkt bearbeiten (Suche: "OBJEKTE PFLEGEN")       ║
-║  Format: {name:"Adresse", eigentuemer:"Name"}                                ║
-║                                                                              ║
-║  TECHNISCHE ENTSCHEIDUNGEN                                                   ║
-║  • Kein Framework, kein Build-Step – reines HTML/CSS/JS                     ║
-║  • iOS Safari: capture="environment" nur für Kamera-Button,                 ║
-║    Galerie-Button ohne capture für Mehrfachauswahl                          ║
-║  • touch-action:none nur per CSS auf canvas, nicht inline                   ║
-║  • Drucken via document.write in sichtbarem Fullscreen-Iframe               ║
-║  • Excel: Arial 10pt, negative Zahlen mit Minus (falls relevant)            ║
-║                                                                              ║
-║  DESIGN                                                                      ║
-║  • Primärfarbe: #eb5b36 (PRISMA Orange)                                      ║
-║  • Font: -apple-system / Helvetica Neue / Arial                              ║
-║  • Mobile-first, min touch-target 44px                                       ║
-║                                                                              ║
+║  EINSATZ: iPhone Safari vor Ort; Hosting GitHub Pages (PWA, sw.js-Cache).   ║
+║  TECHNIK: Vanilla JS, keine CDNs (iOS-Safari-Stabilität), Arial-Metriken.   ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 -->
 <html lang="de">
@@ -179,9 +150,9 @@ table.mg-tbl input,table.mg-tbl select{border:none;width:100%;font-size:16px;bac
 
 /* === SCHLÜSSEL ROW === */
 .sk-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 0;border-bottom:1px solid #f0f0f0}
-.sk-anz{width:52px;border:none;border-bottom:1.5px solid #d0d0d0;text-align:center;font-size:14px;font-family:inherit;background:transparent;outline:none;padding:4px 2px;-webkit-appearance:none}
+.sk-anz{width:52px;border:none;border-bottom:1.5px solid #d0d0d0;text-align:center;font-size:16px;font-family:inherit;background:transparent;outline:none;padding:4px 2px;-webkit-appearance:none}
 .sk-lbl{font-size:13px;color:#777;white-space:nowrap}
-.sk-sel,.sk-inp{border:none;border-bottom:1.5px solid #d0d0d0;font-size:13px;font-family:inherit;background:transparent;outline:none;padding:4px 3px;-webkit-appearance:none;border-radius:0}
+.sk-sel,.sk-inp{border:none;border-bottom:1.5px solid #d0d0d0;font-size:16px;font-family:inherit;background:transparent;outline:none;padding:4px 3px;-webkit-appearance:none;border-radius:0}
 .sk-sel{min-width:155px}
 .sk-inp{flex:1;min-width:80px}
 
@@ -205,7 +176,7 @@ table.mg-tbl input,table.mg-tbl select{border:none;width:100%;font-size:16px;bac
 .foto-card{border:1px solid #e0e0e0;overflow:hidden;background:#fafafa}
 .foto-card img{width:100%;height:112px;object-fit:cover;display:block}
 .foto-card-foot{padding:5px 7px;display:flex;gap:5px;align-items:center;border-top:1px solid #f0f0f0}
-.foto-card-foot input{border:none;font-size:11.5px;width:100%;background:transparent;outline:none;font-family:inherit;color:#666}
+.foto-card-foot input{border:none;font-size:16px;width:100%;background:transparent;outline:none;font-family:inherit;color:#666}
 
 /* === SIGNATUR === */
 .sig-grid{display:flex;gap:22px;flex-wrap:wrap;margin:14px 0 20px}
@@ -273,7 +244,7 @@ table.mg-tbl input,table.mg-tbl select{border:none;width:100%;font-size:16px;bac
 /* === MANGEL CARD === */
 .mangel-card{background:#fff8f6;border:1px solid #f5d0c5;padding:11px 13px;margin-bottom:9px;position:relative}
 .mangel-card-row{display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap}
-.mangel-card textarea{width:100%;border:none;border-bottom:1.5px solid #e0d0d0;font-size:13.5px;font-family:inherit;background:transparent;outline:none;padding:3px 2px;resize:none;min-height:38px}
+.mangel-card textarea{width:100%;border:none;border-bottom:1.5px solid #e0d0d0;font-size:16px;font-family:inherit;background:transparent;outline:none;padding:3px 2px;resize:none;min-height:38px}
 .mangel-card textarea:focus{border-bottom-color:#eb5b36}
 
 /* === FOTO GRID (Raum-Fotos) === */
@@ -321,7 +292,7 @@ input:focus,select:focus,textarea:focus{border-bottom-color:#eb5b36 !important}
         <div class="app-sub" id="prog-lbl">Schritt 1 von 6</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
-        <button onclick="openDraftPanel()" type="button" title="Zur Startseite" style="background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;font-family:inherit;color:#444;cursor:pointer;display:flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5"/><path d="M6 9.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5"/></svg> Start</button>
+        <button id="hdr-btn" onclick="hdrBtn()" type="button" title="Entwürfe / Start" style="background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;font-family:inherit;color:#444;cursor:pointer;display:flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent"></button>
         <div id="header-logo">
           <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAc4AAABUCAYAAAALbNchAAAGR0lEQVR42u3d3W3jSgxA4bXhElLMdhK/pLq8ZDtJMduD9ynYIIBtWZ4fcvgd4D5cIJaXIw7PUJZGh8vl8gsAAGzjaAgAACBOAACIEwCA2ZwMAVbkfH59+Mf7j48/ByMH4B6HnzcH7Sk4qxSlyrG3GI/ZcfY4fzNi2htHtDxbJY7VF2V/3367Q/QOL++fhykd571kW3m1Xzn2rIuda8d3ruSbUcApYkJWK06VY89WxCKfq/P59SJ/4uaqc0OcRNI5dpPMqt85AmJyNAHjxq34yAfIPRAniYhd4TJGzg2IU+KJvVr8LqX3O1cEA+IkELGLG3IQxCmJxQ45Ij+ND3ECCs0GXKYFavP04yhbikiP4hfhuajKsWfj2nit2gHIEV0iAotzb9FqkYwZikPl2GcXrC3j0+v8EAwsaoizm1AqTrbKsUe5EvDI5+3sBPTj5z6w14i0p+70nYOelUjm1Vvl2KNKc9QxR3Rt8kMXnVmUtz43W6Jhbg6qPMEVN+NIMMargjD3SvPasVodL604yVPRV4gBwhzVwS4jTkVW7BYe8iPr2MnBeVIb3X2GE6euEyBn46bLjCzqk/QF1i/QFmUWvdHlde2Gn0eP9/L+eeh98xBxAtA16aKHS3Or3H7+3Zbv6C1PW+5BoQMmdZ4r5e0jz2M+I7Wtn+952ZY4gQJF2sICs6X5rDD3HK+XPI/ZC0L1FSvIIcN4Z8prd9O2p+dl0xny1HFiqQUEecLiN1a3OWKXn9HyDClOz2XCGLYv0nJLvq4ozRnfpeOEYoSu4+sybU1m7Cd76ztbdp3EiSW6qWtFsIJAFW9E6zYjvclExwnoPqePxard5szFjBzN1XXaAAGlhKE7y3O+Rp8r8prbbV475p7j/X37fSn1HOee5F2lGFaOfVR8q16+zXCT0Gq5ahHWTsK3JNd639sWxwolTnfTYlSBqvL758w8rS6WipdrH+0OH5HYrHdvpug4gZFFmEBh4Tqv0+z5meX3qq1cvBTu+fJcpXB6pnONXFxReJG7x5TifHYCZ07gyrFHlSehtMlXv//VW8CNegQlgrhPEkPsGeXZcyxn3YHbIqbeYwPno3q32UScM5Ni9qq2cuwVCtLqL4DuFV+2MSO2nPKducmCm4OQWp69i7SiahxGLwyMdXyOklfsBHq/kGUqZm4SMl9BnBJR7GEEqttcKz8tHFBCnKSJmQKNUmjlwtrjTui3mb2J/FHSip1A1ytqLtdiNFvvlo3w5pRn/w1pxFn5LQukGS93qsjGZVr1S7eZUJyVxWGyySP5U5eoi7MW4sr+vs5j5Emvy0TksV2p67SLlRgzCPiRz/TcaOEkMU3OyuPs970aC4MIsVXYRejRjQm+/vae5Fp2qC2ONUWc5HB7QhufPMUs+vmy5Vtu2UbNr9Yvir4m0NYvxQ7TcbrTteaKnTzXXrTZ0B2jus5enWVPbLkXsLNWxPOcK+dL54h44u4tZuI0ubF45+SZTrWgB7cktMIbUIhTJ4Pi8uyVd7Y4rE00eY7oNolTMYYctCjAFJFl/i7iDF64THSSMU6IXAfudXIjhDbycRbiNGkAIK08X94/D6OlSZyJVujkCR2iBWh2ebYS6NZj9Xq8hTgVL0AeE/8wvqS3R6KPfK7nM6En6Tin6OyZBHYVAtZZIKzYAW/dQu+7CGd0vzpOq044rzrFDuNrkRpXXLO/mzgTrmTJ0+Jk1S7MOK6TmzPkOeo7iVMBgrwDuolshMxGfQ9xJi9iFbqi8/n18vWfbnMN6c6Qtsu06wp0tDCJcxGxVIq1d7x7j6/IYuRCIvO8byG6r2PM/B3VXbVBJs/eyVDtTtvv49Qy7mqdplepYbZAv///qD1miVMhK99N//ybR0VqvNfvrF2mzSnS6BDnAvL0fOc8ERp3zJj35vxc/MZJGtBBAiDOmsVsFXlmiaOSeFymBf7jUm3QIuVmISIRhzlvrus4AdIEQJyIV5z93rm2NIm7zxwwriBORbpMwXM+UHW+WyQTJxpMpo+PP4fMBT7qv500ARAnyYaOI0os2Rci2dn7XLOFEXrirtokIrlVDFad9N/jGn1JSiFFxLmOGBwuF+co8+q7coHvUWAIEwBxLiwLRX6/VI0dAOIEAGAAbg4CAIA4AQAgTgAApvMP/z5DziFpTCUAAAAASUVORK5CYII=" alt="PRISMA" style="height:26px;width:auto;display:block">
         </div>
@@ -340,8 +311,8 @@ input:focus,select:focus,textarea:focus{border-bottom-color:#eb5b36 !important}
 <script>
 // ── DATA ───────────────────────────────────────────────────────────────────
 // Standard-Räume (Schlafzimmer 2/3 als optionale Ergänzung, nicht mehr default)
-var ROOMS=["GANG","KÜCHE","BAD","WC","WOHNZIMMER","SCHLAFZIMMER 1","BALKON","ABSTELLRAUM","SONSTIGE"];
-var ROOMS_GEWERBE=["EINGANG/EMPFANG","BÜRO 1","BÜRO 2","BESPRECHUNG","TEEKÜCHE","WC","LAGER","TECHNIK","SONSTIGE"];
+var ROOMS=["EINGANGSTÜRE","GANG","KÜCHE","BAD","WC","WOHNZIMMER","SCHLAFZIMMER 1","BALKON","ABSTELLRAUM"];
+var ROOMS_GEWERBE=["EINGANGSTÜRE","EMPFANG","BÜRO 1","BÜRO 2","BESPRECHUNG","TEEKÜCHE","WC","LAGER","TECHNIK"];
 // ── PROTOKOLLARTEN (v18): zentrale Konfiguration ───────────────────────────
 var ARTEN={
   wohnung:  {label:"Wohnung",  kurz:"WHG", einseiter:false, rooms:ROOMS,        nebenfl:true },
@@ -354,7 +325,7 @@ function istEinseiter(){return !!artConf().einseiter;}
 function istGewerbe(){return D.art==="gewerbe";}
 function artFirma(){return D.art!=="wohnung";} // Gewerbe/Schlüssel/Parkkarte: Firmenmieter mit Vertreter
 // Optional ergänzbare Räume (Button "Raum hinzufügen")
-var ROOMS_OPTIONAL=["SCHLAFZIMMER 2","SCHLAFZIMMER 3","SCHLAFZIMMER 4","KINDERZIMMER","ARBEITSZIMMER","GÄSTE-WC","TERRASSE","KELLER","GARAGE/TG-PLATZ","SONSTIGE"];
+var ROOMS_OPTIONAL=["SCHLAFZIMMER 2","SCHLAFZIMMER 3","SCHLAFZIMMER 4","KINDERZIMMER","ARBEITSZIMMER","GÄSTE-WC","TERRASSE","KELLER","GARAGE/TG-PLATZ"];
 var RPUNKTE={
   "GANG":"Boden, Wände, Decke, Wohnungstür, Schloss",
   "KÜCHE":"Boden, Wände, Decke, Einbaumöbel, Herd, Spüle, Türe, Fenster, Silikonfugen",
@@ -410,7 +381,7 @@ var D={
   raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};}),
   fotos:[],
   sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,ba:false,ba_art:"",
-  art:"wohnung",bs:false,mv_ende:"",sk_fehlen:"",mieter_vd:"",bestandsobjekt:"",karten:[{nr:"",bez:""}],verlust_eur:"15",
+  art:"wohnung",bs:false,nachsend:false,nachsend_frist:"",mv_ende:"",sk_fehlen:"",mieter_vd:"",bestandsobjekt:"",karten:[{nr:"",bez:""}],verlust_eur:"15",
   email_empf:""
 };
 D.zaehler.forEach(function(z){z.ablese=D.datum;});
@@ -433,6 +404,7 @@ function icn(name,size){
     copy:'<rect x="8.5" y="8.5" width="11" height="11" rx="1.5"/><path d="M5.5 15.5h-1A1.5 1.5 0 0 1 3 14V5.5A1.5 1.5 0 0 1 4.5 4H13a1.5 1.5 0 0 1 1.5 1.5v1"/>',
     pen:'<path d="M4 20l1-4.5L16.5 4a1.8 1.8 0 0 1 2.5 0l1 1a1.8 1.8 0 0 1 0 2.5L8.5 19z"/><path d="M14.5 6l3.5 3.5"/>',
     home:'<path d="M4 10.5L12 4l8 6.5"/><path d="M6 9.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5"/>',
+    gal:'<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M20 15.5l-4.5-4.5-6 6.5"/>',
     office:'<rect x="5" y="4" width="10" height="16" rx="1"/><path d="M15 9h4a1 1 0 0 1 1 1v10"/><path d="M8 8h1.5M8 11.5h1.5M8 15h1.5M11.5 8H13M11.5 11.5H13M11.5 15H13"/><path d="M3.5 20h17"/>',
     key:'<circle cx="15.5" cy="8.5" r="4"/><path d="M12.5 11.5L4.5 19.5"/><path d="M7 17l2 2M9.5 14.5l2 2"/>',
     park:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9.5 17V7h3.8a3 3 0 0 1 0 6H9.5"/>'
@@ -489,6 +461,7 @@ function saveStep(){
   el=ge("cb_ba");if(el)D.ba=el.checked;
   el=ge("f_ba_art");if(el)D.ba_art=el.value;
   el=ge("cb_bs");if(el)D.bs=el.checked;
+  el=ge("f_ns_frist");if(el)D.nachsend_frist=el.value;
   el=ge("f_mieter_vd");if(el)D.mieter_vd=el.value;
   el=ge("f_mv_ende");if(el)D.mv_ende=el.value;
   el=ge("f_sk_fehlen");if(el)D.sk_fehlen=el.value;
@@ -543,13 +516,14 @@ function stepHasContent(i){
 var STEP_FNS=null;
 // ── EINSEITER: Schlüssel- & Parkkartenprotokoll (v18) ──────────────────────
 function saveSingle(){
-  var f=["f_top","f_eigentuemer","f_mieter","f_mieter_vd","f_kfz","f_verlust_eur","f_verwalter","f_objekt"];
-  var map={f_top:"top",f_eigentuemer:"eigentuemer",f_mieter:"mieter",f_mieter_vd:"mieter_vd",f_kfz:"kfz",f_verlust_eur:"verlust_eur",f_verwalter:"verwalter",f_objekt:"objekt"};
+  var f=["f_top","f_eigentuemer","f_mieter","f_mieter_vd","f_kfz","f_verlust_eur","f_objekt"];
+  var map={f_top:"top",f_eigentuemer:"eigentuemer",f_mieter:"mieter",f_mieter_vd:"mieter_vd",f_kfz:"kfz",f_verlust_eur:"verlust_eur",f_objekt:"objekt"};
   f.forEach(function(id){var el=ge(id);if(el)D[map[id]]=el.value;});
   // Schlüsselzeilen
   D.schluessel.forEach(function(s,i){
-    var a=ge("sk_art_"+i),n=ge("sk_anz_"+i),r=ge("sk_nr_"+i);
-    if(a)s.art=a.value;if(n)s.anz=n.value;if(r)s.nr=r.value;
+    var se=ge("sk_sel_"+i),ae=ge("sk_anz_"+i),ne=ge("sk_nr_"+i),ce=ge("sk_cust_"+i);
+    if(se){s._sel=se.value;s.art=(se.value==="Sonstiges"&&ce)?ce.value:se.value;}
+    if(ae)s.anz=ae.value;if(ne)s.nr=ne.value;
   });
   // Kartenzeilen
   D.karten.forEach(function(k,i){
@@ -567,13 +541,6 @@ function renderSingle(){
   var ttl=ge("app-title");if(ttl)ttl.textContent=protTitle();
   var istPK=(D.art==="parkkarte");
   var kern=
-    '<div class="sec-hd">Protokoll</div>'+
-    metaLine()+
-    '<div class="grp-card">'+
-      '<div class="field field-full ac-wrap" style="position:relative"><label>'+typWort()+' durchgeführt durch (PRISMA)</label>'+
-        '<input type="text" id="f_verwalter" value="'+esc(D.verwalter)+'" placeholder="Name tippen oder auswählen…" autocomplete="off" oninput="vwFilter(this.value,this)" onblur="setTimeout(vwClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
-      '</div>'+
-    '</div>'+
     '<div class="sec-hd">Objekt & Mieter</div>'+
     '<div class="grp-card">'+
       '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
@@ -593,12 +560,14 @@ function renderSingle(){
         '</div>';
       }).join("")+
       '<button class="btn-add" onclick="addKarte()" type="button">＋ Karte hinzufügen</button>'+
-      '<div class="grp-card" style="margin-top:14px"><div class="field"><label>Kostenersatz bei Verlust (EUR)</label><input id="f_verlust_eur" inputmode="decimal" value="'+esc(D.verlust_eur)+'" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div></div>';
+      (istRuecknahme()?"":'<div class="grp-card" style="margin-top:14px"><div class="field"><label>Kostenersatz bei Verlust (EUR)</label><input id="f_verlust_eur" inputmode="decimal" value="'+esc(D.verlust_eur)+'" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div></div>');
   }else{
     liste='<div class="sec-hd">Schlüssel</div><div id="single-sk">'+skRows()+'</div>';
   }
   var sig=
     '<div class="sec-hd">Unterschriften</div>'+
+    metaLine()+
+    personZeile()+
     '<div class="grp-card">'+
       '<div class="sig-grid">'+
         '<div class="sig-col">'+
@@ -624,6 +593,7 @@ function renderSingle(){
   ge("content").innerHTML='<div style="padding-top:4px">'+kern+liste+sig+'</div>';
 }
 function render(){
+  _screen="form";kopfLeiste("form");
   if(istEinseiter()){renderSingle();return;}
   var bar=ge("stepbar");
   bar.innerHTML=STEP_LABELS.map(function(s,i){
@@ -660,6 +630,13 @@ function sel(id,opts,val,onch){
     opts.map(function(o){return'<option'+(o===val?' selected':"")+'>'+o+'</option>';}).join("")+
   '</select>';
 }
+function fotoBtns(onch){
+  // Kamera + Galerie als kompaktes Button-Paar (v20)
+  return '<label class="foto-btn" style="padding:5px 9px;font-size:11px" title="Kamera">'+icn("cam",14)+
+    '<input type="file" accept="image/*" capture="environment" style="display:none" onchange="'+onch+'"></label>'+
+    '<label class="foto-btn" style="padding:5px 9px;font-size:11px" title="Aus Galerie">'+icn("gal",14)+
+    '<input type="file" accept="image/*" style="display:none" onchange="'+onch+'"></label>';
+}
 function fotoBtn(label,onch){
   return'<label class="foto-btn">'+icn("cam",14)+' '+label+'<input type="file" accept="image/*" capture="environment" style="display:none" onchange="'+onch+'">'+'</label>';
 }
@@ -681,17 +658,8 @@ function logoSVG(){
 // ── STEP 0: STAMMDATEN ────────────────────────────────────────────────────
 function step0(){
   // v15: Mängel-Checkboxen entfallen (werden im Protokoll automatisch aus der Raumbeurteilung abgeleitet)
-  var cbs='<label class="cb-row'+(D.cb[2]?' checked':"")+'"><input type="checkbox" id="cb_2"'+(D.cb[2]?' checked':"")+' onchange="cbChange(2,this)">'+cbLabel(2)+'</label>';
-  return'<div class="sec-hd">Protokoll</div>'+
-    metaLine()+
-    '<div class="grp-card">'+
-      '<div class="field-row" style="margin-bottom:2px">'+
-        '<div class="field field-full ac-wrap" style="position:relative"><label>'+typWort()+' durchgeführt durch (PRISMA)</label>'+
-          '<input type="text" id="f_verwalter" value="'+esc(D.verwalter)+'" placeholder="Name tippen oder auswählen…" autocomplete="off" oninput="vwFilter(this.value,this)" onblur="setTimeout(vwClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
-        '</div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="sec-hd">Objekt</div>'+
+  var cbs='<label class="cb-row'+(D.cb[2]?' checked':"")+'"><input type="checkbox" id="cb_2"'+(D.cb[2]?' checked':"")+' onchange="cbChange(2,this)">Kaution hinterlegt</label>';
+  return'<div class="sec-hd">Objekt</div>'+
     '<div class="grp-card">'+
       '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Top-Nummer</span><span class="obj-val">'+inp("f_top",D.top,"z.B. Top 12")+'</span></div>'+
@@ -712,16 +680,20 @@ function step0(){
     '</div>'+
     '<div class="sec-hd">Bei der '+typWort()+' festgestellt</div>'+
     '<div class="grp-card">'+
-      '<div class="cb-group">'+cbs+'</div>'+
-      '<label class="cb-row'+(D.ba?' checked':"")+'" style="margin-top:4px"><input type="checkbox" id="cb_ba"'+(D.ba?' checked':"")+' onchange="baChange(this)">Bedienungsanleitungen '+(istRuecknahme()?"zurückgegeben":"übergeben")+'</label>'+
-      (D.ba?'<div class="field" style="margin:10px 2px 2px"><label>Art der Übergabe</label>'+inp("f_ba_art",D.ba_art,"z.B. digital, Hardcopy")+'</div>':"")+
+      (istRuecknahme()?"":cbs)+
+      (istRuecknahme()?"":'<label class="cb-row'+(D.ba?' checked':"")+'" style="margin-top:4px"><input type="checkbox" id="cb_ba"'+(D.ba?' checked':"")+' onchange="baChange(this)">Bedienungsanleitungen übergeben</label>'+
+      (D.ba?'<div class="field" style="margin:10px 2px 2px"><label>Art der Übergabe</label>'+inp("f_ba_art",D.ba_art,"z.B. digital, Hardcopy")+'</div>':""))+
       (istGewerbe()?'<label class="cb-row'+(D.bs?' checked':"")+'" style="margin-top:4px"><input type="checkbox" id="cb_bs"'+(D.bs?' checked':"")+' onchange="D.bs=this.checked;persist();render()">Brandschutzordnung '+(istRuecknahme()?"zurückgegeben":"übergeben")+'</label>':"")+
+      (D.art==="wohnung"&&istRuecknahme()?
+        '<label class="cb-row'+(D.nachsend?' checked':"")+'"><input type="checkbox" id="cb_ns"'+(D.nachsend?' checked':"")+' onchange="D.nachsend=this.checked;persist();render()">Post-Nachsendeauftrag eingerichtet</label>'+
+        (!D.nachsend?'<div class="field" style="margin:10px 2px 2px"><label>Fristsetzung bis</label>'+inp("f_ns_frist",D.nachsend_frist,"","date")+'</div>':"")
+      :"")+
     '</div>'+
     '<div class="sec-hd">Stromzähler-'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' (Smart Meter)</div>'+
     '<div class="grp-card">'+
     '<div class="field-row" style="margin-bottom:2px">'+
       '<div class="field ac-wrap"><label>Anbieter</label>'+
-        '<input type="text" id="f_anbieter" value="'+esc(D.anbieter)+'" placeholder="Anbieter tippen oder auswählen…" autocomplete="off" oninput="D.anbieter=this.value;anbFilter(this.value,this)" onblur="setTimeout(anbClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
+        '<input type="text" id="f_anbieter" value="'+esc(D.anbieter)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="D.anbieter=this.value;anbFilter(this.value,this)" onblur="setTimeout(anbClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
       '</div>'+
       '<div class="field"><label>wird erledigt durch</label>'+sel("f_strom_person",["Mieter","Vermieter"],D.strom_person)+'</div>'+
       '<div class="field"><label>Zählerstichtag</label>'+inp("f_strom_bis",D.strom_bis,"","date")+'</div>'+
@@ -733,6 +705,14 @@ function step0(){
 var VW_KEY="prisma_uebergabe_verwalter";
 function gespeicherterVerwalter(){try{return localStorage.getItem(VW_KEY)||"";}catch(e){return "";}}
 function setzeVerwalter(name){try{localStorage.setItem(VW_KEY,name);}catch(e){}}
+function personZeile(){
+  var vw=D.verwalter||gespeicherterVerwalter();
+  if(vw&&!D.verwalter){D.verwalter=vw;}
+  return '<div class="grp-card" style="padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px">'+
+    '<div style="font-size:13.5px;color:#333;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Durchgeführt von: <b>'+(vw?esc(vw):"—")+'</b></div>'+
+    '<button type="button" onclick="startPersonWahl()" style="border:none;background:none;color:#eb5b36;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;flex:none;padding:4px 2px;-webkit-tap-highlight-color:transparent">'+(vw?"ändern":"wählen")+'</button>'+
+  '</div>';
+}
 var _metaOpen=false;
 function metaLine(){
   return '<div class="grp-card" style="padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px">'+
@@ -790,7 +770,7 @@ function vwSelect(n){
 function vwClose(){var old=ge("vw-list");if(old&&old.parentNode)old.parentNode.removeChild(old);}
 
 // ── STROMANBIETER PFLEGEN: Hier Anbieter ergänzen/streichen ────────────────
-var ANBIETER=["Salzburg AG","Verbund","KELAG","Energie AG","oekostrom AG","Wien Energie","MyElectric","aWATTar"];
+var ANBIETER=["Salzburg AG","VKW","Verbund","KELAG","Energie AG","oekostrom AG","Wien Energie","MyElectric","aWATTar"];
 function anbFilter(val,inputEl){
   var old=ge("anb-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
   if(!val||val.length<1)return;
@@ -818,23 +798,26 @@ function anbClose(){var old=ge("anb-list");if(old&&old.parentNode)old.parentNode
 // ── STEP 1: SCHLÜSSEL ─────────────────────────────────────────────────────
 function skRows(){
   var rows=D.schluessel.map(function(s,i){
-    var sv=s._sel||s.art;
-    var fix=(i===0);
+    var sv=s._sel||s.art||SK_OPTS[0];
+    var opts=SK_OPTS.slice();
+    if(opts.indexOf(sv)<0&&sv)opts.unshift(sv); // vorhandene freie Art bleibt wählbar
     var thumb=s.foto?fotoThumb(s.foto,"delSkFoto("+i+")"):"";
-    return'<div class="sk-row">'+
-      '<input type="number" inputmode="numeric" class="sk-anz" id="sk_anz_'+i+'" value="'+esc(s.anz)+'" min="0" placeholder="0">'+
-      '<span class="sk-lbl">Stk.</span>'+
-      (fix
-        ? '<strong style="font-size:13.5px;min-width:155px">Wohnungsschlüssel</strong><input type="hidden" id="sk_sel_'+i+'" value="Wohnungsschlüssel">'
-        : '<select class="sk-sel" id="sk_sel_'+i+'" onchange="skChange('+i+')">'+SK_OPTS.map(function(o){return'<option'+(o===sv?' selected':"")+">"+o+"</option>";}).join("")+'</select>'+
-          (sv==="Sonstiges"?'<input class="sk-inp" id="sk_cust_'+i+'" value="'+esc(s.art!=="Sonstiges"?s.art:"")+'" placeholder="Art…">':"")
-      )+
-      '<input class="sk-inp" id="sk_nr_'+i+'" value="'+esc(s.nr)+'" placeholder="Schlüsselnummer" style="flex:1">'+
-      '<div class="foto-zone">'+thumb+(s.foto?"":fotoBtn("Foto","addSkFoto("+i+",this)"))+'</div>'+
-      (i>0?'<button class="btn-del" onclick="delSk('+i+')" type="button">✕</button>':"")
-    +'</div>';
+    return '<div class="grp-card" style="padding:12px 14px 13px;margin-bottom:10px">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'+
+        '<select class="sk-sel" id="sk_sel_'+i+'" onchange="skChange('+i+')" style="flex:1;min-width:0;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-weight:700;color:#1a1a1a;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
+          opts.map(function(o){return'<option'+(o===sv?' selected':"")+">"+o+"</option>";}).join("")+
+        '</select>'+
+        '<div class="foto-zone" style="flex:none">'+thumb+(s.foto?"":fotoBtns("addSkFoto("+i+",this)"))+'</div>'+
+        (D.schluessel.length>1?'<button class="btn-del" onclick="delSk('+i+')" type="button">✕</button>':"")+
+      '</div>'+
+      (sv==="Sonstiges"?'<div class="field" style="margin-bottom:9px"><label>Bezeichnung</label><input class="sk-inp" id="sk_cust_'+i+'" value="'+esc(s.art!=="Sonstiges"?s.art:"")+'" placeholder="z.B. Postkasten-Chip" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>':"")+
+      '<div style="display:flex;gap:14px;align-items:flex-end">'+
+        '<div class="field" style="flex:none;width:74px"><label>Anzahl</label><input type="number" inputmode="numeric" id="sk_anz_'+i+'" value="'+esc(s.anz)+'" min="0" placeholder="0" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>'+
+        '<div class="field" style="flex:1"><label>Schlüsselnummer</label><input class="sk-inp" id="sk_nr_'+i+'" value="'+esc(s.nr)+'" placeholder="optional" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>'+
+      '</div>'+
+    '</div>';
   }).join("");
-  return rows+'<button class="btn-add" onclick="addSk()" type="button" style="margin-top:10px">＋ Schlüssel hinzufügen</button>';
+  return rows+'<button class="btn-add" onclick="addSk()" type="button" style="margin-top:4px">＋ Schlüssel hinzufügen</button>';
 }
 function step1(){
   var rows=skRows(); // v18: geteilt mit Einseiter
@@ -854,28 +837,30 @@ function step2(){
     var sv=z._sel||z.art;
     var fix=(i<3);
     var thumb=z.foto?fotoThumb(z.foto,"delZaeFoto("+i+")"):"";
-    return'<tr>'+
-      '<td style="min-width:120px;background:#fafafa;font-weight:700">'+
+    var inpS='style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"';
+    return '<div class="grp-card" style="padding:12px 14px 13px;margin-bottom:10px">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'+
         (fix
-          ? esc(z.art)+'<input type="hidden" id="zae_sel_'+i+'" value="'+esc(z.art)+'">'+
-          '<div id="zae_cust_wrap_'+i+'" style="display:none"></div>'
-          : '<select id="zae_sel_'+i+'" onchange="zaeChange('+i+')" style="border:none;width:100%;font-size:13px;font-family:inherit;background:transparent;outline:none">'+
+          ? '<strong style="flex:1;min-width:0;font-size:16px;color:#1a1a1a">'+esc(z.art)+'</strong><input type="hidden" id="zae_sel_'+i+'" value="'+esc(z.art)+'">'
+          : '<select id="zae_sel_'+i+'" onchange="zaeChange('+i+')" style="flex:1;min-width:0;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-weight:700;color:#1a1a1a;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
               ZAE_OPTS.map(function(o){return'<option'+(o===sv?' selected':"")+">"+o+"</option>";}).join("")+
-            '</select>'+
-            (sv==="Sonstiges"?'<input id="zae_cust_'+i+'" value="'+esc(z.art!=="Sonstiges"?z.art:"")+'" placeholder="Zählerart…" style="border:none;border-bottom:1px solid #ccc;width:100%;font-size:16px;font-family:inherit;background:transparent;outline:none;margin-top:3px">':"")
-        )+
-      '</td>'+
-      '<td><input id="zae_nr_'+i+'" inputmode="numeric" value="'+esc(z.nr)+'" placeholder="Nr." style="border:none;width:100%;font-size:16px;font-family:inherit;outline:none;background:transparent;padding:3px"></td>'+
-      '<td><div style="display:flex;align-items:center;gap:4px"><input id="zae_st_'+i+'" inputmode="decimal" value="'+esc(z.stand)+'" placeholder="Stand" style="border:none;flex:1;min-width:50px;font-size:16px;font-family:inherit;outline:none;background:transparent;padding:3px"><input id="zae_eh_'+i+'" value="'+esc(z.einheit||"")+'" placeholder="Einh." style="border:none;width:48px;font-size:16px;color:#888;font-family:inherit;outline:none;background:transparent;padding:3px;text-align:right"></div></td>'+
-      '<td style="width:120px"><input type="date" id="zae_ab_'+i+'" value="'+esc(z.ablese||"")+'" style="border:none;width:100%;font-size:16px;font-family:inherit;outline:none;background:transparent;padding:3px"></td>'+
-      '<td style="width:80px"><div class="foto-zone">'+thumb+(z.foto?"":'<label class="foto-btn" style="padding:4px 8px;font-size:11px">'+icn("cam",14)+'<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addZaeFoto('+i+',this)"></label>')+'</div></td>'+
-      (i>=3?'<td style="width:38px"><button class="btn-del" onclick="delZae('+i+')" type="button">✕</button></td>':"<td></td>")+
-    '</tr>';
+            '</select>')+
+        '<div class="foto-zone" style="flex:none">'+thumb+(z.foto?"":fotoBtns("addZaeFoto("+i+",this)"))+'</div>'+
+        (i>=3?'<button class="btn-del" onclick="delZae('+i+')" type="button">✕</button>':"")+
+      '</div>'+
+      (!fix&&sv==="Sonstiges"?'<div class="field" style="margin-bottom:9px"><label>Zählerart</label><input id="zae_cust_'+i+'" value="'+esc(z.art!=="Sonstiges"?z.art:"")+'" placeholder="Bezeichnung…" '+inpS+'></div>':"")+
+      '<div style="display:flex;gap:14px;align-items:flex-end;margin-bottom:9px">'+
+        '<div class="field" style="flex:1"><label>Zählernummer</label><input id="zae_nr_'+i+'" inputmode="numeric" value="'+esc(z.nr)+'" placeholder="Nr." '+inpS+'></div>'+
+        '<div class="field" style="flex:1"><label>Zählerstand</label><input id="zae_st_'+i+'" inputmode="decimal" value="'+esc(z.stand)+'" placeholder="Stand" '+inpS+'></div>'+
+        '<div class="field" style="flex:none;width:62px"><label>Einheit</label><input id="zae_eh_'+i+'" value="'+esc(z.einheit||"")+'" placeholder="kWh" '+inpS+'></div>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+        '<span style="font-size:10.5px;color:#999;font-weight:700;letter-spacing:.5px;text-transform:uppercase;flex:none">Ablesung</span>'+
+        '<input type="date" id="zae_ab_'+i+'" value="'+esc(z.ablese||"")+'" style="border:none;font-size:16px;color:#555;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;padding:2px;width:160px">'+
+      '</div>'+
+    '</div>';
   }).join("");
-  return'<div class="sec-hd">Zählerstände erfassen</div>'+
-        '<div class="tbl-scroll"><table class="tbl"><thead><tr>'+
-      '<th style="min-width:115px">Zählerart</th><th>Nummer</th><th>Stand / Einheit</th><th style="width:120px">Ablesedatum</th><th style="width:80px">Foto</th><th style="width:38px"></th>'+
-    '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
+  return'<div class="sec-hd">Zählerstände erfassen</div>'+rows+
     '<button class="btn-add" onclick="addZae()">＋ Zähler hinzufügen</button>'+
     navBar(true,true,"Weiter: Fotos →");
 }
@@ -901,6 +886,7 @@ var ZUST_WORT={gut:"Mängelfrei",mangel:"Mängel/Schäden festgestellt"};
 var SCHWERE_WORT={leicht:"Leicht",mittel:"Mittel",schwer:"Schwer"};
 
 function step3(){
+  var gestenHinweis='<p style="font-size:11.5px;color:#b0b0b0;margin:0 2px 9px">Raum nach links wischen = löschen · nach rechts = umbenennen</p>';
   var blocks=D.raeume.map(function(r,ri){
     var fotoCount=(r.fotos||[]).length;
     var hatBeschr=r.beschreibung&&r.beschreibung.trim();
@@ -915,6 +901,7 @@ function step3(){
     return '<div class="raum-block" id="rb_'+ri+'">'+
       '<div class="rb-swipe" style="position:relative;overflow:hidden">'+
         '<button type="button" class="rb-del" onclick="delRaum('+ri+',event)" style="position:absolute;top:0;right:0;bottom:0;width:86px;border:none;background:#d9534f;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-appearance:none;-webkit-tap-highlight-color:transparent">Löschen</button>'+
+        '<button type="button" class="rb-ren" onclick="renameRaum('+ri+',event)" style="position:absolute;top:0;left:0;bottom:0;width:86px;border:none;background:#575656;color:#fff;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-appearance:none;-webkit-tap-highlight-color:transparent">Umbenennen</button>'+
       '<div class="raum-block-hd'+(isOpen?" open":"")+'" id="rbhd_'+ri+'" style="position:relative;background:#fff;transition:transform .18s ease" onclick="toggleRb('+ri+')" ontouchstart="rbTS('+ri+',event)" ontouchmove="rbTM('+ri+',event)" ontouchend="rbTE('+ri+',event)">'+
         '<div class="rb-name">'+r.r+(summary?'<div style="font-size:10.5px;color:#999;font-weight:400;margin-top:2px">'+summary+'</div>':'')+'</div>'+
         '<span class="zust-mini-row" onclick="event.stopPropagation()">'+
@@ -927,6 +914,12 @@ function step3(){
       '</div>'+
       '<div class="raum-block-body'+(isOpen?" open":"")+'" id="rbb_'+ri+'">'+
         '<div style="margin-bottom:10px">'+
+          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Beschreibung (Mangel / Schaden)</div>'+
+          (r.zustand==="mangel"&&!(r.beschreibung&&r.beschreibung.trim())?'<div style="font-size:12px;color:#c05621;background:#fff8f0;border-left:3px solid #e8a33d;padding:7px 10px;margin-bottom:7px">Bitte Mangel/Schaden kurz beschreiben – ohne Beschreibung ist der Eintrag im Protokoll nicht nachvollziehbar.</div>':"")+
+          '<textarea id="rb_desc_'+ri+'" rows="2" placeholder="Was wurde festgestellt…" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.raeume['+ri+'].beschreibung=this.value" onblur="beschrBlur('+ri+')" style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 10px;font-size:16px;font-family:inherit;color:#1a1a1a;outline:none;resize:none;box-sizing:border-box">'+esc(r.beschreibung||"")+'</textarea>'+
+        '</div>'+
+        '</div>'+
+        '<div style="margin-bottom:10px">'+
           '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Schweregrad</div>'+
           '<div style="display:flex;gap:7px">'+
             ['leicht','mittel','schwer'].map(function(s){
@@ -934,12 +927,6 @@ function step3(){
               return '<button type="button" onclick="setSchwere('+ri+',\''+s+'\')" style="flex:1;padding:8px 4px;border:1.5px solid '+(on?'#e8a33d':'#ddd')+';background:'+(on?'#e8a33d':'#fff')+';color:'+(on?'#fff':'#666')+';font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;border-radius:6px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+SCHWERE_WORT[s]+'</button>';
             }).join("")+
           '</div>'+
-        '</div>'+
-        '<div style="margin-bottom:10px">'+
-          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Beschreibung (Mangel / Schaden)</div>'+
-          (r.zustand==="mangel"&&!(r.beschreibung&&r.beschreibung.trim())?'<div style="font-size:12px;color:#c05621;background:#fff8f0;border-left:3px solid #e8a33d;padding:7px 10px;margin-bottom:7px">Bitte Mangel/Schaden kurz beschreiben – ohne Beschreibung ist der Eintrag im Protokoll nicht nachvollziehbar.</div>':"")+
-          '<textarea id="rb_desc_'+ri+'" rows="2" placeholder="Was wurde festgestellt…" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.raeume['+ri+'].beschreibung=this.value" style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 10px;font-size:16px;font-family:inherit;color:#1a1a1a;outline:none;resize:none;box-sizing:border-box">'+esc(r.beschreibung||"")+'</textarea>'+
-        '</div>'+
         '<div style="margin-bottom:6px">'+
           '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Fotos</div>'+
           '<div class="rfoto-grid">'+
@@ -960,9 +947,9 @@ function step3(){
       '<button type="button" class="btn-add" style="margin-bottom:0;font-size:12.5px;padding:8px 13px" onclick="alleGut()">Alle Räume: Mängelfrei</button>'+
     '</div>'+
     '<p style="font-size:13px;color:#777;margin-bottom:14px;line-height:1.5">Jeden Raum explizit beurteilen: Mängelfrei oder Mängel/Schäden festgestellt. Bei Mängeln/Schäden öffnet sich der Raum für Schweregrad, Beschreibung und Fotos.</p>'+
-    blocks+
+    gestenHinweis+blocks+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">'+
-      '<button class="btn-add" onclick="addRaumDialog()" type="button" style="margin-bottom:0">＋ Raum hinzufügen</button>'+
+      raumAddInline()+
       '<button class="btn-add" onclick="addMangelDialog()" type="button" style="margin-bottom:0;border-color:#eb5b36;color:#eb5b36">＋ Mangel/Schaden hinzufügen</button>'+
     '</div>'+
     navBar(true,true,"Weiter: Abschluss →");
@@ -970,16 +957,18 @@ function step3(){
 
 // Optionalen Raum hinzufügen
 // ── Wischgeste: Raum nach links wischen legt Löschen frei (v19) ────────────
-var _rbSwipe={i:-1,x0:0,y0:0,dx:0,open:-1,drag:false};
-function rbOffen(i,offen){
+var _rbSwipe={i:-1,x0:0,y0:0,dx:0,open:-1,dir:0,drag:false};
+function rbOffen(i,richtung){
+  // richtung: -1 = Löschen (links gewischt), +1 = Umbenennen (rechts gewischt), 0 = zu
   var el=ge("rbhd_"+i);if(!el)return;
-  el.style.transform=offen?"translateX(-86px)":"translateX(0)";
-  _rbSwipe.open=offen?i:(_rbSwipe.open===i?-1:_rbSwipe.open);
+  el.style.transform=richtung?("translateX("+(richtung*86)+"px)"):"translateX(0)";
+  if(richtung){_rbSwipe.open=i;_rbSwipe.dir=richtung;}
+  else if(_rbSwipe.open===i){_rbSwipe.open=-1;_rbSwipe.dir=0;}
 }
 function rbTS(i,ev){
   var t=ev.touches[0];
   _rbSwipe.i=i;_rbSwipe.x0=t.clientX;_rbSwipe.y0=t.clientY;_rbSwipe.dx=0;_rbSwipe.drag=false;
-  if(_rbSwipe.open>=0&&_rbSwipe.open!==i)rbOffen(_rbSwipe.open,false);
+  if(_rbSwipe.open>=0&&_rbSwipe.open!==i)rbOffen(_rbSwipe.open,0);
 }
 function rbTM(i,ev){
   var t=ev.touches[0];
@@ -989,8 +978,8 @@ function rbTM(i,ev){
   }
   ev.preventDefault();
   _rbSwipe.dx=dx;
-  var base=(_rbSwipe.open===i?-86:0);
-  var x=Math.max(-86,Math.min(0,base+dx));
+  var base=(_rbSwipe.open===i?_rbSwipe.dir*86:0);
+  var x=Math.max(-86,Math.min(86,base+dx));
   var el=ge("rbhd_"+i);
   if(el){el.style.transition="none";el.style.transform="translateX("+x+"px)";}
 }
@@ -998,22 +987,49 @@ function rbTE(i,ev){
   var el=ge("rbhd_"+i);
   if(el)el.style.transition="transform .18s ease";
   if(!_rbSwipe.drag)return;
-  var base=(_rbSwipe.open===i?-86:0);
+  var base=(_rbSwipe.open===i?_rbSwipe.dir*86:0);
   var x=base+_rbSwipe.dx;
-  rbOffen(i,x<-40);
+  rbOffen(i,x<-40?-1:(x>40?1:0));
   // Klick nach Drag unterdrücken
   if(el){el.dataset.noclick="1";setTimeout(function(){delete el.dataset.noclick;},350);}
+}
+function renameRaum(i,ev){
+  if(ev)ev.stopPropagation();
+  saveMangelStep();
+  var r=D.raeume[i];if(!r)return;
+  var neu=prompt("Raum umbenennen:",r.r);
+  rbOffen(i,0);
+  if(neu&&neu.trim()){r.r=neu.trim().toUpperCase();persist();render();toast("Raum umbenannt");}
 }
 function delRaum(i,ev){
   if(ev)ev.stopPropagation();
   saveMangelStep();
   var r=D.raeume[i];
   var hatDaten=(r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length);
-  if(hatDaten&&!confirm(r.r+" samt Mangel-Daten löschen?")){rbOffen(i,false);return;}
+  if(hatDaten&&!confirm(r.r+" samt Mangel-Daten löschen?")){rbOffen(i,0);return;}
   D.raeume.splice(i,1);
   _rbSwipe.open=-1;
   persist();render();
   toast("Raum entfernt");
+}
+function raumAddInline(){
+  var vorhanden={};D.raeume.forEach(function(r){vorhanden[r.r]=1;});
+  var chips=ROOMS_OPTIONAL.filter(function(r){return !vorhanden[r];}).slice(0,6).map(function(r){
+    return '<button type="button" onclick="addRaum(\''+r.replace(/'/g,"\\'")+'\')" style="border:1px solid #ddd;background:#fff;border-radius:15px;padding:6px 12px;font-size:12px;font-weight:600;color:#555;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">＋ '+r+'</button>';
+  }).join("");
+  return '<div style="margin-top:4px">'+
+    (chips?'<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px">'+chips+'</div>':"")+
+    '<div style="display:flex;gap:8px">'+
+      '<input type="text" id="raum-inline" placeholder="＋ Eigene Bezeichnung…" style="flex:1;border:1.5px dashed #ccc;border-radius:9px;padding:11px 13px;font-size:16px;font-family:inherit;background:#fbfbfb;outline:none;-webkit-appearance:none" onkeydown="if(event.key===\'Enter\'){raumInlineAdd();return false;}">'+
+      '<button type="button" onclick="raumInlineAdd()" style="border:none;background:#eb5b36;color:#fff;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-appearance:none;-webkit-tap-highlight-color:transparent">＋</button>'+
+    '</div>'+
+  '</div>';
+}
+function raumInlineAdd(){
+  var el=ge("raum-inline");
+  var name=(el&&el.value||"").trim();
+  if(!name){if(el)el.focus();return;}
+  addRaum(name.toUpperCase());
 }
 function addRaumDialog(){
   saveMangelStep();
@@ -1027,7 +1043,7 @@ function addRaumDialog(){
     '<div style="font-size:12.5px;color:#888;margin-bottom:14px">Raumtyp wählen – wird der Liste hinzugefügt.</div>'+
     verfuegbar.map(function(r){return '<button type="button" onclick="addRaum(\''+r.replace(/'/g,"\\'")+'\')" style="display:block;width:100%;text-align:left;padding:13px 14px;margin-bottom:7px;border:1px solid #e0e0e0;background:#fff;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:600;color:#1a1a1a">'+r+'</button>';}).join("")+
     '<div style="display:flex;gap:8px;margin-top:10px">'+
-      '<input type="text" id="raum-frei" placeholder="Eigene Bezeichnung…" style="flex:1;border:1px solid #e0e0e0;border-radius:8px;padding:12px 13px;font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none">'+
+      '<input type="text" id="raum-frei" placeholder="Eigene Bezeichnung…" style="flex:1;border:1px solid #e0e0e0;border-radius:8px;padding:12px 13px;font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none">'+
       '<button type="button" onclick="addRaumFrei()" style="border:none;background:#eb5b36;color:#fff;border-radius:8px;padding:12px 16px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-appearance:none">＋</button>'+
     '</div>'+
     '<button type="button" onclick="closeRaumDialog()" style="display:block;width:100%;padding:13px;margin-top:6px;border:none;background:#f0f0f0;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:700">Abbrechen</button>'+
@@ -1084,15 +1100,20 @@ function delRaum(ri){
 function addRaum(name){
   closeRaumDialog();
   var neu={r:name,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:true};
-  var lastIsSonstige=D.raeume.length&&D.raeume[D.raeume.length-1].r==="SONSTIGE";
-  if(lastIsSonstige){D.raeume.splice(D.raeume.length-1,0,neu);}else{D.raeume.push(neu);}
+  D.raeume.push(neu);
   render();
   toast("Raum hinzugefügt");
 }
 
+function beschrBlur(ri){
+  var r=D.raeume[ri];if(!r)return;
+  if(r.beschreibung&&r.beschreibung.trim()&&r.zustand!=="mangel"){
+    r.zustand="mangel";r.ok=true;persist();render();
+  }else{persist();}
+}
 function toggleRb(ri){
   var hd=ge("rbhd_"+ri);if(hd&&hd.dataset.noclick)return;
-  if(_rbSwipe.open>=0){rbOffen(_rbSwipe.open,false);return;}
+  if(_rbSwipe.open>=0){rbOffen(_rbSwipe.open,0);return;}
   D.raeume[ri]._open=!D.raeume[ri]._open;
   var hd=document.querySelector("#rb_"+ri+" .raum-block-hd");
   var bd=ge("rbb_"+ri);
@@ -1327,9 +1348,9 @@ function konsistenzWarnung(){
   var g=gutMitMangeldaten();
   if(g.length)return g.map(function(r){return r.r;}).join(", ")+(g.length===1?" ist":" sind")+" als M\u00E4ngelfrei markiert, enth\u00E4lt aber noch Mangelbeschreibung oder Fotos.";
   var ohneBeschr=D.raeume.filter(function(r){return r.zustand==="mangel"&&!(r.beschreibung&&r.beschreibung.trim());});
-  if(ohneBeschr.length)return "Beschreibung fehlt bei: "+ohneBeschr.map(function(r){return r.r;}).join(", ")+".";
+  if(ohneBeschr.length)return ohneBeschr.map(function(r){return "Mangel/Schaden "+r.r+": Beschreibung fehlt.";}).join(" ");
   var ohneSchwere=D.raeume.filter(function(r){return r.zustand==="mangel"&&!r.schwere;});
-  if(ohneSchwere.length)return "Schweregrad fehlt bei: "+ohneSchwere.map(function(r){return r.r;}).join(", ")+".";
+  if(ohneSchwere.length)return ohneSchwere.map(function(r){return "Mangel/Schaden "+r.r+": Schweregrad fehlt.";}).join(" ");
   return null;
 }
 function step5(c){
@@ -1342,13 +1363,15 @@ function step5(c){
         '<br><span style="color:#a98;font-size:11.5px">Das Protokoll kann trotzdem erstellt werden.</span>'+
       '</div>'
     : '<div style="background:#f0faf0;border:1px solid #c5e8c5;border-left:3px solid #4caf50;padding:11px 15px;margin-bottom:18px;font-size:12.5px;color:#1b7a2e;font-weight:600">✓ Alle Schritte ausgefüllt.</div>';
-  if(kw){fehltBox+='<div style="background:#fdecea;border:1px solid #f0c0bc;border-left:3px solid #d9534f;padding:12px 15px;margin-bottom:18px;font-size:12.5px;color:#8a2a24;line-height:1.6"><strong>Widerspruch:</strong> '+kw+'</div>';}
+  if(kw){fehltBox+='<div style="background:#fdecea;border:1px solid #f0c0bc;border-left:3px solid #d9534f;padding:12px 15px;margin-bottom:18px;font-size:12.5px;color:#8a2a24;line-height:1.6"><strong>Hinweis:</strong> '+kw+'</div>';}
   var zw=D.zaehler.filter(function(z){return (z.nr&&!z.stand)||(z.stand&&!z.nr);});
   if(zw.length){fehltBox+='<div style="background:#fff8f0;border:1px solid #f0d6b8;border-left:3px solid #e8a33d;padding:12px 15px;margin-bottom:18px;font-size:12.5px;color:#7a5a20;line-height:1.6"><strong>Zähler unvollständig:</strong> '+zw.map(function(z){return esc(z.art)+" ("+(z.nr?"Stand fehlt":"Nummer fehlt")+")";}).join(", ")+'</div>';}
   c.innerHTML=
     '<div class="sec-hd">Zusammenfassung</div>'+
     fehltBox+
     '<div class="sec-hd">Unterschriften</div>'+
+    metaLine()+
+    personZeile()+
     '<p style="font-size:13px;color:#666;margin-bottom:15px;line-height:1.65">Ich/Wir bestätige/n die ordnungsgemäße '+(istRuecknahme()?"Rückgabe":"Übernahme")+' der angeführten Einheit unter Berücksichtigung des Bestandvertrages. Die Einheit wurde mit Ausnahme der angeführten Mängel in einwandfreiem Zustand '+(istRuecknahme()?"zurückgegeben":"übernommen")+'.</p>'+
     '<div class="sig-grid">'+
       '<div class="sig-col">'+
@@ -1377,7 +1400,7 @@ function step5(c){
         '<button class="btn-dl" onclick="sharePDF()" type="button" style="font-size:15px;padding:13px 22px">'+icn("send",16)+' Protokoll senden</button>'+
       '</div>'+
     '</div>'+
-    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Übergabeprotokoll App '+APP_VERSION+'</div>';
+    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version '+APP_VERSION+' · Jakob Bonomo</div>';
 
 }
 
@@ -1428,6 +1451,31 @@ function clrSig(which){
 
 // ── Vollbild-Unterschrift (v15) ─────────────────────────────────────────────
 var sigPad=null,sigWhich=null;
+function sigSummary(){
+  // Kernfakten, die der/die Unterzeichnende bestätigt (v20)
+  var t=[];
+  if(D.objekt)t.push("<b>"+esc(D.objekt.split(",")[0])+(D.top?" · Top "+esc(D.top):"")+"</b>");
+  if(D.mieter)t.push(esc(D.mieter)+(D.mieter_vd?", vertr. d. "+esc(D.mieter_vd):""));
+  if(!istEinseiter()){
+    var mg=D.raeume.filter(function(r){return r.zustand==="mangel";}).length;
+    t.push(mg?mg+" Mangel/Mängel erfasst":"keine Mängel erfasst");
+    var sk=D.schluessel.filter(function(s){return s.anz;}).map(function(s){return s.anz+"× "+(s.art||"Schlüssel");});
+    if(sk.length)t.push(sk.join(", "));
+    var za=D.zaehler.filter(function(z){return z.stand;}).map(function(z){return (z.art||"Zähler")+" "+z.stand+(z.einheit?" "+z.einheit:"");});
+    if(za.length)t.push(za.join(", "));
+  }else if(D.art==="schluessel"){
+    var sk2=D.schluessel.filter(function(s){return s.anz;}).map(function(s){return s.anz+"× "+(s.art||"Schlüssel");});
+    t.push(sk2.length?sk2.join(", "):"keine Schlüssel erfasst");
+  }else{
+    var ka=D.karten.filter(function(k){return k.nr;});
+    t.push(ka.length?ka.length+" Parkkarte(n): Nr. "+ka.map(function(k){return k.nr;}).join(", "):"keine Karten erfasst");
+  }
+  return t.join(" · ");
+}
+function sigZeigeProtokoll(){
+  closeSigOverlay();
+  openPreview();
+}
 function openSigOverlay(which){
   saveStep();
   sigWhich=which;
@@ -1440,8 +1488,14 @@ function openSigOverlay(which){
   ov.style.cssText="position:fixed;inset:0;z-index:2600;background:#fff;display:flex;flex-direction:column";
   ov.innerHTML=
     '<div style="flex-shrink:0;padding:calc(14px + env(safe-area-inset-top)) 18px 10px;border-bottom:1px solid #eee">'+
-      '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.6px;text-transform:uppercase">Unterschrift</div>'+
-      '<div style="font-size:16px;font-weight:700;color:#1a1a1a;margin-top:2px">'+esc(wer)+'</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'+
+        '<div style="min-width:0">'+
+          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.6px;text-transform:uppercase">Unterschrift</div>'+
+          '<div style="font-size:16px;font-weight:700;color:#1a1a1a;margin-top:2px">'+esc(wer)+'</div>'+
+        '</div>'+
+        '<button type="button" onclick="sigZeigeProtokoll()" style="flex:none;border:1.5px solid #ddd;background:#fff;color:#444;font-size:12px;font-weight:700;font-family:inherit;border-radius:8px;padding:8px 11px;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+icn("eye",13)+' Protokoll ansehen</button>'+
+      '</div>'+
+      '<div style="font-size:12px;color:#777;margin-top:8px;line-height:1.55">'+sigSummary()+'</div>'+
     '</div>'+
     '<div style="flex:1;position:relative;margin:14px 14px 0">'+
       '<canvas id="sig-ov-cv" style="position:absolute;inset:0;width:100%;height:100%;border:1.5px dashed #ccc;border-radius:10px;background:#fdfdfd;touch-action:none"></canvas>'+
@@ -1462,7 +1516,30 @@ function openSigOverlay(which){
   // Vorhandene Unterschrift zum Korrigieren laden
   var ex=(which==="v"?D.sig_v:D.sig_m);
   if(ex){var im=new Image();im.onload=function(){sigPad.ctx.drawImage(im,0,0,cv.width,cv.height);sigOvHint(false);sigPad.markDrawn();};im.src=ex;}
+  // Rotation/Resize: Zeichnung sichern und proportionsecht ins neue Format übernehmen (v20)
+  var relayout=function(){
+    var c=ge("sig-ov-cv");if(!c||!sigPad)return;
+    var hatte=!sigPad.isEmpty();
+    var dataOld=hatte?c.toDataURL():null;
+    var ow=c.width,oh=c.height;
+    var r2=c.getBoundingClientRect(),dpr2=window.devicePixelRatio||1;
+    c.width=Math.round(r2.width*dpr2);c.height=Math.round(r2.height*dpr2);
+    if(dataOld){
+      var im2=new Image();
+      im2.onload=function(){
+        var sc=Math.min(c.width/ow,c.height/oh);
+        var w2=ow*sc,h2=oh*sc;
+        sigPad.ctx.drawImage(im2,(c.width-w2)/2,(c.height-h2)/2,w2,h2);
+        sigPad.markDrawn();
+      };
+      im2.src=dataOld;
+    }
+  };
+  sigOvRelayout=function(){setTimeout(relayout,250);}; // iOS meldet neue Maße verzögert
+  window.addEventListener("orientationchange",sigOvRelayout);
+  window.addEventListener("resize",sigOvRelayout);
 }
+var sigOvRelayout=null;
 function sigOvHint(show){var hn=ge("sig-ov-hint");if(hn)hn.style.display=show?"flex":"none";}
 function sigOvClear(){
   if(!sigPad)return;
@@ -1470,6 +1547,7 @@ function sigOvClear(){
   sigPad.reset();sigOvHint(true);
 }
 function closeSigOverlay(){var ov=ge("sig-ov");if(ov)ov.parentNode.removeChild(ov);sigPad=null;sigWhich=null;}
+  if(sigOvRelayout){window.removeEventListener("orientationchange",sigOvRelayout);window.removeEventListener("resize",sigOvRelayout);sigOvRelayout=null;}
 function sigCrop(cv){
   // Bounding-Box der Tinte ermitteln und mit Rand ausschneiden
   var ctx=cv.getContext("2d");
@@ -1590,7 +1668,7 @@ function buildPDF(){
     }else{
       var kf=D.karten.filter(function(k){return k.nr;});
       liste='<div class="shd">Parkkarten</div>'+(kf.length?kf.map(function(k){return '<p class="txt">Parkkarte Nr. '+esc(k.nr||"-")+'</p>';}).join(""):'<p class="txt dim">-</p>')+
-        '<p class="txt" style="font-size:9pt;color:#444;margin-top:5mm">Bei Verlust einer Parkkarte wird ein Kostenersatz von EUR '+esc(D.verlust_eur||"15")+',&ndash; verrechnet.</p>';
+        (istRuecknahme()?'':'<p class="txt" style="font-size:9pt;color:#444;margin-top:5mm">Bei Verlust einer Parkkarte wird ein Kostenersatz von EUR '+esc(D.verlust_eur||"15")+',&ndash; verrechnet.</p>');
     }
     var rowsK='<div class="or"><span class="ol">Objekt:</span><b>'+esc(D.objekt||"-")+'</b></div>'+
       (D.art==="schluessel"&&D.top?'<div class="or"><span class="ol">Top:</span><b>'+esc(D.top)+'</b></div>':'')+
@@ -1632,9 +1710,11 @@ function buildPDF(){
 
   var acb=autoCB();
   var cbH=CB_LABELS.map(function(l,i){
+    if(i===2&&istRuecknahme())return"";
     return'<div class="cbl"><span class="cbx">'+(acb[i]?"☑":"☐")+'</span><span>'+cbLabel(i)+'</span></div>';
   }).join("");
-  if(D.ba)cbH+='<div class="cbl"><span class="cbx">☑</span><span>die Bedienungsanleitungen wurden '+(istRuecknahme()?"zurückgegeben":"übergeben")+(D.ba_art?" ("+esc(D.ba_art)+")":"")+'</span></div>';
+  if(D.art==="wohnung"&&istRuecknahme())cbH+='<div class="cbl"><span class="cbx">'+(D.nachsend?"☑":"☐")+'</span><span>der Post-Nachsendeauftrag an die neue Adresse wurde '+(D.nachsend?"eingerichtet":"nicht eingerichtet &ndash; Fristsetzung bis "+(D.nachsend_frist?fmtDate(D.nachsend_frist):"________"))+'</span></div>';
+  if(D.ba&&!istRuecknahme())cbH+='<div class="cbl"><span class="cbx">☑</span><span>die Bedienungsanleitungen wurden '+(istRuecknahme()?"zurückgegeben":"übergeben")+(D.ba_art?" ("+esc(D.ba_art)+")":"")+'</span></div>';
   if(D.bs&&istGewerbe())cbH+='<div class="cbl"><span class="cbx">☑</span><span>die Brandschutzordnung wurde '+(istRuecknahme()?"zurückgegeben":"übergeben")+'</span></div>';
 
   var stromH=(D.anbieter||D.strom_bis)
@@ -1795,7 +1875,10 @@ function acFilter(val,inputEl){
   var old=ge("ac-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
   if(!val||val.length<1||!OBJEKTE.length){_acOpen=false;return;}
   var q=val.toLowerCase();
-  var matches=OBJEKTE.filter(function(o){return !q||o.toLowerCase().indexOf(q)>=0;});
+  var matches=OBJEKTE.filter(function(o){
+    var n=(o.name||"").toLowerCase(),e=(o.eigentuemer||"").toLowerCase();
+    return n.indexOf(q)>=0||e.indexOf(q)>=0;
+  });
   if(!matches.length){_acOpen=false;return;}
 
   var list=document.createElement("div");
@@ -1886,7 +1969,7 @@ function closeBurst(){
 
 // ── NATIVES PDF (für Teilen/Share – ohne Druckdialog) ─────────────────────
 // Erzeugt ein echtes PDF (PDF 1.4, Helvetica/WinAnsi, JPEG-Bilder) rein clientseitig.
-var APP_VERSION="v19";
+var APP_VERSION="1.0";
 
 function jpegDim(bin){
   var i=2,L=bin.length;
@@ -2080,7 +2163,7 @@ function buildNativePDF(sigV,sigM){
         });
       }else{txt(M,yy,"-",FSk,false,0.5);yy+=16;}
       yy+=8;
-      twrap("Bei Verlust einer Parkkarte wird ein Kostenersatz von EUR "+(D.verlust_eur||"15")+",– verrechnet.",9,false,CW).forEach(function(L){txt(M,yy,L,9,false,0.25);yy+=12.5;});
+      if(!istRuecknahme())twrap("Bei Verlust einer Parkkarte wird ein Kostenersatz von EUR "+(D.verlust_eur||"15")+",– verrechnet.",9,false,CW).forEach(function(L){txt(M,yy,L,9,false,0.25);yy+=12.5;});
     }
     // Schlüsselfotos kompakt auf Seite 1 (v19: strikt einseitig)
     if(D.art==="schluessel"){
@@ -2171,7 +2254,7 @@ function buildNativePDF(sigV,sigM){
   function estH(L){
     var e=49;                             // Kopf
     e+=rows.length*L+14+18;               // Objektbox
-    e+=(L+3)+(3+(D.ba?1:0)+((D.bs&&istGewerbe())?1:0))*(L+1)+10; // Feststellungssatz + Checkboxen
+    e+=(L+3)+((istRuecknahme()?2:3)+((D.ba&&!istRuecknahme())?1:0)+((D.bs&&istGewerbe())?1:0)+((D.art==="wohnung"&&istRuecknahme())?1:0))*(L+1)+10;
     if(stromDa)e+=2*L+10;                 // Stromsatz (max 2 Zeilen)
     if(sk.length)e+=24+sk.length*L+12;    // Schlüssel
     if(istRuecknahme()&&D.sk_fehlen)e+=L+2;
@@ -2190,10 +2273,15 @@ function buildNativePDF(sigV,sigM){
   txt(M,yy,"Bei der "+typWort()+" der Mieteinheit"+(artConf().nebenfl?" samt Nebenflächen":"")+" am "+datumStr+" wurden:",FS);yy+=LH+3;
   var acb=autoCB();
   CB_LABELS.forEach(function(l,i){
+    if(i===2&&istRuecknahme())return; // Kaution entfällt bei Rücknahme (v20)
     checkbox(M,yy,acb[i]);
     txt(M+16,yy-1.5,cbLabel(i),FS);yy+=LH+1;
   });
-  if(D.ba){
+  if(D.art==="wohnung"&&istRuecknahme()){
+    checkbox(M,yy,!!D.nachsend);
+    txt(M+16,yy-1.5,"der Post-Nachsendeauftrag an die neue Adresse wurde "+(D.nachsend?"eingerichtet":"nicht eingerichtet – Fristsetzung bis "+(D.nachsend_frist?fmtDate(D.nachsend_frist):"________")),FS);yy+=LH+1;
+  }
+  if(D.ba&&!istRuecknahme()){
     checkbox(M,yy,true);
     txt(M+16,yy-1.5,"die Bedienungsanleitungen wurden "+(istRuecknahme()?"zurückgegeben":"übergeben")+(D.ba_art?" ("+D.ba_art+")":""),FS);yy+=LH+1;
   }
@@ -2579,10 +2667,10 @@ function migrateData(d){
   // Alt-Format: separate Mängel-Karten -> in Raum-Beschreibung übernehmen
   if(d.maengel&&d.maengel.length){
     d.maengel.forEach(function(m){
-      var name=m._rsel||m.raum||"SONSTIGE";
+      var name=m._rsel||m.raum||"WEITERES";
       var r=null,i;
       for(i=0;i<d.raeume.length;i++){if(d.raeume[i].r===name){r=d.raeume[i];break;}}
-      if(!r){for(i=0;i<d.raeume.length;i++){if(d.raeume[i].r==="SONSTIGE"){r=d.raeume[i];break;}}}
+      if(!r){r={r:name,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};d.raeume.push(r);}
       if(!r)return;
       var t=(m.mangel||"").trim()+(m.bem?" ("+m.bem+")":"");
       if(t)r.beschreibung=(r.beschreibung?r.beschreibung+"\n":"")+t;
@@ -2603,6 +2691,8 @@ function migrateData(d){
   if(d.ba_art===undefined)d.ba_art="";
   if(d.art===undefined)d.art="wohnung";      // Bestandsentwürfe sind Wohnungen
   if(d.bs===undefined)d.bs=false;
+  if(d.nachsend===undefined)d.nachsend=false;
+  if(d.nachsend_frist===undefined)d.nachsend_frist="";
   if(d.mv_ende===undefined)d.mv_ende="";
   if(d.sk_fehlen===undefined)d.sk_fehlen="";
   if(d.mieter_vd===undefined)d.mieter_vd="";
@@ -2659,7 +2749,7 @@ function newDraft(art,typ){
     maengel:[],
     iban:"",nachfolge:"",
     raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};}),
-    fotos:[],sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,ba:false,ba_art:"",art:"wohnung",bs:false,mv_ende:"",sk_fehlen:"",mieter_vd:"",bestandsobjekt:"",karten:[{nr:"",bez:""}],verlust_eur:"15",email_empf:""
+    fotos:[],sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,ba:false,ba_art:"",art:"wohnung",bs:false,nachsend:false,nachsend_frist:"",mv_ende:"",sk_fehlen:"",mieter_vd:"",bestandsobjekt:"",karten:[{nr:"",bez:""}],verlust_eur:"15",email_empf:""
   };
   D.zaehler.forEach(function(z){z.ablese=D.datum;});
   cur=0;visited={};
@@ -2696,26 +2786,25 @@ function deleteDraft(id,ev){
   saveDrafts(map);
   var c=null;try{c=localStorage.getItem(CURRENT_KEY);}catch(e){}
   if(c===id){try{localStorage.removeItem(CURRENT_KEY);}catch(e){}}
-  showStart(); // Übersicht neu aufbauen
+  showDrafts(); // Übersicht neu aufbauen
   toast("Entwurf gelöscht");
 }
-function openDraftPanel(){
-  // v17: kein Overlay mehr – Entwürfe = Startbildschirm
-  saveStep();persist();
-  showStart();
+function hdrBtn(){
+  if(_screen==="drafts"){showStart();return;}
+  if(istEinseiter())saveSingle();else{saveStep();persist();}
+  showDrafts();
 }
+function openDraftPanel(){hdrBtn();}
 function closeDraftPanel(){}
 
 // ── RESTORE beim Start: aktuellen Entwurf laden, sonst Altformat migrieren ──
-var START_SHOW=true; // Startbildschirm nur, wenn kein Entwurf offen ist
 (function(){
   try{
     var curIdv=localStorage.getItem(CURRENT_KEY);
     var map=loadDrafts();
     if(curIdv&&map[curIdv]&&map[curIdv].data){
       D=migrateData(JSON.parse(JSON.stringify(map[curIdv].data)));
-      START_SHOW=false; // offener Entwurf → direkt weiterarbeiten
-      toast("Letzter Entwurf wiederhergestellt",2200);
+      // v20: App startet immer am Startbildschirm; der Entwurf liegt dort als "GEÖFFNET"-Karte
       return;
     }
     // Fallback: altes Einzelformat (prisma_proto) migrieren
@@ -2724,8 +2813,6 @@ var START_SHOW=true; // Startbildschirm nur, wenn kein Entwurf offen ist
       var parsed=JSON.parse(saved);
       if(parsed&&(parsed.objekt||parsed.mieter)){
         D=migrateData(parsed);
-        START_SHOW=false;
-        toast("Letzter Stand wiederhergestellt",2200);
       }
     }
   }catch(e){}
@@ -2742,11 +2829,9 @@ function draftProgress(d){
   if(d.sig_v||d.sig_m)done++;
   return done;
 }
-function showStart(){
-  var map=loadDrafts();
-  var curIdv=null;try{curIdv=localStorage.getItem(CURRENT_KEY);}catch(e){}
+function draftCards(map,curIdv){
   var ids=Object.keys(map).sort(function(a,b){return (map[b].ts||0)-(map[a].ts||0);});
-  var cards=ids.map(function(id){
+  return ids.map(function(id){
     var e=map[id],d=e.data||{};
     var p=draftProgress(d);
     var isCur=(id===curIdv);
@@ -2766,37 +2851,57 @@ function showStart(){
       '<div style="height:4px;background:#f0f0f0;border-radius:2px;margin-top:10px;overflow:hidden"><div style="height:100%;width:'+Math.round(p/6*100)+'%;background:'+(p===6?"#4caf50":"#eb5b36")+';border-radius:2px"></div></div>'+
     '</div>';
   }).join("");
+}
+function kopfLeiste(modus){
+  // Header-Zusatz: Entwürfe-Zugang mit Anzahl
+  var n=Object.keys(loadDrafts()).length;
+  var btn=ge("hdr-btn");
+  if(btn)btn.innerHTML=(modus==="drafts")
+    ?icn("home",14)+' Start'
+    :icn("folder",14)+' Entwürfe'+(n?' <span style="background:#eb5b36;color:#fff;border-radius:9px;font-size:10px;padding:1px 6px;margin-left:2px">'+n+'</span>':'');
+}
+var _screen="start";
+function showStart(){
+  _screen="start";
   var c=ge("content");
   ge("stepbar").innerHTML="";
   ge("prog-lbl").textContent="";
   ge("prog-fill").style.width="0";
   var ttl=ge("app-title");if(ttl)ttl.textContent="Übergabeprotokolle";
-  // Art-Kacheln
+  kopfLeiste("start");
   var ICO={wohnung:"home",gewerbe:"office",schluessel:"key",parkkarte:"park"};
   var tiles=Object.keys(ARTEN).map(function(k){
     var on=(_startArt===k);
-    return '<button type="button" onclick="waehlArt(\''+k+'\')" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:'+(on?"#fff8f6":"#fff")+';border:1.5px solid '+(on?"#eb5b36":"#ececec")+';border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:16px 8px 13px;font-size:13.5px;font-weight:700;font-family:inherit;color:'+(on?"#eb5b36":"#333")+';cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+icn(ICO[k],26)+ARTEN[k].label+'</button>';
+    return '<button type="button" onclick="waehlArt(\''+k+'\')" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:'+(on?"#fff8f6":"#fff")+';border:2px solid '+(on?"#eb5b36":"#ececec")+';border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);padding:24px 8px 19px;font-size:14.5px;font-weight:700;font-family:inherit;color:'+(on?"#eb5b36":"#333")+';cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+icn(ICO[k],32)+ARTEN[k].label+'</button>';
   }).join("");
   var richtung=_startArt
-    ? '<div style="display:flex;gap:10px;margin-top:12px">'+
+    ? '<div style="display:flex;gap:10px;margin-top:14px">'+
         '<button type="button" onclick="artGo(\'Übergabe\')" class="btn-send" style="flex:1">Übergabe</button>'+
         '<button type="button" onclick="artGo(\'Rücknahme\')" style="flex:1;background:#fff;border:1.5px solid #575656;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:inherit;color:#575656;cursor:pointer;min-height:50px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">Rücknahme</button>'+
       '</div>'
-    : '';
-  var vw=gespeicherterVerwalter();
-  var person='<div onclick="startPersonWahl()" style="display:flex;justify-content:space-between;align-items:center;padding:10px 3px 0;cursor:pointer;-webkit-tap-highlight-color:transparent">'+
-    '<span style="font-size:12.5px;color:#888">Durchgeführt von: <b style="color:#444">'+(vw?esc(vw):"—")+'</b></span>'+
-    '<span style="font-size:12px;font-weight:700;color:#eb5b36">'+(vw?"ändern":"wählen")+'</span>'+
-  '</div>';
+    : '<p style="text-align:center;color:#b5b5b5;font-size:12.5px;margin-top:14px">Protokollart wählen, dann Übergabe oder Rücknahme.</p>';
   c.innerHTML=
-    '<div style="padding-top:6px">'+
-      '<div class="sec-hd" style="margin-top:4px">Neues Protokoll</div>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+tiles+'</div>'+
+    '<div style="padding-top:14px;max-width:480px;margin:0 auto">'+
+      '<div style="font-size:19px;font-weight:800;color:#1a1a1a;margin:2px 2px 3px">Neues Protokoll</div>'+
+      '<div style="font-size:12.5px;color:#999;margin:0 2px 16px">Was wird übergeben oder zurückgenommen?</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+tiles+'</div>'+
       richtung+
-      person+
-      (cards?'<div class="sec-hd" style="margin-top:24px">Entwürfe</div>'+cards:
-        '<p style="text-align:center;color:#aaa;font-size:13px;margin-top:30px;line-height:1.7">Noch keine Entwürfe.</p>')+
     '</div>';
+}
+function showDrafts(){
+  _screen="drafts";
+  var map=loadDrafts();
+  var curIdv=null;try{curIdv=localStorage.getItem(CURRENT_KEY);}catch(e){}
+  var c=ge("content");
+  ge("stepbar").innerHTML="";
+  ge("prog-lbl").textContent="";
+  ge("prog-fill").style.width="0";
+  var ttl=ge("app-title");if(ttl)ttl.textContent="Entwürfe";
+  kopfLeiste("drafts");
+  var cards=draftCards(map,curIdv);
+  c.innerHTML='<div style="padding-top:10px">'+
+    (cards||'<p style="text-align:center;color:#aaa;font-size:13px;margin-top:34px;line-height:1.7">Keine Entwürfe vorhanden.</p>')+
+  '</div>';
 }
 var _startArt=null;
 function startNew(){} // entfällt: Auswahl liegt direkt auf der Startseite (v19)
@@ -2821,13 +2926,14 @@ function startPersonWahl(){
 }
 function startPersonSet(n){
   setzeVerwalter(n);
+  D.verwalter=n;persist();
   var ov=ge("vw-ov");if(ov)ov.parentNode.removeChild(ov);
-  showStart();
+  if(_screen==="form")render();else if(_screen==="drafts")showDrafts();else showStart();
 }
 function startOpenDraft(id){loadDraft(id);}
 
 loadObjekte();
-if(START_SHOW){showStart();}else{render();}
+showStart();
 
 // ── PWA: SERVICE WORKER ───────────────────────────────────────────────────
 if("serviceWorker" in navigator){
