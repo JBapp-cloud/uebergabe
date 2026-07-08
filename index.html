@@ -10,7 +10,7 @@
 ║  (prisma-zentrum.com) – österreichischer Immobilienentwickler.              ║
 ║  Single-File HTML-App, läuft komplett im Browser, kein Backend.             ║
 ║                                                                              ║
-║  VERSION: v15-PWA – Dateinamen-Schema, E-Mail-Vorlage, PDF-Layout nach Word-Original (Auto-Fit),
+║  VERSION: v16-PWA – UX-Feinschliff (Startbildschirm, Karten-Design, Typografie), PDF formal-kompakt,
 ║                                                                              ║
 ║  NEU in v8:                                                                  ║
 ║  • Tab-Haken korrigiert (kein Doppelhaken, nur bei echtem Inhalt)           ║
@@ -120,20 +120,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-se
 @media(max-width:600px){.content-area{padding:18px 15px 18px}}
 
 /* === SECTION HEADERS === */
-.sec-hd{font-size:10.5px;font-weight:700;color:#eb5b36;letter-spacing:1.2px;text-transform:uppercase;border-bottom:1.5px solid #fad5c9;padding-bottom:5px;margin:24px 0 15px}
+.sec-hd{font-size:10.5px;font-weight:700;color:#eb5b36;letter-spacing:1.2px;text-transform:uppercase;margin:22px 2px 9px}
 .sec-hd:first-child{margin-top:0}
 
 /* === OBJ BOX === */
-.obj-box{border:1px solid #e0e0e0;padding:15px 17px;margin-bottom:20px;background:#fafafa;border-radius:1px}
+.obj-box,.grp-card{border:1px solid #ececec;padding:16px 17px;margin-bottom:8px;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .obj-row{display:flex;align-items:center;margin-bottom:11px;gap:10px}
 .obj-row:last-child{margin-bottom:0}
-.obj-lbl{font-weight:700;font-size:12.5px;color:#555;min-width:195px;flex-shrink:0}
+.obj-lbl{font-weight:700;font-size:10.5px;color:#888;letter-spacing:.5px;text-transform:uppercase;min-width:175px;flex-shrink:0}
 .obj-val{flex:1}
 .obj-val input{width:100%;border:none;border-bottom:1.5px solid #d0d0d0;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;padding:4px 3px 3px;outline:none;-webkit-appearance:none;transition:border-color .15s}
 .obj-val input:focus{border-bottom-color:#eb5b36}
 @media(max-width:520px){
   .obj-row{flex-direction:column;align-items:flex-start;gap:3px}
-  .obj-lbl{min-width:unset;font-size:11.5px;color:#777}
+  .obj-lbl{min-width:unset}
   .obj-val{width:100%}
 }
 
@@ -211,9 +211,9 @@ table.mg-tbl input,table.mg-tbl select{border:none;width:100%;font-size:16px;bac
 .sig-grid{display:flex;gap:22px;flex-wrap:wrap;margin:14px 0 20px}
 .sig-col{flex:1;min-width:210px}
 .sig-lbl{font-size:11.5px;font-weight:700;color:#444;margin-bottom:7px;letter-spacing:.2px}
-.sig-wrap{border:1.5px solid #ccc;background:#f8f8f8;position:relative;cursor:crosshair}
-.sig-wrap canvas{display:block;width:100%;height:115px;touch-action:auto}
-.sig-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:#ccc;pointer-events:none;user-select:none;letter-spacing:.3px}
+.sig-wrap{border:1.5px dashed #ccc;border-radius:10px;background:#fbfbfb;position:relative;cursor:pointer;min-height:115px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.sig-wrap img{width:100%;height:115px;object-fit:contain;display:block}
+.sig-hint{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#b5b5b5;pointer-events:none;user-select:none;letter-spacing:.3px}
 .sig-clear{background:#fff;border:1px solid #ccc;padding:5px 13px;font-size:11.5px;cursor:pointer;color:#666;margin-top:5px;font-family:inherit;transition:border-color .12s}
 .sig-clear:hover{border-color:#555;color:#333}
 
@@ -567,39 +567,49 @@ function step0(){
   // v15: Mängel-Checkboxen entfallen (werden im Protokoll automatisch aus der Raumbeurteilung abgeleitet)
   var cbs='<label class="cb-row'+(D.cb[2]?' checked':"")+'"><input type="checkbox" id="cb_2"'+(D.cb[2]?' checked':"")+' onchange="cbChange(2,this)">'+cbLabel(2)+'</label>'+
     '<p style="font-size:12px;color:#999;margin-top:8px;line-height:1.5">„Mängel/Schäden festgestellt" bzw. „keine Mängel/Schäden" wird im Protokoll automatisch aus der Raumbeurteilung (Tab Mängel) übernommen.</p>';
-  return'<div class="sec-hd">Objektdaten</div>'+
-    '<div class="obj-box">'+
+  return'<div class="sec-hd">Protokoll</div>'+
+    '<div class="grp-card">'+
+      '<div class="field-row field-row-aligned" style="margin-bottom:14px">'+
+        '<div class="field"><label>Art des Protokolls</label>'+sel("f_typ",["Übergabe","Rücknahme"],D.typ,"saveTyp()")+'</div>'+
+        '<div class="field"><label>Datum der '+typWort()+'</label>'+inp("f_datum",D.datum,"","date")+'</div>'+
+      '</div>'+
+      '<div class="field-row" style="margin-bottom:2px">'+
+        '<div class="field field-full ac-wrap" style="position:relative"><label>'+typWort()+' durchgeführt durch (PRISMA)</label>'+
+          '<input type="text" id="f_verwalter" value="'+esc(D.verwalter)+'" placeholder="Name tippen oder auswählen…" autocomplete="off" onfocus="vwFilter(this.value,this)" oninput="vwFilter(this.value,this)" onblur="setTimeout(vwClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="sec-hd">Objekt</div>'+
+    '<div class="grp-card">'+
       '<div class="obj-row"><span class="obj-lbl">Objekt / Adresse</span><span class="obj-val ac-wrap"><input type="text" id="f_objekt" value="'+esc(D.objekt)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="acFilter(this.value,this)" onblur="setTimeout(acClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Top-Nummer</span><span class="obj-val">'+inp("f_top",D.top,"z.B. Top 12")+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Eigentümer/in</span><span class="obj-val">'+inp("f_eigentuemer",D.eigentuemer)+'</span></div>'+
-      '<div class="obj-row"><span class="obj-lbl">Mieter/in</span><span class="obj-val">'+inp("f_mieter",D.mieter)+'</span></div>'+
-      '<div class="obj-row"><span class="obj-lbl">E-Mail Mieter/in</span><span class="obj-val">'+inp("f_email_mieter",D.email_mieter,"","email")+'</span></div>'+
+    '</div>'+
+    '<div class="sec-hd">Mieter/in</div>'+
+    '<div class="grp-card">'+
+      '<div class="obj-row"><span class="obj-lbl">Name</span><span class="obj-val">'+inp("f_mieter",D.mieter)+'</span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">E-Mail</span><span class="obj-val">'+inp("f_email_mieter",D.email_mieter,"","email")+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Telefonnummer</span><span class="obj-val">'+inp("f_telefon",D.telefon,"","tel")+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">KFZ-Kennzeichen</span><span class="obj-val">'+inp("f_kfz",D.kfz)+'</span></div>'+
       (istRuecknahme()?
-        '<div class="obj-row"><span class="obj-lbl">IBAN Mieter/in</span><span class="obj-val">'+inp("f_iban",D.iban,"AT00 0000 0000 0000 0000")+'</span></div>'+
+        '<div class="obj-row"><span class="obj-lbl">IBAN</span><span class="obj-val">'+inp("f_iban",D.iban,"AT00 0000 0000 0000 0000")+'</span></div>'+
         '<div class="obj-row"><span class="obj-lbl">Nachfolgeadresse</span><span class="obj-val">'+inp("f_nachfolge",D.nachfolge,"neue Anschrift für Schriftverkehr")+'</span></div>'
       :"")+
     '</div>'+
-    '<div class="field-row field-row-aligned">'+
-      '<div class="field"><label>Art des Protokolls</label>'+sel("f_typ",["Übergabe","Rücknahme"],D.typ,"saveTyp()")+'</div>'+
-      '<div class="field"><label>Datum der '+typWort()+'</label>'+inp("f_datum",D.datum,"","date")+'</div>'+
-    '</div>'+
-    '<div class="field-row">'+
-      '<div class="field field-full ac-wrap" style="position:relative"><label>Übergabe durchgeführt durch (PRISMA)</label>'+
-        '<input type="text" id="f_verwalter" value="'+esc(D.verwalter)+'" placeholder="Name tippen oder auswählen…" autocomplete="off" onfocus="vwFilter(this.value,this)" oninput="vwFilter(this.value,this)" onblur="setTimeout(vwClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
-      '</div>'+
-    '</div>'+
     '<div class="sec-hd">Bei der '+typWort()+' festgestellt</div>'+
-    '<p style="font-size:13px;color:#666;margin-bottom:12px">Bei der '+typWort()+' der Mieteinheit samt Nebenflächen wurden:</p>'+
-    '<div class="cb-group">'+cbs+'</div>'+
+    '<div class="grp-card">'+
+      '<p style="font-size:13px;color:#666;margin-bottom:12px">Bei der '+typWort()+' der Mieteinheit samt Nebenflächen wurden:</p>'+
+      '<div class="cb-group">'+cbs+'</div>'+
+    '</div>'+
     '<div class="sec-hd">Stromzähler-'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' (Smart Meter)</div>'+
-    '<div class="field-row">'+
+    '<div class="grp-card">'+
+    '<div class="field-row" style="margin-bottom:2px">'+
       '<div class="field ac-wrap"><label>Anbieter</label>'+
         '<input type="text" id="f_anbieter" value="'+esc(D.anbieter)+'" placeholder="Anbieter tippen oder auswählen…" autocomplete="off" onfocus="anbFilter(this.value,this)" oninput="D.anbieter=this.value;anbFilter(this.value,this)" onblur="setTimeout(anbClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
       '</div>'+
       '<div class="field"><label>wird erledigt durch</label>'+sel("f_strom_person",["Mieter","Vermieter"],D.strom_person)+'</div>'+
       '<div class="field"><label>wird erledigt mit Zählerstichtag</label>'+inp("f_strom_bis",D.strom_bis,"","date")+'</div>'+
+    '</div>'+
     '</div>'+
     navBar(false,true,"Weiter: Schlüssel →");
 }
@@ -664,7 +674,7 @@ function step1(){
     var fix=(i===0);
     var thumb=s.foto?fotoThumb(s.foto,"delSkFoto("+i+")"):"";
     return'<div class="sk-row">'+
-      '<input type="number" class="sk-anz" id="sk_anz_'+i+'" value="'+esc(s.anz)+'" min="0" placeholder="0">'+
+      '<input type="number" inputmode="numeric" class="sk-anz" id="sk_anz_'+i+'" value="'+esc(s.anz)+'" min="0" placeholder="0">'+
       '<span class="sk-lbl">Stk.</span>'+
       (fix
         ? '<strong style="font-size:13.5px;min-width:155px">Wohnungsschlüssel</strong><input type="hidden" id="sk_sel_'+i+'" value="Wohnungsschlüssel">'
@@ -703,8 +713,8 @@ function step2(){
             (sv==="Sonstiges"?'<input id="zae_cust_'+i+'" value="'+esc(z.art!=="Sonstiges"?z.art:"")+'" placeholder="Zählerart…" style="border:none;border-bottom:1px solid #ccc;width:100%;font-size:16px;font-family:inherit;background:transparent;outline:none;margin-top:3px">':"")
         )+
       '</td>'+
-      '<td><input id="zae_nr_'+i+'" value="'+esc(z.nr)+'" placeholder="Nr." style="border:none;width:100%;font-size:16px;font-family:inherit;outline:none;background:transparent;padding:3px"></td>'+
-      '<td><div style="display:flex;align-items:center;gap:4px"><input id="zae_st_'+i+'" value="'+esc(z.stand)+'" placeholder="Stand" style="border:none;flex:1;min-width:50px;font-size:16px;font-family:inherit;outline:none;background:transparent;padding:3px"><input id="zae_eh_'+i+'" value="'+esc(z.einheit||"")+'" placeholder="Einh." style="border:none;width:48px;font-size:16px;color:#888;font-family:inherit;outline:none;background:transparent;padding:3px;text-align:right"></div></td>'+
+      '<td><input id="zae_nr_'+i+'" inputmode="numeric" value="'+esc(z.nr)+'" placeholder="Nr." style="border:none;width:100%;font-size:16px;font-family:inherit;outline:none;background:transparent;padding:3px"></td>'+
+      '<td><div style="display:flex;align-items:center;gap:4px"><input id="zae_st_'+i+'" inputmode="decimal" value="'+esc(z.stand)+'" placeholder="Stand" style="border:none;flex:1;min-width:50px;font-size:16px;font-family:inherit;outline:none;background:transparent;padding:3px"><input id="zae_eh_'+i+'" value="'+esc(z.einheit||"")+'" placeholder="Einh." style="border:none;width:48px;font-size:16px;color:#888;font-family:inherit;outline:none;background:transparent;padding:3px;text-align:right"></div></td>'+
       '<td style="width:120px"><input type="date" id="zae_ab_'+i+'" value="'+esc(z.ablese||"")+'" style="border:none;width:100%;font-size:16px;font-family:inherit;outline:none;background:transparent;padding:3px"></td>'+
       '<td style="width:80px"><div class="foto-zone">'+thumb+(z.foto?"":'<label class="foto-btn" style="padding:4px 8px;font-size:11px">'+icn("cam",14)+'<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addZaeFoto('+i+',this)"></label>')+'</div></td>'+
       (i>=3?'<td style="width:38px"><button class="btn-del" onclick="delZae('+i+')" type="button">✕</button></td>':"<td></td>")+
@@ -1122,14 +1132,14 @@ function step5(c){
       '<div class="sig-col">'+
         '<div class="sig-lbl">PRISMA – '+typWort()+' erfolgt durch</div>'+
         '<div class="sig-wrap" onclick="openSigOverlay(\'v\')" role="button" tabindex="0">'+
-          (D.sig_v?'<img src="'+D.sig_v+'" style="width:100%;height:115px;object-fit:contain">':'<span class="sig-hint">'+icn("pen",15)+' Antippen zum Unterschreiben</span>')+
+          (D.sig_v?'<img src="'+D.sig_v+'">':'<span class="sig-hint">'+icn("pen",15)+' Antippen zum Unterschreiben</span>')+
         '</div>'+
         (D.sig_v?'<button class="sig-clear" onclick="clrSig(\'v\')" type="button">Signatur löschen</button>':'')+
       '</div>'+
       '<div class="sig-col">'+
         '<div class="sig-lbl">Mieter/in – Unterschrift</div>'+
         '<div class="sig-wrap" onclick="openSigOverlay(\'m\')" role="button" tabindex="0">'+
-          (D.sig_m?'<img src="'+D.sig_m+'" style="width:100%;height:115px;object-fit:contain">':'<span class="sig-hint">'+icn("pen",15)+' Antippen zum Unterschreiben</span>')+
+          (D.sig_m?'<img src="'+D.sig_m+'">':'<span class="sig-hint">'+icn("pen",15)+' Antippen zum Unterschreiben</span>')+
         '</div>'+
         (D.sig_m?'<button class="sig-clear" onclick="clrSig(\'m\')" type="button">Signatur löschen</button>':'')+
       '</div>'+
@@ -1156,7 +1166,8 @@ function updateSigHint(wrapId){
 function initPad(canvasId,wrapId){
   var cv=ge(canvasId),ctx=cv.getContext("2d"),drawing=false,last=null,hasDrawn=false;
   function pos(e){var r=cv.getBoundingClientRect(),src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*(cv.width/r.width),y:(src.clientY-r.top)*(cv.height/r.height)};}
-  function draw(p){ctx.strokeStyle="#111";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;}
+  var lw=2.5*(cv.width/Math.max(1,cv.getBoundingClientRect().width||cv.width)); // konstant kräftig, auch auf Retina
+  function draw(p){ctx.strokeStyle="#111";ctx.lineWidth=lw;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;}
   function hint(){if(wrapId)updateSigHint(wrapId);else if(typeof sigOvHint==="function")sigOvHint(false);}
   cv.addEventListener("mousedown",function(e){drawing=true;last=pos(e);hasDrawn=true;hint();});
   cv.addEventListener("mousemove",function(e){if(drawing)draw(pos(e));});
@@ -1237,11 +1248,34 @@ function sigOvClear(){
   sigPad.reset();sigOvHint(true);
 }
 function closeSigOverlay(){var ov=ge("sig-ov");if(ov)ov.parentNode.removeChild(ov);sigPad=null;sigWhich=null;}
+function sigCrop(cv){
+  // Bounding-Box der Tinte ermitteln und mit Rand ausschneiden
+  var ctx=cv.getContext("2d");
+  var w=cv.width,hgt=cv.height,data=ctx.getImageData(0,0,w,hgt).data;
+  var minX=w,minY=hgt,maxX=-1,maxY=-1;
+  for(var y=0;y<hgt;y++){
+    for(var x=0;x<w;x++){
+      if(data[(y*w+x)*4+3]>10){
+        if(x<minX)minX=x;if(x>maxX)maxX=x;
+        if(y<minY)minY=y;if(y>maxY)maxY=y;
+      }
+    }
+  }
+  if(maxX<0)return null; // leer
+  var pad=Math.round(Math.max(maxX-minX,maxY-minY)*0.06)+8;
+  minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);
+  maxX=Math.min(w-1,maxX+pad);maxY=Math.min(hgt-1,maxY+pad);
+  var cw=maxX-minX+1,ch=maxY-minY+1;
+  var out=document.createElement("canvas");out.width=cw;out.height=ch;
+  out.getContext("2d").drawImage(cv,minX,minY,cw,ch,0,0,cw,ch);
+  return out.toDataURL("image/png");
+}
 function sigOvSave(){
   if(!sigPad)return;
   var empty=sigPad.isEmpty();
-  var d=empty?null:sigPad.toDataURL();
-  var ts=empty?null:new Date().toISOString();
+  var d=empty?null:(sigCrop(sigPad.cv)||sigPad.toDataURL());
+  var ts=(empty||!d)?null:new Date().toISOString();
+  if(empty)d=null;
   if(sigWhich==="v"){D.sig_v=d;D.sig_v_ts=ts;}else{D.sig_m=d;D.sig_m_ts=ts;}
   persist();closeSigOverlay();render();
 }
@@ -1304,14 +1338,14 @@ function buildPDF(){
     return '<div class="zrow"><b>'+esc(z.art)+'</b><span>Nr. '+esc(z.nr||"-")+'</span><span>Stand '+esc(z.stand||"-")+(z.stand&&z.einheit?' '+esc(z.einheit):"")+'</span><span>abgelesen '+(z.ablese?fmtDate(z.ablese):"-")+'</span></div>';
   }).join(""):"";
 
-  var allFotos=[];
+  var rasterFotos=[];
   D.raeume.forEach(function(r){
     if(r.zustand==="mangel")return; // Fotos dieser Räume erscheinen in Beilage 1
-    (r.fotos||[]).forEach(function(f){if(f&&f.data)allFotos.push({data:f.data,bez:f.bez||r.r});});
+    (r.fotos||[]).forEach(function(f){if(f&&f.data)rasterFotos.push({data:f.data,bez:f.bez||r.r});});
   });
-  D.fotos.forEach(function(f){if(f&&f.data)allFotos.push({data:f.data,bez:f.bez||""});});
-  skZaeFotos().forEach(function(f){allFotos.push(f);});
-  var hatFotos=allFotos.length>0;
+  D.fotos.forEach(function(f){if(f&&f.data)rasterFotos.push({data:f.data,bez:f.bez||""});});
+  var detailFotos=skZaeFotos();
+  var hatFotos=(rasterFotos.length+detailFotos.length)>0;
   var beil=["Checkliste & Mängel/Schäden"];if(hatFotos)beil.push("Fotodokumentation");
 
   var best="Ich/Wir bestätige/n die ordnungsgemäße "+(istRuecknahme()?"Rückgabe":"Übernahme")+" der angeführten Einheit unter Berücksichtigung des Bestandvertrages. Die Einheit wurde mit Ausnahme der angeführten Mängel in einwandfreiem Zustand "+(istRuecknahme()?"zurückgegeben":"übernommen")+".";
@@ -1338,43 +1372,61 @@ function buildPDF(){
   '</div>';
 
   var clRows=D.raeume.map(function(r,i){
-    var befund=r.zustand==="gut"?"Mängelfrei"
-      :(r.zustand==="mangel"?"Mängel/Schäden"+(r.schwere?" ("+SCHWERE_WORT[r.schwere].toLowerCase()+")":"")
+    var befund=r.zustand==="gut"?'<span style="color:#333">Mängelfrei</span>'
+      :(r.zustand==="mangel"?'<b>Mängel/Schäden'+(r.schwere?" ("+SCHWERE_WORT[r.schwere].toLowerCase()+")":"")+'</b>'
       :'<span class="dim">-</span>');
-    var main='<tr'+(i%2?' class="zeb"':'')+'><td class="rn">'+r.r+'</td><td class="ck">'+(r.ok?"✓":"")+'</td><td class="zu">'+befund+'</td></tr>';
-    if(r.zustand==="mangel"){
-      var fotos=(r.fotos||[]).filter(function(f){return f&&f.data;}).map(function(f){return '<img src="'+f.data+'" class="mimg">';}).join("");
-      main+='<tr'+(i%2?' class="zeb"':'')+'><td></td><td colspan="2" class="msub"><div style="white-space:pre-line">'+esc(r.beschreibung||"")+'</div>'+(fotos?'<div class="mrow">'+fotos+'</div>':'')+'</td></tr>';
-    }
-    return main;
+    return '<tr'+(i%2?' class="zeb"':'')+'><td class="rn">'+r.r+'</td><td class="ck">'+(r.ok?"✓":"")+'</td><td class="zu">'+befund+'</td></tr>';
   }).join("");
+  var mrDet=maengelRaeume();
+  var mgDetail="";
+  if(mrDet.length){
+    mgDetail='<div class="shd" style="margin-top:8mm">Mängel/Schäden im Detail</div>'+
+      mrDet.map(function(r,mi){
+        var fotos=(r.fotos||[]).filter(function(f){return f&&f.data;}).map(function(f){return '<div class="mgbox"><img src="'+f.data+'"></div>';}).join("");
+        return '<div class="mgblk'+(mi<mrDet.length-1?' sep':'')+'">'+
+          '<div class="mghd">'+r.r+(r.schwere?'&ensp;–&ensp;Schweregrad: '+SCHWERE_WORT[r.schwere]:'')+'</div>'+
+          (r.beschreibung?'<div class="mgtxt" style="white-space:pre-line">'+esc(r.beschreibung)+'</div>':'')+
+          (fotos?'<div class="mggrid">'+fotos+'</div>':'')+
+        '</div>';
+      }).join("");
+  }
   var blCheck='<div class="bl">'+hdr("Beilage 1: Checkliste & Mängel/Schäden")+
-    '<table class="cl"><thead><tr><th>Raum</th><th style="width:80px">Geprüft</th><th style="width:150px">Befund</th></tr></thead><tbody>'+clRows+'</tbody></table></div>';
+    '<table class="cl"><thead><tr><th>Raum</th><th style="width:80px">Geprüft</th><th style="width:150px">Befund</th></tr></thead><tbody>'+clRows+'</tbody></table>'+mgDetail+'</div>';
 
   var blMg="";
 
   var blFo="";
   if(hatFotos){
     var fb=beil.indexOf("Fotodokumentation")+1;
-    var cells="";
-    allFotos.forEach(function(f,fi){
-      cells+='<div class="fcell"><div class="fbox"><img src="'+f.data+'"></div><div class="fcap">Foto '+(fi+1)+(f.bez?" - "+esc(f.bez):"")+'</div></div>';
-    });
-    blFo='<div class="bl">'+hdr("Beilage "+fb+": Fotodokumentation")+'<div class="fgrid">'+cells+'</div></div>';
+    var inner="";
+    if(detailFotos.length){
+      inner+='<div class="shd">Zähler- und Schlüsselfotos</div>'+
+        detailFotos.map(function(f){
+          return '<div class="fbig"><div class="fbigbox"><img src="'+f.data+'"></div><div class="fcap">'+esc(f.bez||"")+'</div></div>';
+        }).join("");
+    }
+    if(rasterFotos.length){
+      var cells="";
+      rasterFotos.forEach(function(f,fi){
+        cells+='<div class="fcell"><div class="fbox"><img src="'+f.data+'"></div><div class="fcap">Foto '+(fi+1)+(f.bez?" – "+esc(f.bez):"")+'</div></div>';
+      });
+      inner+=(detailFotos.length?'<div class="shd" style="margin-top:6mm">Fotodokumentation der Einheit</div>':'')+'<div class="fgrid">'+cells+'</div>';
+    }
+    blFo='<div class="bl">'+hdr("Beilage "+fb+": Fotodokumentation")+inner+'</div>';
   }
 
   var css='*{box-sizing:border-box;margin:0;padding:0}'+
-    'body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;color:#000;background:#fff}'+
+    'body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#000;background:#fff}'+
     '.pg,.bl{padding:15mm 20mm 20mm;min-height:290mm;display:flex;flex-direction:column;position:relative}'+
     '.bl{page-break-before:always}'+
-    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:3mm;border-bottom:1pt solid #000;margin-bottom:8mm}'+
-    '.dt{font-size:18pt;font-weight:700}.ds{font-size:9pt;color:#555;margin-top:3px}'+
+    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:3mm;border-bottom:1.4pt solid #eb5b36;margin-bottom:8mm}'+
+    '.dt{font-size:16pt;font-weight:700}.ds{font-size:8.5pt;color:#666;margin-top:3px}'+
     '.obj{border:.6pt solid #666;padding:9px 12px}'+
-    '.or{display:flex;font-size:11pt;line-height:1.65;margin:2px 0}.ol{font-weight:700;min-width:155px;color:#333}'+
-    '.txt{font-size:11pt;line-height:1.6;margin:5px 0}.ind{margin-left:8px}'+
-    '.cbl{display:flex;gap:8px;font-size:11pt;margin:7px 0;align-items:baseline}.cbx{font-size:13pt;line-height:1}'+
-    '.shd{background:#ececec;font-weight:700;font-size:11pt;padding:4px 8px;margin:15px 0 9px}'+
-    '.zrow{display:flex;gap:0;font-size:11pt;margin:6px 0 6px 8px}.zrow b{width:95px}.zrow span{width:145px}'+
+    '.or{display:flex;font-size:10pt;line-height:1.6;margin:2px 0}.ol{font-weight:700;min-width:150px;color:#333}'+
+    '.txt{font-size:10pt;line-height:1.55;margin:4px 0}.ind{margin-left:8px}'+
+    '.cbl{display:flex;gap:8px;font-size:10pt;margin:6px 0;align-items:baseline}.cbx{font-size:12pt;line-height:1}'+
+    '.shd{background:#eee;font-weight:700;font-size:9.5pt;padding:3px 8px;margin:13px 0 8px;color:#222}'+
+    '.zrow{display:flex;gap:0;font-size:10pt;margin:5px 0 5px 8px}.zrow b{width:95px}.zrow span{width:145px}'+
     '.sig-area{margin-top:auto;padding-top:12mm}'+
     '.best{font-size:10.5pt;font-weight:700;line-height:1.5}'+
     '.sgrid{display:flex;gap:24px}.scol{flex:1}'+
@@ -1387,14 +1439,19 @@ function buildPDF(){
     'table.cl td{font-size:10.5pt;padding:7px 8px;vertical-align:top;border-bottom:.4pt solid #ddd}'+
     'tr.zeb td{background:#f7f7f7}.rn{font-weight:700}.ck{font-size:12pt}.dim{color:#999}'+
     '.mimg{width:90px;height:64px;object-fit:cover;border:.5pt solid #ccc;margin:4px 6px 0 0}'+
-    '.msub{padding:2mm 3mm 4mm;font-size:10pt;color:#222}'+
+    '.mgblk{margin:0 0 5mm}.mgblk.sep{border-bottom:.4pt solid #ccc;padding-bottom:4mm}'+
+    '.mghd{font-weight:700;font-size:10pt;margin-bottom:2mm}'+
+    '.mgtxt{font-size:9.5pt;color:#111;line-height:1.5;margin-bottom:2.5mm}'+
+    '.mggrid{display:flex;flex-wrap:wrap;gap:4mm}'+
+    '.mgbox{width:calc(50% - 2mm);aspect-ratio:3/2;border:.4pt solid #bbb;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff}.mgbox img{width:100%;height:100%;object-fit:cover}'+
+    '.fbig{margin-bottom:5mm}.fbigbox{border:.4pt solid #bbb;width:100%;height:105mm;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff}.fbigbox img{width:100%;height:100%;object-fit:contain}'+
     '.mrow{margin-top:4px}'+
-    '.fgrid{display:grid;grid-template-columns:1fr;gap:8mm}'+
+    '.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:5mm 6mm}'+
     '.fcell{break-inside:avoid}'+
-    '.fbox{border:.5pt solid #bbb;height:106mm;display:flex;align-items:center;justify-content:center;overflow:hidden}'+
+    '.fbox{border:.4pt solid #bbb;height:60mm;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff}'+
     '.fbox img{max-width:100%;max-height:100%;object-fit:contain}'+
     '.fcap{font-size:8.5pt;color:#555;margin-top:2mm}'+
-    '.secfoot{position:absolute;bottom:7mm;left:20mm;right:20mm;display:flex;justify-content:space-between;font-size:8.5pt;color:#999;border-top:.5pt solid #ccc;padding-top:3px}'+
+    '.secfoot{position:absolute;bottom:7mm;left:20mm;right:20mm;display:flex;justify-content:space-between;font-size:8pt;color:#999;border-top:.5pt solid #ccc;padding-top:3px}'+
     '@page{margin:0;size:A4}'+
     '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
@@ -1556,7 +1613,7 @@ function closeBurst(){
 
 // ── NATIVES PDF (für Teilen/Share – ohne Druckdialog) ─────────────────────
 // Erzeugt ein echtes PDF (PDF 1.4, Helvetica/WinAnsi, JPEG-Bilder) rein clientseitig.
-var APP_VERSION="v15";
+var APP_VERSION="v16";
 
 function jpegDim(bin){
   var i=2,L=bin.length;
@@ -1618,6 +1675,7 @@ function buildNativePDF(sigV,sigM){
     o("BT /"+(bold?"F2":"F1")+" "+size+" Tf "+(gray!=null?gray+" g ":"")+x.toFixed(2)+" "+Y(y+size*0.85)+" Td ("+pdfEnc(s)+") Tj ET"+(gray!=null?" 0 g":""));
   }
   function hline(x1,x2,y,w,gray){o((gray!=null?gray+" G ":"0 G ")+(w||0.6)+" w "+x1.toFixed(2)+" "+Y(y)+" m "+x2.toFixed(2)+" "+Y(y)+" l S 0 G");}
+  function hlineC(x1,x2,y,w,r,g,b){o(r+" "+g+" "+b+" RG "+(w||0.6)+" w "+x1.toFixed(2)+" "+Y(y)+" m "+x2.toFixed(2)+" "+Y(y)+" l S 0 G");}
   function rect(x,y,w,h,lw,gray){o((gray!=null?gray+" G ":"0 G ")+(lw||0.6)+" w "+x.toFixed(2)+" "+Y(y+h)+" "+w.toFixed(2)+" "+h.toFixed(2)+" re S 0 G");}
   function frect(x,y,w,h,r,g,b){o(r+" "+g+" "+b+" rg "+x.toFixed(2)+" "+Y(y+h)+" "+w.toFixed(2)+" "+h.toFixed(2)+" re f 0 g");}
   function circle(cx,cy,r,lw,stroke){ // stroke = [r,g,b]
@@ -1634,6 +1692,22 @@ function buildNativePDF(sigV,sigM){
     var hsh=5381,i,step=Math.max(1,Math.floor(s.length/2048));
     for(i=0;i<s.length;i+=step){hsh=((hsh<<5)+hsh+s.charCodeAt(i))|0;}
     return s.length+"_"+hsh;
+  }
+  function imgBox(dataUrl,x,y,w,hh){
+    // contain: seitenverhältnis-korrekt, zentriert im Rahmen
+    if(!dataUrl||dataUrl.indexOf("image/jpeg")<0)return;
+    var bin=atob(dataUrl.split(",")[1]),d=jpegDim(bin);
+    var sc=Math.min(w/d.w,hh/d.h);
+    var iw=d.w*sc,ih=d.h*sc;
+    img(dataUrl,x+(w-iw)/2,y+(hh-ih)/2,iw,ih);
+  }
+  function imgFit(dataUrl,x,yBottom,maxW,maxH){
+    // seitenverhältnis-korrekt einpassen, Unterkante an yBottom
+    if(!dataUrl||dataUrl.indexOf("image/jpeg")<0)return;
+    var bin=atob(dataUrl.split(",")[1]),d=jpegDim(bin);
+    var sc=Math.min(maxW/d.w,maxH/d.h);
+    var w=d.w*sc,hh=d.h*sc;
+    img(dataUrl,x,yBottom-hh,w,hh);
   }
   function img(dataUrl,x,y,w,h){
     if(!dataUrl||dataUrl.indexOf("image/jpeg")<0)return;
@@ -1662,23 +1736,31 @@ function buildNativePDF(sigV,sigM){
   var datumStr=fmtDate(D.datum);
   var sub=D.typ+" · "+datumStr;
   var docName=title+" - "+objMitTop();
-  function header(t){
-    logo(PW-M-84,yy+2);
-    txt(M,yy,t,18,true);
-    txt(M,yy+24,sub,9,false,0.35);
-    hline(M,PW-M,yy+37,1);
-    yy+=53;
+  var ORA=[0.922,0.357,0.212]; // PRISMA-Orange #eb5b36
+  function header(t,folge){
+    logo(PW-M-84,yy+1);
+    if(folge){
+      // Folgeseiten: kompakter, grauer Kopf
+      txt(M,yy+2,t,11,true,0.25);
+      hlineC(M,PW-M,yy+22,1.1,ORA[0],ORA[1],ORA[2]);
+      yy+=36;
+    }else{
+      txt(M,yy,t,16,true);
+      txt(M,yy+22,sub,8.5,false,0.4);
+      hlineC(M,PW-M,yy+34,1.3,ORA[0],ORA[1],ORA[2]);
+      yy+=49;
+    }
   }
   // grauer Abschnitts-Balken
   function secHd(t){
-    frect(M,yy,CW,17,0.925,0.925,0.925);
-    txt(M+7,yy+2.5,t,10.5,true);
-    yy+=24;
+    frect(M,yy,CW,16,0.93,0.93,0.93);
+    txt(M+7,yy+2.5,t,9.5,true,0.15);
+    yy+=22;
   }
   var CW=PW-2*M;
 
-  // ── Seite 1 (v15: 11pt, luftig wie Word-Original; Auto-Fit hält alles einseitig)
-  var FS=11;
+  // ── Seite 1 (v16: 10pt kompakt-formal; Auto-Fit hält alles einseitig)
+  var FS=10;
   np();header(title);
   // Objektbox
   var rows=[["Objekt:",D.objekt,1],["Top:",D.top,1],["Eigentümer/in:",D.eigentuemer,0],["Mieter/in:",D.mieter,1]];
@@ -1695,17 +1777,17 @@ function buildNativePDF(sigV,sigM){
   var beilCnt=1+((D.fotos.length||D.raeume.some(function(r){return r.zustand!=="mangel"&&r.fotos&&r.fotos.length;})||skZaeFotos().length)?1:0);
   var sigZeilen=(D.eigentuemer?3:1)+(D.verwalter?1:0);
   function estH(L){
-    var e=53;                             // Kopf
+    var e=49;                             // Kopf
     e+=rows.length*L+14+18;               // Objektbox
     e+=(L+3)+3*(L+1)+10;                  // Feststellungssatz + 3 Checkboxen
     if(stromDa)e+=2*L+10;                 // Stromsatz (max 2 Zeilen)
     if(sk.length)e+=24+sk.length*L+12;    // Schlüssel
     if(zf.length)e+=24+zf.length*L+12;    // Zähler
-    e+=3*16+16+20+50+sigZeilen*11+12+beilCnt*13+14; // offizieller Block
+    e+=3*14.5+14+18+50+sigZeilen*10.5+12+beilCnt*12+14; // offizieller Block
     return e;
   }
-  var LH=19;
-  [19,17.5,16,14.5,13.5].some(function(L){if(estH(L)<=PH-BOT-M){LH=L;return true;}return false;});
+  var LH=17;
+  [17,15.5,14.5,13.5,12.5].some(function(L){if(estH(L)<=PH-BOT-M){LH=L;return true;}return false;});
   var bh=rows.length*LH+14;
   rect(M,yy,CW,bh,0.7,0.4);
   var ry=yy+8;
@@ -1744,19 +1826,19 @@ function buildNativePDF(sigV,sigM){
     yy+=12;
   }
   // ── Beilagen/Foto-Quellen vorbereiten
-  var allFotos=[];
+  var rasterFotos=[];
   D.raeume.forEach(function(r){
     if(r.zustand==="mangel")return; // Fotos dieser Räume erscheinen in Beilage 1
-    (r.fotos||[]).forEach(function(f){if(f&&f.data)allFotos.push({data:f.data,bez:f.bez||r.r});});
+    (r.fotos||[]).forEach(function(f){if(f&&f.data)rasterFotos.push({data:f.data,bez:f.bez||r.r});});
   });
-  D.fotos.forEach(function(f){if(f&&f.data)allFotos.push({data:f.data,bez:f.bez||""});});
-  skZaeFotos().forEach(function(f){allFotos.push(f);});
-  var hatFotos=allFotos.length>0;
+  D.fotos.forEach(function(f){if(f&&f.data)rasterFotos.push({data:f.data,bez:f.bez||""});});
+  var detailFotos=skZaeFotos(); // Zähler-/Schlüsselfotos: groß, Werte ablesbar
+  var hatFotos=(rasterFotos.length+detailFotos.length)>0;
   var beil=["Checkliste & Mängel/Schäden"];if(hatFotos)beil.push("Fotodokumentation");
 
   // ── Offizieller Teil am unteren Seitenrand verankert
   var best="Ich/Wir bestätige/n die ordnungsgemäße "+(istRuecknahme()?"Rückgabe":"Übernahme")+" der angeführten Einheit unter Berücksichtigung des Bestandvertrages. Die Einheit wurde mit Ausnahme der angeführten Mängel in einwandfreiem Zustand "+(istRuecknahme()?"zurückgegeben":"übernommen")+".";
-  var bestLines=twrap(best,11,true,CW);
+  var bestLines=twrap(best,10,true,CW);
   var colW=(CW-22)/2;
   // Unterschrifts-Beschriftungen (Punkt 5: Vermieter vertreten durch PRISMA + Bearbeiter | Mieter mit Name)
   var vLbl=[];
@@ -1769,89 +1851,135 @@ function buildNativePDF(sigV,sigM){
   if(D.verwalter)vLbl.push({t:D.verwalter,s:8.5,b:false,g:0.2});
   var mLbl=[{t:"Mieter/in",s:7.5,b:false,g:0.35}];
   if(D.mieter)mLbl.push({t:D.mieter,s:8.5,b:false,g:0.2});
-  var lblH=Math.max(vLbl.length,mLbl.length)*11+6;
-  var blockH=bestLines.length*16+16+20+50+lblH+12+beil.length*13;
+  var lblH=Math.max(vLbl.length,mLbl.length)*10.5+6;
+  var blockH=bestLines.length*14.5+14+18+50+lblH+12+beil.length*12;
   var anchorY=PH-BOT-blockH;
   if(yy>anchorY){np();header(title);}
   if(yy<anchorY)yy=anchorY;
-  bestLines.forEach(function(L){txt(M,yy,L,11,true);yy+=16;});
-  yy+=16;
+  bestLines.forEach(function(L){txt(M,yy,L,10,true);yy+=14.5;});
+  yy+=14;
   // Ort aus PLZ der Objektadresse + Datum automatisch
   var ortM=(D.objekt||"").match(/\b\d{4,5}\s+([A-Za-zÄÖÜäöüß.\- ]+?)\s*$/);
   var ort=ortM?ortM[1].trim():"";
-  txt(M,yy,(ort?ort+", ":"")+"am "+datumStr,FS);yy+=20;
-  if(sigV)img(sigV,M,yy,colW*0.8,42);
-  if(sigM)img(sigM,M+colW+22,yy,colW*0.8,42);
+  txt(M,yy,(ort?ort+", ":"")+"am "+datumStr,FS);yy+=18;
+  if(sigV)imgFit(sigV,M+4,yy+44,colW*0.85,44);
+  if(sigM)imgFit(sigM,M+colW+26,yy+44,colW*0.85,44);
   yy+=46;
   hline(M,M+colW,yy,0.7);hline(M+colW+22,PW-M,yy,0.7);
-  var vy=yy+3;vLbl.forEach(function(L){txt(M,vy,L.t,L.s,L.b,L.g);vy+=11;});
-  var my=yy+3;mLbl.forEach(function(L){txt(M+colW+22,my,L.t,L.s,L.b,L.g);my+=11;});
+  var vy=yy+3;vLbl.forEach(function(L){txt(M,vy,L.t,L.s,L.b,L.g);vy+=10.5;});
+  var my=yy+3;mLbl.forEach(function(L){txt(M+colW+22,my,L.t,L.s,L.b,L.g);my+=10.5;});
   yy+=lblH+12;
   // Beilagen-Verweis: untereinander
-  beil.forEach(function(b,i){txt(M,yy,"Beilage "+(i+1)+": "+b,9,false,0.4);yy+=13;});
+  beil.forEach(function(b,i){txt(M,yy,"Beilage "+(i+1)+": "+b,8.5,false,0.45);yy+=12;});
 
-  // ── Beilage 1: Checkliste & Mängel/Schäden (v15 zusammengeführt)
+  // ── Beilage 1: kompakte Checkliste, darunter Mängel/Schäden im Detail (v16)
   np();header("Beilage 1: Checkliste & Mängel/Schäden");
-  yy+=8;
-  var RH=24;
+  yy+=6;
+  var RH=20;
   function clHead(){
-    frect(M,yy,CW,18,0.925,0.925,0.925);
-    txt(M+8,yy+3.5,"Raum",10,true);
-    txt(M+CW-235,yy+3.5,"Geprüft",10,true);
-    txt(M+CW-150,yy+3.5,"Befund",10,true);
-    yy+=22;
+    frect(M,yy,CW,15,0.93,0.93,0.93);
+    txt(M+8,yy+2.5,"Raum",9.5,true,0.15);
+    txt(M+CW-225,yy+2.5,"Geprüft",9.5,true,0.15);
+    txt(M+CW-145,yy+2.5,"Befund",9.5,true,0.15);
+    yy+=19;
   }
   clHead();
   D.raeume.forEach(function(r,idx){
-    // Höhe des Raumblocks (Hauptzeile + ggf. Mangel-Unterzeile) vorab bestimmen
-    var lines=[],fotos=[];
-    if(r.zustand==="mangel"){
-      String(r.beschreibung||"").split(/\n+/).forEach(function(seg){
-        if(!seg.trim())return;
-        twrap(seg,10,false,CW-160).forEach(function(L){lines.push(L);});
-      });
-      fotos=(r.fotos||[]).filter(function(f){return f&&f.data;});
-    }
-    var fRows=Math.ceil(fotos.length/3);
-    var subH=(lines.length||fotos.length)?(lines.length*13+(fotos.length?fRows*62+6:0)+10):0;
-    if(yy+RH+subH>PH-BOT){np();header("Beilage 1: Checkliste & Mängel/Schäden (Forts.)");yy+=8;clHead();}
-    if(idx%2===1)frect(M,yy-3,CW,RH+subH,0.965,0.965,0.965); // Zebra über ganzen Block
-    txt(M+8,yy+2,r.r,10,true);
-    if(r.ok){o("0 G 1.3 w "+(M+CW-225).toFixed(2)+" "+Y(yy+7)+" m "+(M+CW-220.5).toFixed(2)+" "+Y(yy+11.5)+" l "+(M+CW-213).toFixed(2)+" "+Y(yy+2)+" l S");}
+    if(yy+RH>PH-BOT){np();header("Beilage 1: Checkliste & Mängel/Schäden (Forts.)",true);yy+=6;clHead();}
+    if(idx%2===1)frect(M,yy-3,CW,RH,0.966,0.966,0.966);
+    txt(M+8,yy+1,r.r,9.5,true);
+    if(r.ok){o("0 G 1.2 w "+(M+CW-215).toFixed(2)+" "+Y(yy+6)+" m "+(M+CW-211).toFixed(2)+" "+Y(yy+10)+" l "+(M+CW-204.5).toFixed(2)+" "+Y(yy+1.5)+" l S");}
     if(r.zustand==="gut"){
-      txt(M+CW-150,yy+2,"Mängelfrei",10,true);
+      txt(M+CW-145,yy+1,"Mängelfrei",9.5,false,0.2);
     }else if(r.zustand==="mangel"){
-      txt(M+CW-150,yy+2,"Mängel/Schäden"+(r.schwere?" ("+SCHWERE_WORT[r.schwere].toLowerCase()+")":""),10,true);
+      txt(M+CW-145,yy+1,"Mängel/Schäden"+(r.schwere?" ("+SCHWERE_WORT[r.schwere].toLowerCase()+")":""),9.5,true);
     }else{
-      txt(M+CW-150,yy+2,"-",9.5,false,0.6);
+      txt(M+CW-145,yy+1,"-",9.5,false,0.6);
     }
     yy+=RH;
-    if(subH){
-      var y1=yy-3;
-      lines.forEach(function(L){txt(M+24,y1,L,10);y1+=13;});
-      var fx=M+24,fy=y1+3,fc=0;
-      fotos.forEach(function(f){
-        img(f.data,fx,fy,84,56);
-        fx+=92;fc++;
-        if(fc===3){fc=0;fx=M+24;fy+=62;}
-      });
-      yy+=subH-3;
-    }
   });
 
-  // ── Beilage Fotos (2 große Fotos pro Seite, volle Breite)
+  // Mängel/Schäden im Detail: pro Raum ein Block mit großen Fotos (2 je Reihe)
+  var mrDet=maengelRaeume();
+  if(mrDet.length){
+    var FW=(CW-14)/2, FH=FW*0.67; // ~200x134pt, gut erkennbar
+    yy+=14;
+    if(yy+40>PH-BOT){np();header("Beilage 1: Checkliste & Mängel/Schäden (Forts.)",true);yy+=2;}
+    frect(M,yy,CW,16,0.93,0.93,0.93);
+    txt(M+7,yy+2.5,"Mängel/Schäden im Detail",9.5,true,0.15);
+    yy+=24;
+    mrDet.forEach(function(r,mi){
+      var lines=[];
+      String(r.beschreibung||"").split(/\n+/).forEach(function(seg){
+        if(!seg.trim())return;
+        twrap(seg,9.5,false,CW).forEach(function(L){lines.push(L);});
+      });
+      var fotos=(r.fotos||[]).filter(function(f){return f&&f.data;});
+      var fRows=Math.ceil(fotos.length/2);
+      var bh=14+lines.length*12.5+(fotos.length?6+fRows*(FH+8):0)+16;
+      // Block nie mitten teilen; sehr hohe Blöcke (viele Fotos) dürfen fließen
+      if(yy+Math.min(bh,PH-BOT-M-60)>PH-BOT){np();header("Beilage 1: Mängel/Schäden im Detail (Forts.)",true);yy+=2;}
+      txt(M,yy,r.r+(r.schwere?"  –  Schweregrad: "+SCHWERE_WORT[r.schwere]:""),10,true);yy+=14;
+      lines.forEach(function(L){txt(M,yy,L,9.5,false,0.1);yy+=12.5;});
+      if(fotos.length){
+        yy+=6;
+        var fc=0;
+        fotos.forEach(function(f){
+          if(yy+FH>PH-BOT){np();header("Beilage 1: Mängel/Schäden im Detail (Forts.)",true);yy+=2;fc=0;}
+          rect(M+fc*(FW+14),yy,FW,FH,0.4,0.8);
+          imgBox(f.data,M+fc*(FW+14)+1,yy+1,FW-2,FH-2);
+          fc++;
+          if(fc===2){fc=0;yy+=FH+8;}
+        });
+        if(fc===1)yy+=FH+8;
+      }
+      yy+=8;
+      if(mi<mrDet.length-1){hline(M,PW-M,yy-4,0.4,0.8);yy+=6;}
+    });
+  }
+
+  // ── Beilage Fotodokumentation (v16): Zähler/Schlüssel groß, Übrige im 2×2-Raster
   if(hatFotos){
     var fb=beil.indexOf("Fotodokumentation")+1;
     np();header("Beilage "+fb+": Fotodokumentation");
-    var ph2=315;
-    allFotos.forEach(function(f,fi){
-      if(yy+ph2+18>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Fortsetzung)");yy+=4;}
-      rect(M,yy,CW,ph2,0.5,0.78);
-      img(f.data,M+2,yy+2,CW-4,ph2-4);
-      var cap="Foto "+(fi+1)+(f.bez?" - "+f.bez:"");
-      txt(M,yy+ph2+4,twrap(cap,8.5,false,CW)[0],8.5,false,0.4);
-      yy+=ph2+24;
-    });
+    function foSub(t){
+      frect(M,yy,CW,16,0.93,0.93,0.93);
+      txt(M+7,yy+2.5,t,9.5,true,0.15);
+      yy+=24;
+    }
+    // 1) Zähler- und Schlüsselfotos: 2 große pro Seite, Werte am Foto ablesbar
+    if(detailFotos.length){
+      foSub("Zähler- und Schlüsselfotos");
+      var phBig=290;
+      detailFotos.forEach(function(f){
+        if(yy+phBig+16>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Forts.)",true);yy+=2;}
+        rect(M,yy,CW,phBig,0.5,0.8);
+        imgBox(f.data,M+2,yy+2,CW-4,phBig-4);
+        txt(M,yy+phBig+3,twrap(f.bez||"",8.5,false,CW)[0],8.5,false,0.4);
+        yy+=phBig+20;
+      });
+    }
+    // 2) Allgemeine Fotodokumentation: 4 Fotos pro Seite (2×2), nummeriert
+    if(rasterFotos.length){
+      if(detailFotos.length){
+        yy+=4;
+        if(yy+240>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Forts.)",true);yy+=2;}
+        foSub("Fotodokumentation der Einheit");
+      }
+      var GW=(CW-16)/2, GH=GW*0.75, rowH=GH+18; // 4:3-Raster
+      var col=0;
+      rasterFotos.forEach(function(f,fi){
+        if(col===0&&yy+rowH>PH-BOT){np();header("Beilage "+fb+": Fotodokumentation (Forts.)",true);yy+=2;}
+        var x=M+col*(GW+16);
+        rect(x,yy,GW,GH,0.5,0.8);
+        imgBox(f.data,x+1.5,yy+1.5,GW-3,GH-3);
+        var cap="Foto "+(fi+1)+(f.bez?" – "+f.bez:"");
+        txt(x,yy+GH+3,twrap(cap,8,false,GW)[0],8,false,0.45);
+        col++;
+        if(col===2){col=0;yy+=rowH;}
+      });
+      if(col===1)yy+=rowH;
+    }
   }
 
   // ── Fußzeilen (Seitenzahl rechtsbündig am Satzspiegelrand)
@@ -1860,9 +1988,9 @@ function buildNativePDF(sigV,sigM){
     pg=p;
     hline(M,PW-M,PH-34,0.4,0.75);
     var pgTxt="Seite "+(i+1)+" von "+total;
-    var pgW=twd(pgTxt,8.5,false);
-    txt(M,PH-30,twrap(docName,8.5,false,CW-pgW-14)[0],8.5,false,0.5);
-    txt(PW-M-pgW,PH-30,pgTxt,8.5,false,0.5);
+    var pgW=twd(pgTxt,8,false);
+    txt(M,PH-30,twrap(docName,8,false,CW-pgW-14)[0],8,false,0.5);
+    txt(PW-M-pgW,PH-30,pgTxt,8,false,0.5);
   });
 
   // ── PDF zusammensetzen
@@ -2133,12 +2261,14 @@ function openDraftPanel(){
 function closeDraftPanel(){var ov=ge("draft-ov");if(ov)ov.parentNode.removeChild(ov);}
 
 // ── RESTORE beim Start: aktuellen Entwurf laden, sonst Altformat migrieren ──
+var START_SHOW=true; // Startbildschirm nur, wenn kein Entwurf offen ist
 (function(){
   try{
     var curIdv=localStorage.getItem(CURRENT_KEY);
     var map=loadDrafts();
     if(curIdv&&map[curIdv]&&map[curIdv].data){
       D=migrateData(JSON.parse(JSON.stringify(map[curIdv].data)));
+      START_SHOW=false; // offener Entwurf → direkt weiterarbeiten
       toast("Letzter Entwurf wiederhergestellt",2200);
       return;
     }
@@ -2148,14 +2278,60 @@ function closeDraftPanel(){var ov=ge("draft-ov");if(ov)ov.parentNode.removeChild
       var parsed=JSON.parse(saved);
       if(parsed&&(parsed.objekt||parsed.mieter)){
         D=migrateData(parsed);
+        START_SHOW=false;
         toast("Letzter Stand wiederhergestellt",2200);
       }
     }
   }catch(e){}
 })();
 
+// ── STARTBILDSCHIRM ─────────────────────────────────────────────────────────
+function draftProgress(d){
+  var done=0;
+  if(d.objekt||d.mieter||d.eigentuemer)done++;
+  if((d.schluessel||[]).some(function(s){return s.anz;}))done++;
+  if((d.zaehler||[]).some(function(z){return z.stand||z.nr;}))done++;
+  if((d.fotos||[]).length)done++;
+  if((d.raeume||[]).some(function(r){return r.zustand;}))done++;
+  if(d.sig_v||d.sig_m)done++;
+  return done;
+}
+function showStart(){
+  var map=loadDrafts();
+  var ids=Object.keys(map).sort(function(a,b){return (map[b].ts||0)-(map[a].ts||0);});
+  var cards=ids.map(function(id){
+    var e=map[id],d=e.data||{};
+    var p=draftProgress(d);
+    var obj=(d.objekt?d.objekt.split(",")[0]:"Ohne Objekt")+(d.top?" · Top "+d.top:"");
+    var meta=(d.typ||"Übergabe")+(d.datum?" · "+fmtDate(d.datum):"");
+    return '<div onclick="startOpenDraft(\''+id+'\')" style="background:#fff;border:1px solid #ececec;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:14px 15px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">'+
+        '<div style="min-width:0">'+
+          '<div style="font-size:14.5px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(obj)+'</div>'+
+          '<div style="font-size:12px;color:#999;margin-top:2px">'+esc(meta)+'</div>'+
+        '</div>'+
+        '<div style="flex-shrink:0;font-size:11.5px;font-weight:700;color:'+(p===6?"#1b7a2e":"#888")+'">'+p+'/6</div>'+
+      '</div>'+
+      '<div style="height:4px;background:#f0f0f0;border-radius:2px;margin-top:10px;overflow:hidden"><div style="height:100%;width:'+Math.round(p/6*100)+'%;background:'+(p===6?"#4caf50":"#eb5b36")+';border-radius:2px"></div></div>'+
+    '</div>';
+  }).join("");
+  var c=ge("content");
+  ge("stepbar").innerHTML="";
+  ge("prog-lbl").textContent="";
+  ge("prog-fill").style.width="0";
+  var ttl=ge("app-title");if(ttl)ttl.textContent="Übergabeprotokolle";
+  c.innerHTML=
+    '<div style="padding-top:6px">'+
+      '<button type="button" onclick="startNew()" class="btn-burst" style="border-radius:12px">＋ Neues Protokoll</button>'+
+      (cards?'<div class="sec-hd" style="margin-top:24px">Entwürfe</div>'+cards:
+        '<p style="text-align:center;color:#aaa;font-size:13px;margin-top:34px;line-height:1.7">Noch keine Entwürfe.<br>Mit „Neues Protokoll" starten.</p>')+
+    '</div>';
+}
+function startNew(){newDraft();}
+function startOpenDraft(id){loadDraft(id);}
+
 loadObjekte();
-render();
+if(START_SHOW){showStart();}else{render();}
 
 // ── PWA: SERVICE WORKER ───────────────────────────────────────────────────
 if("serviceWorker" in navigator){
