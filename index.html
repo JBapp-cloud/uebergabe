@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  PRISMA ÜBERGABEPROTOKOLL – Version 2.0                                      ║
+║  PRISMA ÜBERGABEPROTOKOLL – Version 2.1                                      ║
 ║  Projektkontext: Diese Datei hochladen, dann ist Claude sofort im Bild.      ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
@@ -51,6 +51,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;font-size:15px;background:#ededed;color:#1a1a1a;min-height:100vh;-webkit-overflow-scrolling:touch;overflow-y:auto;overflow-x:hidden}
+/* v2.1 (#6): Doppeltipp-Zoom unterbinden, Pinch-Zoom bleibt */
+button,a,label,input,select,textarea,.start-tile{touch-action:manipulation}
+/* v2.1 (#3): Press-Feedback für Start-Kacheln */
+.start-tile{transition:transform .1s ease,filter .1s ease}
+.start-tile:active{transform:scale(.97);filter:brightness(.95)}
 /* PWA safe-area (iPhone Notch) */
 .sticky-top{padding-top:env(safe-area-inset-top)}
 @supports(padding:env(safe-area-inset-top)){.header{padding-top:calc(14px + env(safe-area-inset-top))}}
@@ -78,16 +83,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-se
 /* === STEP TABS === */
 .steps{display:flex;background:#fff;border-bottom:1px solid #e8e8e8;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .steps::-webkit-scrollbar{display:none}
-.step-tab{flex:1;min-width:60px;padding:9px 4px 8px;text-align:center;font-size:9.5px;color:#bbb;cursor:pointer;border-right:1px solid #f0f0f0;user-select:none;font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:color .15s,background .15s;position:relative;-webkit-tap-highlight-color:transparent}
+.step-tab{flex:1;min-width:0;padding:8px 2px 7px;text-align:center;font-size:10.5px;color:#b5b5b5;cursor:pointer;border-right:1px solid #f0f0f0;user-select:none;font-weight:600;transition:color .15s,background .15s;position:relative;-webkit-tap-highlight-color:transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .step-tab:last-child{border-right:none}
-.step-tab .sn{font-size:15px;font-weight:700;display:block;line-height:1.1;margin-bottom:1px}
-.step-tab.active{color:#eb5b36;background:#fff8f6}
+.step-tab .sn{font-size:9px;font-weight:600;display:block;line-height:1.1;margin-bottom:1px;color:inherit;opacity:.75}
+.step-tab.active{color:#eb5b36;background:#fff8f6;flex:1.5;font-size:13.5px;font-weight:800;letter-spacing:.2px}
+.step-tab.active .sn{font-weight:700;opacity:.85}
 .step-tab.active::after{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:#eb5b36}
-.step-tab.done{color:#444;background:#fafafa}
+.step-tab.done{color:#8a8a8a;background:#fafafa}
 .zust-mini-row{display:flex;gap:5px;flex-shrink:0}
 .zust-mini{width:38px;height:38px;border:none;background:none;padding:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;border-radius:50%}
 .zust-mini.on{background:#f5f5f5}
-@media(max-width:500px){.step-tab{min-width:50px;font-size:8.5px;padding:7px 2px 6px}.step-tab .sn{font-size:13px}}
+@media(max-width:500px){.step-tab{font-size:9.5px;padding:7px 1px 6px}.step-tab.active{font-size:12.5px}.step-tab .sn{font-size:8.5px}}
 
 /* === CONTENT === */
 .content-area{background:#fff;border:1px solid #e0e0e0;border-top:none;padding:26px 26px 22px;min-height:420px}
@@ -113,9 +119,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-se
 
 /* === FIELD ROW === */
 .field-row{display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap}
-.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:145px}
+.field-row .field{min-width:145px}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
 .field-full{flex-basis:100%}
-.field label{font-size:10.5px;font-weight:700;color:#888;letter-spacing:.5px;text-transform:uppercase}
+.field label{font-size:11.5px;font-weight:700;color:#777;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .field input,.field select{border:none;border-bottom:1.5px solid #d0d0d0;padding:6px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0;transition:border-color .15s}
 .field-row-aligned .field input,.field-row-aligned .field select{height:34px;line-height:22px;box-sizing:border-box}
 .field input:focus,.field select:focus{border-bottom-color:#eb5b36}
@@ -328,17 +335,19 @@ function artFirma(){return D.art!=="wohnung";} // Gewerbe/Schlüssel/Parkkarte: 
 // Optionale Zusatzräume entfallen (v2.0) – Sonderräume via "Raum hinzufügen" (Freitext)
 var ROOMS_OPTIONAL=[];
 // Schlüsselarten je Rubrik (v2.0)
-var SK_OPTS_WHG=["Wohnungsschlüssel","Briefkasten","Parkkarte","Sonstiges"];
-var SK_OPTS_GEW=["Büroschlüssel","Chip","Parkkarte","Sonstiges"];
+var SK_OPTS_WHG=["Wohnungsschlüssel","Briefkasten","Parkkarte","Chip","Sonstiger Schlüssel"];
+var SK_OPTS_GEW=["Büroschlüssel","Chip","Parkkarte","Sonstiger Schlüssel"];
+var SK_OPTS_EINS=["Schlüssel","Chip","Büroschlüssel","Wohnungsschlüssel","Bauzylinder","Sonstiger Schlüssel"];
 function skOpts(){
   if(D.art==="wohnung")return SK_OPTS_WHG.slice();
   if(D.art==="gewerbe")return SK_OPTS_GEW.slice();
-  return []; // Schlüssel-Einseiter: freie Eingabe, keine Vorgabe
+  if(D.art==="schluessel")return SK_OPTS_EINS.slice(); // v2.1 (#9): Default "Schlüssel"
+  return [];
 }
 var SK_OPTS=SK_OPTS_WHG; // Kompatibilität für Alt-Referenzen
-var ZAE_OPTS=["Strom","Wärme","Kaltwasser","Warmwasser","Gas","Sonstiges"];
+var ZAE_OPTS=["Strom","Wärme","Kaltwasser","Warmwasser","Gas","Sonstiger Zähler"];
 // Standard-Einheit je Zählerart (I1), überschreibbar
-var ZAE_EINHEIT={"Strom":"kWh","Wärme":"MWh","Kaltwasser":"m³","Warmwasser":"m³","Gas":"m³","Sonstiges":""};
+var ZAE_EINHEIT={"Strom":"kWh","Wärme":"MWh","Kaltwasser":"m³","Warmwasser":"m³","Gas":"m³","Sonstiger Zähler":""};
 var CB_LABELS=["keine Mängel/Schäden festgestellt","die aufgeführten Mängel/Schäden festgestellt","die Kaution war zum Zeitpunkt der Übergabe hinterlegt"];
 function istRuecknahme(){return D.typ==="Rücknahme";}
 function typWort(){return istRuecknahme()?"Rücknahme":"Übergabe";}
@@ -487,7 +496,7 @@ function saveStep(){
       var se=ge("sk_sel_"+i),ae=ge("sk_anz_"+i),ne=ge("sk_nr_"+i),ce=ge("sk_cust_"+i),fe=ge("sk_free_"+i);
       if(ae)D.schluessel[i].anz=ae.value;
       if(ne)D.schluessel[i].nr=ne.value;
-      if(se){D.schluessel[i]._sel=se.value;D.schluessel[i].art=(se.value==="Sonstiges"&&ce&&ce.value)?ce.value:se.value;}
+      if(se){D.schluessel[i]._sel=se.value;D.schluessel[i].art=(se.value==="Sonstiger Schlüssel"&&ce&&ce.value)?ce.value:se.value;}
       if(fe){D.schluessel[i].art=fe.value;D.schluessel[i]._sel=fe.value;}
     }
   }
@@ -498,7 +507,7 @@ function saveStep(){
       if(zst)D.zaehler[i].stand=zst.value;
       if(zab)D.zaehler[i].ablese=zab.value;
       if(zeh)D.zaehler[i].einheit=zeh.value;
-      if(zse){D.zaehler[i]._sel=zse.value;D.zaehler[i].art=(zse.value==="Sonstiges"&&zce&&zce.value)?zce.value:zse.value;}
+      if(zse){D.zaehler[i]._sel=zse.value;D.zaehler[i].art=(zse.value==="Sonstiger Zähler"&&zce&&zce.value)?zce.value:zse.value;}
     }
   }
   // cur===3 = Fotos: saves inline
@@ -538,7 +547,7 @@ function saveSingle(){
   // Schlüsselzeilen
   D.schluessel.forEach(function(s,i){
     var se=ge("sk_sel_"+i),ae=ge("sk_anz_"+i),ne=ge("sk_nr_"+i),ce=ge("sk_cust_"+i),fe=ge("sk_free_"+i);
-    if(se){s._sel=se.value;s.art=(se.value==="Sonstiges"&&ce)?ce.value:se.value;}
+    if(se){s._sel=se.value;s.art=(se.value==="Sonstiger Schlüssel"&&ce)?ce.value:se.value;}
     if(fe){s.art=fe.value;s._sel=fe.value;}
     if(ae)s.anz=ae.value;if(ne)s.nr=ne.value;
   });
@@ -627,7 +636,7 @@ function render(){
     var done=stepHasContent(i);
     var cls="step-tab"+(i===cur?" active":done?" done":"");
     return'<div class="'+cls+'" onclick="goStep('+i+')" title="'+s+'">'+
-      '<span class="sn">'+(done?"✓ ":"")+(i+1)+'</span>'+s+
+      '<span class="sn">'+(done&&i!==cur?"✓":(i+1))+'</span>'+s+
     '</div>';
   }).join("");
   ge("prog-lbl").textContent="Schritt "+(cur+1)+" von "+STEP_LABELS.length;
@@ -853,7 +862,7 @@ function skRows(){
         typWidget+
         (D.schluessel.length>1?'<button class="btn-del" onclick="delSk('+i+')" type="button">✕</button>':"")+
       '</div>'+
-      (sv==="Sonstiges"?'<div class="field" style="margin-bottom:11px"><label>Bezeichnung</label><input class="sk-inp" id="sk_cust_'+i+'" value="'+esc(s.art!=="Sonstiges"?s.art:"")+'" placeholder="z.B. Postkasten-Chip" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>':"")+
+      (sv==="Sonstiger Schlüssel"?'<div class="field" style="margin-bottom:11px"><label>Bezeichnung</label><input class="sk-inp" id="sk_cust_'+i+'" value="'+esc(s.art!=="Sonstiger Schlüssel"?s.art:"")+'" placeholder="z.B. Postkasten-Chip" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>':"")+
       '<div style="display:flex;gap:14px;align-items:flex-end;margin-bottom:12px">'+
         '<div class="field" style="flex:none;width:74px"><label>Anzahl</label><input type="number" inputmode="numeric" id="sk_anz_'+i+'" value="'+esc(s.anz)+'" min="0" placeholder="0" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>'+
         '<div class="field" style="flex:1"><label>Schlüsselnummer</label><input class="sk-inp" id="sk_nr_'+i+'" value="'+esc(s.nr)+'" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"></div>'+
@@ -870,7 +879,7 @@ function step1(){
     navBar(true,true,"Weiter: Zähler →");
 }
 function skChange(i){saveStep();render();}
-function addSk(){if(istEinseiter())saveSingle();else saveStep();var o=skOpts();var def=o.length>1?o[1]:(o.length?o[0]:"");D.schluessel.push({art:def,_sel:def,anz:"",nr:"",foto:null});render();}
+function addSk(){if(istEinseiter())saveSingle();else saveStep();var o=skOpts();var def=istEinseiter()?(o[0]||""):(o.length>1?o[1]:(o.length?o[0]:""));D.schluessel.push({art:def,_sel:def,anz:"",nr:"",foto:null});render();}
 function delSk(i){if(istEinseiter())saveSingle();else saveStep();D.schluessel.splice(i,1);toast("Zeile gelöscht");render();}
 function addSkFoto(i,inp){if(!inp.files||!inp.files[0])return;if(istEinseiter())saveSingle();else saveStep();loading(true);resizeImg(inp.files[0],function(d){D.schluessel[i].foto=d;loading(false);if(fotoPersistOderRollback(function(){D.schluessel[i].foto=null;}))render();});}
 function delSkFoto(i){D.schluessel[i].foto=null;render();}
@@ -881,7 +890,7 @@ function step2(){
     var sv=z._sel||z.art;
     var fix=(i<3);
     var thumb=z.foto?fotoThumb(z.foto,"delZaeFoto("+i+")"):"";
-    var inpS='style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"';
+    var inpS='style="width:100%;box-sizing:border-box;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 2px 4px;font-size:16px;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;border-radius:0"';
     return '<div class="grp-card" style="padding:12px 14px 13px;margin-bottom:10px">'+
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:11px">'+
         (fix
@@ -891,16 +900,16 @@ function step2(){
             '</select>')+
         (i>=3?'<button class="btn-del" onclick="delZae('+i+')" type="button">✕</button>':"")+
       '</div>'+
-      (!fix&&sv==="Sonstiges"?'<div class="field" style="margin-bottom:9px"><label>Zählerart</label><input id="zae_cust_'+i+'" value="'+esc(z.art!=="Sonstiges"?z.art:"")+'" placeholder="Bezeichnung…" '+inpS+'></div>':"")+
-      '<div style="display:flex;gap:14px;align-items:flex-end;margin-bottom:11px">'+
-        '<div class="field" style="flex:1"><label>Zählernummer</label><input id="zae_nr_'+i+'" inputmode="numeric" value="'+esc(z.nr)+'" placeholder="Nr." '+inpS+'></div>'+
-        '<div class="field" style="flex:1"><label>Zählerstand</label><input id="zae_st_'+i+'" inputmode="decimal" value="'+esc(z.stand)+'" placeholder="Stand" '+inpS+'></div>'+
-        '<div class="field" style="flex:none;width:62px"><label>Einheit</label><input id="zae_eh_'+i+'" value="'+esc(z.einheit||"")+'" placeholder="kWh" '+inpS+'></div>'+
+      (!fix&&sv==="Sonstiger Zähler"?'<div class="field" style="margin-bottom:9px"><label>Zählerart</label><input id="zae_cust_'+i+'" value="'+esc(z.art!=="Sonstiger Zähler"?z.art:"")+'" placeholder="Bezeichnung…" '+inpS+'></div>':"")+
+      '<div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:11px">'+
+        '<div class="field" style="flex:1.2;min-width:0"><label>Zählernummer</label><input id="zae_nr_'+i+'" inputmode="numeric" value="'+esc(z.nr)+'" placeholder="Nr." '+inpS+'></div>'+
+        '<div class="field" style="flex:1.2;min-width:0"><label>Zählerstand</label><input id="zae_st_'+i+'" inputmode="decimal" value="'+esc(z.stand)+'" placeholder="Stand" '+inpS+'></div>'+
+        '<div class="field" style="flex:none;width:56px"><label>Einheit</label><input id="zae_eh_'+i+'" value="'+esc(z.einheit||"")+'" placeholder="kWh" '+inpS+'></div>'+
       '</div>'+
       '<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap">'+
         '<div class="foto-zone" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+thumb+(z.foto?"":fotoBtnsA("addZaeFoto("+i+",this)"))+'</div>'+
-        '<div style="text-align:right"><span style="display:block;font-size:10.5px;color:#999;font-weight:700;letter-spacing:.5px;text-transform:uppercase">Ablesung</span>'+
-          '<input type="date" id="zae_ab_'+i+'" value="'+esc(z.ablese||"")+'" style="border:none;font-size:15px;color:#555;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;padding:2px 0;text-align:right"></div>'+
+        '<div style="text-align:right"><span style="display:block;font-size:11.5px;color:#999;font-weight:700;letter-spacing:.4px;text-transform:uppercase">Ablesung</span>'+
+          '<input type="date" id="zae_ab_'+i+'" value="'+esc(z.ablese||"")+'" style="border:none;font-size:16px;color:#555;font-family:inherit;background:transparent;outline:none;-webkit-appearance:none;padding:2px 0;text-align:right"></div>'+
       '</div>'+
     '</div>';
   }).join("");
@@ -930,7 +939,7 @@ var ZUST_WORT={gut:"Mängelfrei",mangel:"Mängel/Schäden festgestellt"};
 var SCHWERE_WORT={leicht:"Leicht",mittel:"Mittel",schwer:"Schwer"};
 
 function step3(){
-  var gestenHinweis='<p style="font-size:11.5px;color:#b0b0b0;margin:0 2px 9px">Raum nach links wischen = löschen · nach rechts = umbenennen</p>';
+  var gestenHinweis='<p style="font-size:12px;color:#a5a5a5;margin:0 2px 9px">Raum nach links wischen = löschen · nach rechts = umbenennen</p>';
   var blocks=D.raeume.map(function(r,ri){
     var fotoCount=(r.fotos||[]).length;
     var hatBeschr=r.beschreibung&&r.beschreibung.trim();
@@ -957,14 +966,18 @@ function step3(){
       '</div>'+
       '</div>'+
       '<div class="raum-block-body'+(isOpen?" open":"")+'" id="rbb_'+ri+'">'+
-        '<div style="margin-bottom:10px">'+
-          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Beschreibung (Mangel / Schaden)</div>'+
-          (r.zustand==="mangel"&&!(r.beschreibung&&r.beschreibung.trim())?'<div style="font-size:12px;color:#c05621;background:#fff8f0;border-left:3px solid #e8a33d;padding:7px 10px;margin-bottom:7px">Bitte Mangel/Schaden kurz beschreiben – ohne Beschreibung ist der Eintrag im Protokoll nicht nachvollziehbar.</div>':"")+
-          '<textarea id="rb_desc_'+ri+'" rows="2" placeholder="Was wurde festgestellt…" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.raeume['+ri+'].beschreibung=this.value" onblur="beschrBlur('+ri+')" style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 10px;font-size:16px;font-family:inherit;color:#1a1a1a;outline:none;resize:none;box-sizing:border-box">'+esc(r.beschreibung||"")+'</textarea>'+
+        '<div style="margin-bottom:11px">'+
+          '<textarea id="rb_desc_'+ri+'" rows="2" placeholder="Beschreibe Mangel/Schaden" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.raeume['+ri+'].beschreibung=this.value;schwereReveal('+ri+')" onblur="beschrBlur('+ri+')" style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:10px 11px;font-size:16px;font-family:inherit;color:#1a1a1a;outline:none;resize:none;box-sizing:border-box">'+esc(r.beschreibung||"")+'</textarea>'+
         '</div>'+
+        '<div style="margin-bottom:11px">'+
+          '<div style="font-size:12px;color:#777;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">Fotos</div>'+
+          '<div class="rfoto-grid">'+
+            roomFotos+
+            '<label class="rfoto-add"><span>'+icn("cam",16)+'</span>Foto<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addRaumFoto('+ri+',this)"></label>'+
+          '</div>'+
         '</div>'+
-        '<div style="margin-bottom:10px">'+
-          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Schweregrad</div>'+
+        '<div id="rb_schwere_'+ri+'" style="margin-bottom:6px;'+(schwereSichtbar(r)?'':'display:none')+'">'+
+          '<div style="font-size:12px;color:#777;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">Schweregrad</div>'+
           '<div style="display:flex;gap:7px">'+
             ['leicht','mittel','schwer'].map(function(s){
               var on=r.schwere===s;
@@ -972,12 +985,6 @@ function step3(){
               var bg=on?col.bg:'#fff', bd=on?col.bd:'#ddd', tx=on?col.tx:'#888', fw=on?'700':'600';
               return '<button type="button" onclick="setSchwere('+ri+',\''+s+'\')" style="flex:1;padding:9px 4px;border:1.5px solid '+bd+';background:'+bg+';color:'+tx+';font-size:12.5px;font-weight:'+fw+';font-family:inherit;cursor:pointer;border-radius:8px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+SCHWERE_WORT[s]+'</button>';
             }).join("")+
-          '</div>'+
-        '<div style="margin-bottom:6px">'+
-          '<div style="font-size:11px;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Fotos</div>'+
-          '<div class="rfoto-grid">'+
-            roomFotos+
-            '<label class="rfoto-add"><span>'+icn("cam",16)+'</span>Foto<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addRaumFoto('+ri+',this)"></label>'+
           '</div>'+
         '</div>'+
         '<button onclick="delRaum('+ri+')" type="button" style="float:right;background:none;border:none;color:#c00;font-size:11.5px;font-family:inherit;cursor:pointer;padding:7px 4px;text-decoration:underline">Raum entfernen</button>'+
@@ -1152,6 +1159,21 @@ function addRaum(name){
   toast("Raum hinzugefügt");
 }
 
+// v2.1 (#1): Schweregrad erscheint, sobald Text ODER Foto vorhanden – und bleibt dann sichtbar
+function schwereSichtbar(r){
+  if(r._ratedVisible)return true;
+  var hat=(r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length)||r.schwere;
+  if(hat)r._ratedVisible=true;
+  return !!hat;
+}
+function schwereReveal(ri){
+  // Live beim Tippen einblenden – ohne render(), damit der Textfeld-Fokus bleibt
+  var r=D.raeume[ri];if(!r)return;
+  if(schwereSichtbar(r)){
+    var el=ge("rb_schwere_"+ri);
+    if(el&&el.style.display==="none")el.style.display="";
+  }
+}
 function beschrBlur(ri){
   var r=D.raeume[ri];if(!r)return;
   if(r.beschreibung&&r.beschreibung.trim()&&r.zustand!=="mangel"){
@@ -1170,11 +1192,43 @@ function toggleRb(ri){
 function setZustandQuick(ri,z,ev){
   if(ev)ev.stopPropagation();
   saveMangelStep();
-  D.raeume[ri].zustand=z;
-  D.raeume[ri].ok=true;
+  var r=D.raeume[ri];
+  // v2.1 (#2): Umschalten auf "mängelfrei" bei vorhandenen Mangeldaten → Rückfrage
+  if(z==="gut"){
+    var hatDaten=(r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length)||r.schwere;
+    if(hatDaten){gruenRueckfrage(ri);return;}
+  }
+  r.zustand=z;
+  r.ok=true;
   // Akkordeon: Mangel öffnet diesen Raum und schließt alle anderen; Mängelfrei klappt zu
-  D.raeume.forEach(function(r,i){r._open=(z==="mangel"&&i===ri);});
+  D.raeume.forEach(function(x,i){x._open=(z==="mangel"&&i===ri);});
   persist();render();
+}
+// v2.1 (#2): natives Sheet – Mangeldaten entfernen oder abbrechen
+function gruenRueckfrage(ri){
+  var r=D.raeume[ri];if(!r)return;
+  var old=ge("gruen-ov");if(old)old.parentNode.removeChild(old);
+  var ov=document.createElement("div");
+  ov.id="gruen-ov";
+  ov.style.cssText="position:fixed;inset:0;z-index:3000;background:rgba(20,20,20,.45);display:flex;align-items:flex-end;justify-content:center";
+  ov.onclick=function(e){if(e.target===ov)ov.parentNode.removeChild(ov);};
+  ov.innerHTML='<div style="background:#fff;border-radius:18px 18px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom));width:100%;max-width:480px" onclick="event.stopPropagation()">'+
+    '<div style="width:38px;height:4px;background:#d5d5d5;border-radius:2px;margin:0 auto 16px"></div>'+
+    '<div style="font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:4px">'+esc(r.r)+' als mängelfrei markieren?</div>'+
+    '<div style="font-size:13px;color:#888;margin-bottom:18px;line-height:1.5">Dieser Raum enthält bereits eine Mangelbeschreibung, Fotos oder eine Bewertung. Diese Angaben werden entfernt.</div>'+
+    '<button type="button" onclick="gruenBestaetigt('+ri+')" style="width:100%;background:#1a1a1a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;margin-bottom:9px;-webkit-appearance:none">Angaben entfernen &amp; mängelfrei</button>'+
+    '<button type="button" onclick="gruenAbbruch()" style="width:100%;background:#fff;color:#333;border:1.5px solid #ddd;border-radius:12px;padding:14px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;-webkit-appearance:none">Abbrechen</button>'+
+  '</div>';
+  document.body.appendChild(ov);
+}
+function gruenAbbruch(){var ov=ge("gruen-ov");if(ov)ov.parentNode.removeChild(ov);}
+function gruenBestaetigt(ri){
+  gruenAbbruch();
+  var r=D.raeume[ri];if(!r)return;
+  r.beschreibung="";r.schwere="";r.fotos=[];r._ratedVisible=false;
+  r.zustand="gut";r.ok=true;r._open=false;
+  persist();render();
+  toast("Angaben entfernt – "+r.r+" mängelfrei");
 }
 function setSchwere(ri,s){
   saveMangelStep();
@@ -1459,7 +1513,7 @@ function step5(c){
         '<button class="btn-dl" onclick="sharePDF()" type="button" style="font-size:15px;padding:13px 22px">'+icn("send",16)+' Protokoll senden</button>'+
       '</div>'+
     '</div>'+
-    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version '+APP_VERSION+' · Jakob Bonomo</div>';
+    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version 2.1 · Jakob Bonomo</div>';
 
 }
 
@@ -2047,7 +2101,7 @@ function closeBurst(){
 
 // ── NATIVES PDF (für Teilen/Share – ohne Druckdialog) ─────────────────────
 // Erzeugt ein echtes PDF (PDF 1.4, Helvetica/WinAnsi, JPEG-Bilder) rein clientseitig.
-var APP_VERSION="2.0";
+var APP_VERSION="2.1";
 
 function jpegDim(bin){
   var i=2,L=bin.length;
@@ -2685,7 +2739,7 @@ function migrateData(d){
   if(d.iban===undefined)d.iban="";
   if(d.nachfolge===undefined)d.nachfolge="";
   if(!d.raeume)d.raeume=[];
-  d.raeume.forEach(function(r){if(r._open===undefined)r._open=false;if(r.beschreibung===undefined)r.beschreibung="";});
+  d.raeume.forEach(function(r){if(r._open===undefined)r._open=false;if(r.beschreibung===undefined)r.beschreibung="";if(r._ratedVisible===undefined)r._ratedVisible=false;});
   // Alt-Format: separate Mängel-Karten -> in Raum-Beschreibung übernehmen
   if(d.maengel&&d.maengel.length){
     d.maengel.forEach(function(m){
@@ -2836,6 +2890,43 @@ function deleteDraftConfirm(id){
   showStart();
   toast("Entwurf gelöscht");
 }
+// v2.1 (#4): Alle löschen (getrennt für offene Entwürfe / gesendete) mit Sheet-Rückfrage
+function alleLoeschenSheet(gesendet){
+  var map=loadDrafts();
+  var ids=Object.keys(map).filter(function(id){var d=map[id].data||{};return gesendet?!!d._sent:!d._sent;});
+  if(!ids.length)return;
+  var old=ge("alledel-ov");if(old)old.parentNode.removeChild(old);
+  var ov=document.createElement("div");
+  ov.id="alledel-ov";
+  ov.style.cssText="position:fixed;inset:0;z-index:3000;background:rgba(20,20,20,.45);display:flex;align-items:flex-end;justify-content:center";
+  ov.onclick=function(e){if(e.target===ov)ov.parentNode.removeChild(ov);};
+  var was=gesendet?"gesendeten Protokolle":"offenen Entwürfe";
+  ov.innerHTML='<div style="background:#fff;border-radius:18px 18px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom));width:100%;max-width:480px" onclick="event.stopPropagation()">'+
+    '<div style="width:38px;height:4px;background:#d5d5d5;border-radius:2px;margin:0 auto 16px"></div>'+
+    '<div style="font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:4px">Alle '+was+' löschen?</div>'+
+    '<div style="font-size:13px;color:#888;margin-bottom:18px;line-height:1.5">'+ids.length+' '+(ids.length===1?"Eintrag wird":"Einträge werden")+' endgültig und unwiderruflich von diesem Gerät entfernt.</div>'+
+    '<button type="button" onclick="alleLoeschenBestaetigt('+(gesendet?"true":"false")+')" style="width:100%;background:#cc3b3b;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;margin-bottom:9px;-webkit-appearance:none">Endgültig löschen ('+ids.length+')</button>'+
+    '<button type="button" onclick="alleLoeschenAbbruch()" style="width:100%;background:#fff;color:#333;border:1.5px solid #ddd;border-radius:12px;padding:14px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;-webkit-appearance:none">Abbrechen</button>'+
+  '</div>';
+  document.body.appendChild(ov);
+}
+function alleLoeschenAbbruch(){var ov=ge("alledel-ov");if(ov)ov.parentNode.removeChild(ov);}
+function alleLoeschenBestaetigt(gesendet){
+  alleLoeschenAbbruch();
+  var map=loadDrafts();
+  var cur=null;try{cur=localStorage.getItem(CURRENT_KEY);}catch(e){}
+  var n=0;
+  Object.keys(map).forEach(function(id){
+    var d=map[id].data||{};
+    if(gesendet?!!d._sent:!d._sent){
+      delete map[id];n++;
+      if(cur===id){try{localStorage.removeItem(CURRENT_KEY);}catch(e){}}
+    }
+  });
+  saveDrafts(map);
+  showStart();
+  toast(n+" "+(n===1?"Eintrag":"Einträge")+" gelöscht");
+}
 function hdrBtn(){
   if(istEinseiter())saveSingle();else{saveStep();persist();}
   showStart();
@@ -2921,12 +3012,9 @@ function showStart(){
   var ttl=ge("app-title");if(ttl)ttl.textContent="";
   kopfLeiste("start");
   var ICO={wohnung:"home",gewerbe:"office",schluessel:"key",parkkarte:"park"};
-  // Tint-Paare: Objekt-Protokolle (Wohnung/Gewerbe) orange getönt, Einseiter neutral
-  var TINT={wohnung:1,gewerbe:1,schluessel:0,parkkarte:0};
+  // v2.1: alle vier Kacheln einheitlich neutral (keine Tint-Gruppierung mehr)
   var tiles=Object.keys(ARTEN).map(function(k){
-    var t=TINT[k];
-    var bg=t?"#faece7":"#fafafa", bd=t?"#f0997b":"#ececec", ic=t?"#993c1d":"#575656", tc=t?"#712b13":"#1a1a1a";
-    return '<button type="button" onclick="startSheet(\''+k+'\')" style="display:flex;flex-direction:column;align-items:center;gap:11px;background:'+bg+';border:1px solid '+bd+';border-radius:14px;padding:22px 8px 18px;font-size:15px;font-weight:600;font-family:inherit;color:'+tc+';cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none"><span style="color:'+ic+'">'+icn(ICO[k],30)+'</span>'+ARTEN[k].label+'</button>';
+    return '<button type="button" class="start-tile" onclick="startSheet(\''+k+'\')" style="display:flex;flex-direction:column;align-items:center;gap:11px;background:#fafafa;border:1px solid #ececec;border-radius:14px;padding:22px 8px 18px;font-size:15px;font-weight:600;font-family:inherit;color:#1a1a1a;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none"><span style="color:#575656">'+icn(ICO[k],30)+'</span>'+ARTEN[k].label+'</button>';
   }).join("");
   var map=loadDrafts();
   var curIdv=null;try{curIdv=localStorage.getItem(CURRENT_KEY);}catch(e){}
@@ -2942,7 +3030,9 @@ function showStart(){
       '</button>'+
       '<div id="draft-list" style="display:none;padding:2px 0 6px">'+
         (offen||'<p style="font-size:12.5px;color:#aaa;padding:6px 2px 10px">Keine offenen Entwürfe.</p>')+
+        (nOffen?'<button type="button" onclick="alleLoeschenSheet(false)" style="display:block;margin:2px 0 4px auto;background:none;border:none;color:#c00;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;padding:6px 2px;text-decoration:underline;-webkit-tap-highlight-color:transparent">Alle Entwürfe löschen</button>':'')+
         (gesendet?'<div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999;margin:12px 2px 8px">Gesendet ('+nGes+')</div>'+gesendet:'')+
+        (nGes?'<button type="button" onclick="alleLoeschenSheet(true)" style="display:block;margin:2px 0 4px auto;background:none;border:none;color:#c00;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;padding:6px 2px;text-decoration:underline;-webkit-tap-highlight-color:transparent">Alle gesendeten löschen</button>':'')+
         '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 2px 0"><span style="color:#bbb;flex:none;margin-top:1px">'+icn("device",15)+'</span><span style="font-size:11.5px;color:#999;line-height:1.5">Entwürfe werden nur auf diesem Gerät gespeichert. Fertige Protokolle bitte zeitnah senden.</span></div>'+
       '</div>'+
     '</div>';
