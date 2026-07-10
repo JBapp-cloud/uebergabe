@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  PRISMA ÜBERGABEPROTOKOLL – Version 2.1                                      ║
+║  PRISMA ÜBERGABEPROTOKOLL – Version 2.2                                      ║
 ║  Projektkontext: Diese Datei hochladen, dann ist Claude sofort im Bild.      ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
@@ -23,7 +23,7 @@
 ║    Schweregrade, Fotopflicht-Hinweise                                        ║
 ║  • Unterschriften im Vollbild (rotationsfest, Zusammenfassung eingeblendet) ║
 ║  • Natives PDF ohne Fremdbibliotheken, Auto-Fit Seite 1, Beilagen           ║
-║  • Entwürfe in localStorage, mehrgenerationige Datenmigration               ║
+║  • Entwürfe in IndexedDB (Fotos ohne 5-MB-Limit), Falldaten in localStorage               ║
 ║  • Senden-Helfer (E-Mail/Betreff kopieren) + navigator.share mit PDF        ║
 ║                                                                              ║
 ║  EINSATZ: iPhone Safari vor Ort; Hosting GitHub Pages (PWA, sw.js-Cache).   ║
@@ -465,7 +465,7 @@ function fotoPersistOderRollback(rollbackFn){
   if(!persist()){
     if(typeof rollbackFn==="function")rollbackFn();
     persist();
-    toast("Speicher des Geräts ist voll. Bitte fertige Protokolle senden und dann löschen, um Platz zu schaffen.",4200);
+    toast("Speichern nicht möglich. Bitte App neu laden und erneut versuchen.",4200);
     render();
     return false;
   }
@@ -713,8 +713,8 @@ function step0(){
     '</div>'+
     '<div class="sec-hd">Mieter/in</div>'+
     '<div class="grp-card">'+
-      '<div class="obj-row"><span class="obj-lbl">Firma / Name</span><span class="obj-val">'+inp("f_mieter",D.mieter)+'</span></div>'+
-      '<div class="obj-row"><span class="obj-lbl">vertreten durch</span><span class="obj-val">'+inp("f_mieter_vd",D.mieter_vd,"handelnde Person (bei Firmen)")+'</span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">'+(D.art==="wohnung"?"Name":"Firma / Name")+'</span><span class="obj-val">'+inp("f_mieter",D.mieter)+'</span></div>'+
+      '<div class="obj-row"><span class="obj-lbl">vertreten durch</span><span class="obj-val">'+inp("f_mieter_vd",D.mieter_vd,D.art==="wohnung"?"z.B. Bevollmächtigte/r":"handelnde Person (bei Firmen)")+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">E-Mail</span><span class="obj-val">'+inp("f_email_mieter",D.email_mieter,"","email")+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">Telefonnummer</span><span class="obj-val">'+inp("f_telefon",D.telefon,"","tel")+'</span></div>'+
       '<div class="obj-row"><span class="obj-lbl">KFZ-Kennzeichen</span><span class="obj-val">'+inp("f_kfz",D.kfz)+'</span></div>'+
@@ -1513,7 +1513,7 @@ function step5(c){
         '<button class="btn-dl" onclick="sharePDF()" type="button" style="font-size:15px;padding:13px 22px">'+icn("send",16)+' Protokoll senden</button>'+
       '</div>'+
     '</div>'+
-    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version 2.1 · Jakob Bonomo</div>';
+    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version 2.2 · Jakob Bonomo</div>';
 
 }
 
@@ -2101,7 +2101,7 @@ function closeBurst(){
 
 // ── NATIVES PDF (für Teilen/Share – ohne Druckdialog) ─────────────────────
 // Erzeugt ein echtes PDF (PDF 1.4, Helvetica/WinAnsi, JPEG-Bilder) rein clientseitig.
-var APP_VERSION="2.1";
+var APP_VERSION="2.2";
 
 function jpegDim(bin){
   var i=2,L=bin.length;
@@ -2687,8 +2687,10 @@ function sharePDF(){
     var bytes;
     try{bytes=buildNativePDF(jv,jm);}catch(e){loading(false);toast("PDF-Erstellung fehlgeschlagen – bitte Druckweg nutzen",3000);return;}
     loading(false);
-    // #26: Entwurf als gesendet markieren (separate Gruppierung am Start)
-    D._sent=true;D._sent_ts=todayISO();persist();
+    // #26/#3: Entwurf zuverlässig als gesendet markieren (separate Gruppierung am Start)
+    D._sent=true;D._sent_ts=todayISO();
+    curId(); // sicherstellen, dass eine ID existiert
+    persist();
     var blob=new Blob([bytes],{type:"application/pdf"});
     var fname=pdfFileName();
     var file=null;
@@ -2728,8 +2730,64 @@ step3.returnsHtml=true; step4.returnsHtml=true; step5.returnsHtml=false;
 STEP_FNS=[step0,step1,step2,step4,step3,step5];
 
 // ── ENTWÜRFE / ZWISCHENSPEICHERUNG (mehrere Protokolle) ────────────────────
-var DRAFTS_KEY="prisma_drafts";       // Map: id -> {id,title,ts,data}
+var DRAFTS_KEY="prisma_drafts";       // Legacy-localStorage-Schlüssel (nur noch Migration/Fallback)
 var CURRENT_KEY="prisma_current_id";  // zuletzt geladener Entwurf
+var RESET_FLAG_KEY="prisma_reset_v22"; // v2.2: einmaliger Voll-Reset beim ersten Start
+
+// ── v2.2 (#2): IndexedDB-Speicher für Entwürfe (kein 5-MB-localStorage-Limit) ─
+// Strategie: synchron lesbarer RAM-Cache (_draftCache) als Single Source of Truth
+// zur Laufzeit; jede Änderung wird asynchron nach IndexedDB gespiegelt. So bleibt
+// der gesamte bestehende synchrone Code (loadDrafts/saveDrafts) unverändert nutzbar.
+var IDB_NAME="prisma_uebergabe";
+var IDB_STORE="kv";
+var _idb=null;              // offene DB-Verbindung
+var _draftCache=null;      // {id->{id,title,ts,data}} – synchron im RAM
+var _idbReady=false;
+
+function idbOpen(cb){
+  if(_idb){cb(_idb);return;}
+  var req;
+  try{req=indexedDB.open(IDB_NAME,1);}catch(e){cb(null);return;}
+  req.onupgradeneeded=function(e){
+    var db=e.target.result;
+    if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE);
+  };
+  req.onsuccess=function(e){_idb=e.target.result;cb(_idb);};
+  req.onerror=function(){cb(null);};
+}
+function idbGet(key,cb){
+  idbOpen(function(db){
+    if(!db){cb(null);return;}
+    try{
+      var tx=db.transaction(IDB_STORE,"readonly");
+      var rq=tx.objectStore(IDB_STORE).get(key);
+      rq.onsuccess=function(){cb(rq.result!==undefined?rq.result:null);};
+      rq.onerror=function(){cb(null);};
+    }catch(e){cb(null);}
+  });
+}
+function idbSet(key,val,cb){
+  idbOpen(function(db){
+    if(!db){if(cb)cb(false);return;}
+    try{
+      var tx=db.transaction(IDB_STORE,"readwrite");
+      tx.objectStore(IDB_STORE).put(val,key);
+      tx.oncomplete=function(){if(cb)cb(true);};
+      tx.onerror=function(){if(cb)cb(false);};
+    }catch(e){if(cb)cb(false);}
+  });
+}
+// Cache asynchron nach IndexedDB spiegeln (letzter Schreibvorgang gewinnt)
+var _idbWritePending=false,_idbWriteAgain=false;
+function idbFlushDrafts(){
+  if(_idbWritePending){_idbWriteAgain=true;return;}
+  _idbWritePending=true;
+  idbSet("drafts",_draftCache||{},function(){
+    _idbWritePending=false;
+    if(_idbWriteAgain){_idbWriteAgain=false;idbFlushDrafts();}
+  });
+}
+
 
 function migrateData(d){
   // Sicherstellen, dass neue Felder existieren (alte Stände)
@@ -2782,10 +2840,17 @@ function migrateData(d){
   return d;
 }
 function loadDrafts(){
-  try{var s=localStorage.getItem(DRAFTS_KEY);return s?JSON.parse(s):{};}catch(e){return {};}
+  // Synchron aus RAM-Cache lesen (beim Start aus IndexedDB gefüllt).
+  if(_draftCache)return _draftCache;
+  // Fallback vor Cache-Initialisierung: Legacy-localStorage (falls vorhanden)
+  try{var s=localStorage.getItem(DRAFTS_KEY);_draftCache=s?JSON.parse(s):{};}catch(e){_draftCache={};}
+  return _draftCache;
 }
 function saveDrafts(map){
-  try{localStorage.setItem(DRAFTS_KEY,JSON.stringify(map));return true;}catch(e){return false;}
+  // In RAM-Cache übernehmen (immer erfolgreich – kein 5-MB-Limit mehr)
+  _draftCache=map||{};
+  idbFlushDrafts(); // asynchron nach IndexedDB spiegeln
+  return true;
 }
 function draftTitle(){
   var t=(D.objekt?D.objekt.split(",")[0]:"Ohne Objekt");
@@ -2799,8 +2864,20 @@ function curId(){
   if(!id){id="d"+Date.now()+"_"+Math.floor(Math.random()*1000);try{localStorage.setItem(CURRENT_KEY,id);}catch(e){}}
   return id;
 }
+function draftIstLeer(){
+  // Ein Entwurf gilt als "leer", wenn keinerlei inhaltliche Eingabe vorliegt.
+  if(D.objekt||D.mieter||D.eigentuemer||D.top||D.kfz)return false;
+  if(D.schluessel&&D.schluessel.some(function(s){return s.anz||s.nr;}))return false;
+  if(D.zaehler&&D.zaehler.some(function(z){return z.stand||z.nr;}))return false;
+  if(D.fotos&&D.fotos.length)return false;
+  if(D.raeume&&D.raeume.some(function(r){return r.zustand||(r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length);}))return false;
+  if(D.karten&&D.karten.some(function(k){return k.nr||(k.fotos&&k.fotos.length);}))return false;
+  if(D.sig_v||D.sig_m)return false;
+  return true;
+}
 function persist(){
-  // Auto-Save in aktuellen Entwurf (#28: jeder Schritt persistiert sofort)
+  // v2.2 (#3): leere Entwürfe nicht anlegen → keine Geister-Einträge in der Übersicht
+  if(draftIstLeer()&&!D._sent)return true;
   var map=loadDrafts();
   var id=curId();
   map[id]={id:id,title:draftTitle(),ts:Date.now(),data:D};
@@ -2811,7 +2888,7 @@ function saveDraftManual(){
   toast("Entwurf gespeichert ✓",1800);
 }
 function newDraft(art,typ){
-  // aktuellen sichern, dann frisches Protokoll
+  // aktuellen sichern (leere werden dank draftIstLeer nicht angelegt), dann frisches Protokoll
   persist();
   try{localStorage.removeItem(CURRENT_KEY);}catch(e){}
   // D zurücksetzen
@@ -3130,10 +3207,12 @@ document.addEventListener("keydown",function(e){
   }
 });
 
-// v2.0 (#28): Datenverlust-Schutz – bei Verlassen/Wegwischen sicher persistieren
+// v2.0 (#28) / v2.2: Datenverlust-Schutz – bei Verlassen/Wegwischen sicher persistieren
 function sicherSpeichern(){
   try{
     if(_screen==="form"){ if(istEinseiter())saveSingle(); else{ saveStep(); if(typeof saveMangelStep==="function")saveMangelStep(); } persist(); }
+    // IndexedDB-Spiegelung sofort anstoßen (nicht auf verzögerten Flush warten)
+    if(_draftCache)idbSet("drafts",_draftCache,function(){});
   }catch(e){}
 }
 window.addEventListener("pagehide",sicherSpeichern);
@@ -3141,7 +3220,33 @@ window.addEventListener("beforeunload",sicherSpeichern);
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")sicherSpeichern();});
 
 loadObjekte();
-showStart();
+
+// ── v2.2 (#2): einmaliger Voll-Reset + Entwürfe aus IndexedDB in den RAM-Cache ─
+function appStart(){
+  // 1) Einmaliger kompletter Reset beim ersten Start nach dem Update
+  var resetDone=false;
+  try{resetDone=localStorage.getItem(RESET_FLAG_KEY)==="1";}catch(e){}
+  if(!resetDone){
+    // Alle Alt-Daten entfernen: Entwürfe (localStorage-Legacy), Namens-Historie,
+    // durchführende Person, aktuelle ID – kompletter Neustart auf neuer Architektur.
+    try{localStorage.removeItem(DRAFTS_KEY);}catch(e){}
+    try{localStorage.removeItem(CURRENT_KEY);}catch(e){}
+    try{localStorage.removeItem(VW_HIST_KEY);}catch(e){}
+    try{localStorage.removeItem(VW_KEY);}catch(e){}
+    _draftCache={};
+    idbSet("drafts",{},function(){});      // IndexedDB ebenfalls leeren
+    try{localStorage.setItem(RESET_FLAG_KEY,"1");}catch(e){}
+    showStart();
+    return;
+  }
+  // 2) Normalstart: Entwürfe aus IndexedDB in den synchronen RAM-Cache laden
+  idbGet("drafts",function(data){
+    _draftCache=(data&&typeof data==="object")?data:{};
+    _idbReady=true;
+    showStart();
+  });
+}
+appStart();
 
 // ── PWA: SERVICE WORKER ───────────────────────────────────────────────────
 if("serviceWorker" in navigator){
