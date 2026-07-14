@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  PRISMA ÜBERGABEPROTOKOLL – Version 2.2                                      ║
+║  PRISMA ÜBERGABEPROTOKOLL – Version 2.3                                      ║
 ║  Projektkontext: Diese Datei hochladen, dann ist Claude sofort im Bild.      ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
@@ -331,7 +331,7 @@ var ARTEN={
 function artConf(){return ARTEN[D.art]||ARTEN.wohnung;}
 function istEinseiter(){return !!artConf().einseiter;}
 function istGewerbe(){return D.art==="gewerbe";}
-function artFirma(){return D.art!=="wohnung";} // Gewerbe/Schlüssel/Parkkarte: Firmenmieter mit Vertreter
+
 // Optionale Zusatzräume entfallen (v2.0) – Sonderräume via "Raum hinzufügen" (Freitext)
 var ROOMS_OPTIONAL=[];
 // Schlüsselarten je Rubrik (v2.0)
@@ -386,7 +386,7 @@ var D={
   ],
   maengel:[],
   iban:"",nachfolge:"",
-  raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};}),
+  raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",massnahme:"",beschreibung:"",fotos:[],_open:false};}),
   fotos:[],
   sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,ba:false,ba_art:"",
   art:"wohnung",bs:false,nachsend:false,nachsend_frist:"",mv_ende:"",sk_fehlen:"",mieter_vd:"",bestandsobjekt:"",karten:[{nr:"",bez:"",fotos:[]}],verlust_eur:"15",
@@ -424,7 +424,7 @@ function icn(name,size){
   }[name]||"";
   return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex:none" aria-hidden="true">'+P+'</svg>';
 }
-function fmtNow(){var n=new Date();return n.toLocaleDateString("de-AT")+" "+n.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});}
+
 function protTitle(){
   var a=artConf();
   if(D.art==="schluessel")return (istRuecknahme()?"Rücknahmeprotokoll":"Übergabeprotokoll")+" Schlüssel";
@@ -667,13 +667,6 @@ function sel(id,opts,val,onch){
     opts.map(function(o){return'<option'+(o===val?' selected':"")+'>'+o+'</option>';}).join("")+
   '</select>';
 }
-function fotoBtns(onch){
-  // Kamera + Galerie als kompaktes Button-Paar (v20)
-  return '<label class="foto-btn" style="padding:5px 9px;font-size:11px" title="Kamera">'+icn("cam",14)+
-    '<input type="file" accept="image/*" capture="environment" style="display:none" onchange="'+onch+'"></label>'+
-    '<label class="foto-btn" style="padding:5px 9px;font-size:11px" title="Aus Galerie">'+icn("gal",14)+
-    '<input type="file" accept="image/*" style="display:none" onchange="'+onch+'"></label>';
-}
 // v2.0 (#9): großzügige Foto-Auslöser – Kamera beschriftet + Galerie-Icon, min. 40px Trefferfläche
 function fotoBtnsA(onch){
   return '<div style="display:flex;gap:8px">'+
@@ -683,23 +676,11 @@ function fotoBtnsA(onch){
       '<input type="file" accept="image/*" style="display:none" onchange="'+onch+'"></label>'+
   '</div>';
 }
-function fotoBtn(label,onch){
-  return'<label class="foto-btn">'+icn("cam",14)+' '+label+'<input type="file" accept="image/*" capture="environment" style="display:none" onchange="'+onch+'">'+'</label>';
-}
 function fotoThumb(src,delFn){
   return'<div class="foto-thumb-wrap"><img class="foto-thumb" src="'+src+'"><button class="foto-del-btn" onclick="'+delFn+'" type="button" title="Löschen">✕</button></div>';
 }
 
-function logoSVG(){
-  // Nachbau des PRISMA-Logos: fette Wortmarke + oranges Quadrat mit Zielkreis (#eb5b36)
-  return'<svg width="150" height="34" viewBox="0 0 340 76" xmlns="http://www.w3.org/2000/svg" aria-label="PRISMA">'+
-    '<text x="0" y="56" font-family="Arial,Helvetica,sans-serif" font-size="64" font-weight="800" fill="#1a1a1a" letter-spacing="-1">PRISMA</text>'+
-    '<rect x="280" y="6" width="56" height="56" rx="6" fill="#eb5b36"/>'+
-    '<circle cx="308" cy="34" r="17" fill="none" stroke="#ffffff" stroke-width="5"/>'+
-    '<circle cx="308" cy="34" r="6.5" fill="none" stroke="#ffffff" stroke-width="4"/>'+
-    '<circle cx="308" cy="34" r="1.8" fill="#ffffff"/>'+
-  '</svg>';
-}
+
 
 // ── STEP 0: STAMMDATEN ────────────────────────────────────────────────────
 function step0(){
@@ -724,17 +705,18 @@ function step0(){
         '<div class="obj-row"><span class="obj-lbl">Mietvertragsende vereinbart</span><span class="obj-val">'+inp("f_mv_ende",D.mv_ende,"","date")+'</span></div>'
       :"")+
     '</div>'+
-    '<div class="sec-hd">Bei der '+typWort()+' festgestellt</div>'+
-    '<div class="grp-card">'+
-      (istRuecknahme()?"":cbs)+
-      (istRuecknahme()?"":'<label class="cb-row'+(D.ba?' checked':"")+'" style="margin-top:4px"><input type="checkbox" id="cb_ba"'+(D.ba?' checked':"")+' onchange="baChange(this)">Bedienungsanleitungen übergeben</label>'+
-      (D.ba?'<div class="field" style="margin:10px 2px 2px"><label>Art der Übergabe</label>'+inp("f_ba_art",D.ba_art,"z.B. digital, Hardcopy")+'</div>':""))+
-      (istGewerbe()?'<label class="cb-row'+(D.bs?' checked':"")+'" style="margin-top:4px"><input type="checkbox" id="cb_bs"'+(D.bs?' checked':"")+' onchange="D.bs=this.checked;persist();render()">Brandschutzordnung '+(istRuecknahme()?"zurückgegeben":"übergeben")+'</label>':"")+
-      (D.art==="wohnung"&&istRuecknahme()?
-        '<label class="cb-row'+(D.nachsend?' checked':"")+'"><input type="checkbox" id="cb_ns"'+(D.nachsend?' checked':"")+' onchange="D.nachsend=this.checked;persist();render()">Post-Nachsendeauftrag eingerichtet</label>'+
-        (!D.nachsend?'<div class="field" style="margin:10px 2px 2px"><label>Fristsetzung bis</label>'+inp("f_ns_frist",D.nachsend_frist,"","date")+'</div>':"")
-      :"")+
-    '</div>'+
+    (function(){
+      var festInhalt=(istRuecknahme()?"":cbs)+
+        (istRuecknahme()?"":'<label class="cb-row'+(D.ba?' checked':"")+'" style="margin-top:4px"><input type="checkbox" id="cb_ba"'+(D.ba?' checked':"")+' onchange="baChange(this)">Bedienungsanleitungen übergeben</label>'+
+        (D.ba?'<div class="field" style="margin:10px 2px 2px"><label>Art der Übergabe</label>'+inp("f_ba_art",D.ba_art,"z.B. digital, Hardcopy")+'</div>':""))+
+        (istGewerbe()&&!istRuecknahme()?'<label class="cb-row'+(D.bs?' checked':"")+'" style="margin-top:4px"><input type="checkbox" id="cb_bs"'+(D.bs?' checked':"")+' onchange="D.bs=this.checked;persist();render()">Brandschutzordnung übergeben</label>':"")+
+        (D.art==="wohnung"&&istRuecknahme()?
+          '<label class="cb-row'+(D.nachsend?' checked':"")+'"><input type="checkbox" id="cb_ns"'+(D.nachsend?' checked':"")+' onchange="D.nachsend=this.checked;persist();render()">Post-Nachsendeauftrag eingerichtet</label>'+
+          (!D.nachsend?'<div class="field" style="margin:10px 2px 2px"><label>Fristsetzung bis</label>'+inp("f_ns_frist",D.nachsend_frist,"","date")+'</div>':"")
+        :"");
+      // v2.3 (#1): Abschnitt nur zeigen, wenn er Inhalt hat (z.B. bei Gewerbe-Rücknahme sonst leer)
+      return festInhalt.trim()?('<div class="sec-hd">Bei der '+typWort()+' festgestellt</div><div class="grp-card">'+festInhalt+'</div>'):"";
+    })()+
     '<div class="sec-hd">Stromzähler-'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' (Smart Meter)</div>'+
     '<div class="grp-card">'+
     '<div class="field-row" style="margin-bottom:2px">'+
@@ -780,7 +762,7 @@ function metaLine(){
 function toggleMeta(){if(istEinseiter())saveSingle();else saveStep();_metaOpen=!_metaOpen;render();}
 function setTyp(t){if(istEinseiter())saveSingle();else saveStep();D.typ=t;persist();render();}
 function setMetaDatum(v){D.datum=v;persist();}
-function saveTyp(){var el=ge("f_typ");if(el){saveStep();D.typ=el.value;render();}}
+
 function baChange(el){
   saveStep();
   D.ba=el.checked;
@@ -791,28 +773,7 @@ function cbChange(i,el){
   el.closest("label").classList.toggle("checked",el.checked);
 }
 // Mitarbeiter-Autocomplete (bei Fokus alle anzeigen, beim Tippen filtern)
-function vwFilter(val,inputEl){
-  var old=ge("vw-list");if(old&&old.parentNode)old.parentNode.removeChild(old);
-  var q=(val||"").toLowerCase();
-  var matches=vwHistorie().filter(function(n){return !q||n.toLowerCase().indexOf(q)>=0;});
-  if(!matches.length)return;
-  var list=document.createElement("div");
-  list.id="vw-list";list.className="ac-list";
-  matches.forEach(function(n){
-    var item=document.createElement("div");
-    item.className="ac-item";
-    item.textContent=n;
-    item.onmousedown=item.ontouchstart=function(e){e.preventDefault();vwSelect(n);};
-    list.appendChild(item);
-  });
-  (inputEl.closest(".ac-wrap")||inputEl.parentNode).appendChild(list);
-}
-function vwSelect(n){
-  D.verwalter=n;
-  var el=ge("f_verwalter");if(el)el.value=n;
-  vwClose();
-}
-function vwClose(){var old=ge("vw-list");if(old&&old.parentNode)old.parentNode.removeChild(old);}
+
 
 // ── STROMANBIETER PFLEGEN: Hier Anbieter ergänzen/streichen ────────────────
 var ANBIETER=["Salzburg AG","VKW","Verbund","KELAG","Energie AG","oekostrom AG","Wien Energie","MyElectric","aWATTar"];
@@ -902,7 +863,7 @@ function step2(){
       '</div>'+
       (!fix&&sv==="Sonstiger Zähler"?'<div class="field" style="margin-bottom:9px"><label>Zählerart</label><input id="zae_cust_'+i+'" value="'+esc(z.art!=="Sonstiger Zähler"?z.art:"")+'" placeholder="Bezeichnung…" '+inpS+'></div>':"")+
       '<div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:11px">'+
-        '<div class="field" style="flex:1.2;min-width:0"><label>Zählernummer</label><input id="zae_nr_'+i+'" inputmode="numeric" value="'+esc(z.nr)+'" placeholder="Nr." '+inpS+'></div>'+
+        '<div class="field" style="flex:1.2;min-width:0"><label>Zählernummer</label><input id="zae_nr_'+i+'" value="'+esc(z.nr)+'" placeholder="Nr." '+inpS+'></div>'+
         '<div class="field" style="flex:1.2;min-width:0"><label>Zählerstand</label><input id="zae_st_'+i+'" inputmode="decimal" value="'+esc(z.stand)+'" placeholder="Stand" '+inpS+'></div>'+
         '<div class="field" style="flex:none;width:56px"><label>Einheit</label><input id="zae_eh_'+i+'" value="'+esc(z.einheit||"")+'" placeholder="kWh" '+inpS+'></div>'+
       '</div>'+
@@ -937,6 +898,29 @@ function smileySVG(type,sel,size){
 }
 var ZUST_WORT={gut:"Mängelfrei",mangel:"Mängel/Schäden festgestellt"};
 var SCHWERE_WORT={leicht:"Leicht",mittel:"Mittel",schwer:"Schwer"};
+// v2.3 (#4): Weiterbehandlung je Mangel – kontextabhängig Übergabe/Rücknahme
+var MASS_UEBERGABE=[
+  {k:"behoben",app:"Wird behoben",pdf:"wird behoben"},
+  {k:"doku",app:"Nur dokumentiert",pdf:"wird zu Dokumentationszwecken erfasst, jedoch nicht weiter bearbeitet"},
+  {k:"offen",app:"Noch offen",pdf:"noch offen / zum Zeitpunkt der Übergabe nicht abschließend geklärt"}
+];
+var MASS_RUECKNAHME=[
+  {k:"abnutzung",app:"Übliche Abnutzung",pdf:"übliche Abnutzung, keine Auswirkung auf die Kaution"},
+  {k:"ueber",app:"Über Abnutzung hinaus",pdf:"Schaden über die übliche Abnutzung hinaus — kautionsrelevant, Bewertung vorbehalten"},
+  {k:"pruefen",app:"Muss geprüft werden",pdf:"muss noch geprüft werden"}
+];
+function massOpts(){return istRuecknahme()?MASS_RUECKNAHME:MASS_UEBERGABE;}
+function massPdf(key){
+  var all=MASS_UEBERGABE.concat(MASS_RUECKNAHME);
+  for(var i=0;i<all.length;i++)if(all[i].k===key)return all[i].pdf;
+  return "";
+}
+function massApp(key){
+  var all=MASS_UEBERGABE.concat(MASS_RUECKNAHME);
+  for(var i=0;i<all.length;i++)if(all[i].k===key)return all[i].app;
+  return "";
+}
+
 
 function step3(){
   var gestenHinweis='<p style="font-size:12px;color:#a5a5a5;margin:0 2px 9px">Raum nach links wischen = löschen · nach rechts = umbenennen</p>';
@@ -966,24 +950,46 @@ function step3(){
       '</div>'+
       '</div>'+
       '<div class="raum-block-body'+(isOpen?" open":"")+'" id="rbb_'+ri+'">'+
-        '<div style="margin-bottom:11px">'+
-          '<textarea id="rb_desc_'+ri+'" rows="2" placeholder="Beschreibe Mangel/Schaden" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.raeume['+ri+'].beschreibung=this.value;schwereReveal('+ri+')" onblur="beschrBlur('+ri+')" style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:10px 11px;font-size:16px;font-family:inherit;color:#1a1a1a;outline:none;resize:none;box-sizing:border-box">'+esc(r.beschreibung||"")+'</textarea>'+
+        // 1. Beschreibung
+        '<div style="margin-bottom:13px">'+
+          '<div style="font-size:12px;color:#777;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">Beschreibung</div>'+
+          '<textarea id="rb_desc_'+ri+'" rows="2" placeholder="Beschreibe Mangel/Schaden" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\';D.raeume['+ri+'].beschreibung=this.value" onblur="beschrBlur('+ri+')" style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:10px 11px;font-size:16px;font-family:inherit;color:#1a1a1a;outline:none;resize:none;box-sizing:border-box">'+esc(r.beschreibung||"")+'</textarea>'+
         '</div>'+
-        '<div style="margin-bottom:11px">'+
+        // 2. Fotos
+        '<div style="margin-bottom:15px">'+
           '<div style="font-size:12px;color:#777;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">Fotos</div>'+
           '<div class="rfoto-grid">'+
             roomFotos+
             '<label class="rfoto-add"><span>'+icn("cam",16)+'</span>Foto<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addRaumFoto('+ri+',this)"></label>'+
           '</div>'+
         '</div>'+
-        '<div id="rb_schwere_'+ri+'" style="margin-bottom:6px;'+(schwereSichtbar(r)?'':'display:none')+'">'+
-          '<div style="font-size:12px;color:#777;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">Schweregrad</div>'+
-          '<div style="display:flex;gap:7px">'+
-            ['leicht','mittel','schwer'].map(function(s){
-              var on=r.schwere===s;
-              var col={leicht:{bd:'#e3b341',bg:'#fbf3dc',tx:'#7a5a12'},mittel:{bd:'#d87a30',bg:'#f7e2d2',tx:'#8a4818'},schwer:{bd:'#cc3b3b',bg:'#f7d6d6',tx:'#8a2020'}}[s];
-              var bg=on?col.bg:'#fff', bd=on?col.bd:'#ddd', tx=on?col.tx:'#888', fw=on?'700':'600';
-              return '<button type="button" onclick="setSchwere('+ri+',\''+s+'\')" style="flex:1;padding:9px 4px;border:1.5px solid '+bd+';background:'+bg+';color:'+tx+';font-size:12.5px;font-weight:'+fw+';font-family:inherit;cursor:pointer;border-radius:8px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+SCHWERE_WORT[s]+'</button>';
+        // Trennlinie: "Was ist der Mangel" | "Bewertung & Maßnahme"
+        '<div style="height:1px;background:#f0f0f0;margin:0 -3px 14px"></div>'+
+        // 3. Schweregrad – nur bei Übergabe
+        (istRuecknahme()?"":
+          '<div style="margin-bottom:14px">'+
+            '<div style="font-size:12px;color:#777;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">Schweregrad</div>'+
+            '<div style="display:flex;gap:7px">'+
+              ['leicht','mittel','schwer'].map(function(s){
+                var on=r.schwere===s;
+                var col={leicht:{bd:'#e3b341',bg:'#fbf3dc',tx:'#7a5a12'},mittel:{bd:'#d87a30',bg:'#f7e2d2',tx:'#8a4818'},schwer:{bd:'#cc3b3b',bg:'#f7d6d6',tx:'#8a2020'}}[s];
+                var bg=on?col.bg:'#fff', bd=on?col.bd:'#ddd', tx=on?col.tx:'#888', fw=on?'700':'600';
+                return '<button type="button" onclick="setSchwere('+ri+',\''+s+'\')" style="flex:1;padding:9px 4px;border:1.5px solid '+bd+';background:'+bg+';color:'+tx+';font-size:12.5px;font-weight:'+fw+';font-family:inherit;cursor:pointer;border-radius:8px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+SCHWERE_WORT[s]+'</button>';
+              }).join("")+
+            '</div>'+
+          '</div>')+
+        // 4. Weiterbehandlung – kontextabhängig; Rücknahme gestapelt, Übergabe nebeneinander
+        '<div style="margin-bottom:6px">'+
+          '<div style="font-size:12px;color:#777;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">Weiterbehandlung</div>'+
+          '<div style="display:flex;'+(istRuecknahme()?'flex-direction:column;':'')+'gap:7px">'+
+            massOpts().map(function(m,idx){
+              var on=r.massnahme===m.k;
+              var gruen=(idx===0);
+              var bg=on?(gruen?'#e6f2e8':'#eef2f7'):'#fff';
+              var bd=on?(gruen?'#3a7d44':'#8aa0b8'):'#ddd';
+              var tx=on?(gruen?'#2a5d32':'#3a5573'):'#666';
+              var fw=on?'700':'600';
+              return '<button type="button" onclick="setMass('+ri+',\''+m.k+'\')" style="'+(istRuecknahme()?'width:100%;padding:11px 12px;':'flex:1;padding:9px 4px;')+'border:1.5px solid '+bd+';background:'+bg+';color:'+tx+';font-size:'+(istRuecknahme()?'13px':'12px')+';font-weight:'+fw+';font-family:inherit;cursor:pointer;border-radius:8px;-webkit-tap-highlight-color:transparent;-webkit-appearance:none">'+m.app+'</button>';
             }).join("")+
           '</div>'+
         '</div>'+
@@ -999,7 +1005,7 @@ function step3(){
       '<span style="font-size:13px;color:'+(bewertet===D.raeume.length?"#1b7a2e":"#888")+';font-weight:700">'+(bewertet===D.raeume.length?"✓ ":"")+bewertet+' von '+D.raeume.length+' Räumen bewertet</span>'+
       '<button type="button" class="btn-add" style="margin-bottom:0;font-size:12.5px;padding:8px 13px" onclick="alleGut()">Alle Räume: Mängelfrei</button>'+
     '</div>'+
-    '<p style="font-size:13px;color:#777;margin-bottom:14px;line-height:1.5">Jeden Raum explizit beurteilen: Mängelfrei oder Mängel/Schäden festgestellt. Bei Mängeln/Schäden öffnet sich der Raum für Schweregrad, Beschreibung und Fotos.</p>'+
+    '<p style="font-size:13px;color:#777;margin-bottom:14px;line-height:1.5">Jeden Raum explizit beurteilen: Mängelfrei oder Mängel/Schäden festgestellt. Bei Mängeln/Schäden öffnet sich der Raum für '+(istRuecknahme()?"Beschreibung, Fotos und die Einordnung":"Beschreibung, Fotos, Schweregrad und Weiterbehandlung")+'.</p>'+
     gestenHinweis+blocks+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">'+
       raumAddInline()+
@@ -1084,33 +1090,6 @@ function raumInlineAdd(){
   if(!name){if(el)el.focus();return;}
   addRaum(name);
 }
-function addRaumDialog(){
-  saveMangelStep();
-  var verfuegbar=ROOMS_OPTIONAL.slice();
-  var old=ge("raum-add-ov");if(old)old.parentNode.removeChild(old);
-  var ov=document.createElement("div");
-  ov.id="raum-add-ov";
-  ov.style.cssText="position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center";
-  var box='<div style="background:#fff;width:100%;max-width:560px;border-radius:14px 14px 0 0;padding:18px 18px 26px;max-height:75vh;overflow-y:auto">'+
-    '<div style="font-size:15px;font-weight:700;margin-bottom:4px">Raum hinzufügen</div>'+
-    '<div style="font-size:12.5px;color:#888;margin-bottom:14px">Raumtyp wählen – wird der Liste hinzugefügt.</div>'+
-    verfuegbar.map(function(r){return '<button type="button" onclick="addRaum(\''+r.replace(/'/g,"\\'")+'\')" style="display:block;width:100%;text-align:left;padding:13px 14px;margin-bottom:7px;border:1px solid #e0e0e0;background:#fff;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:600;color:#1a1a1a">'+r+'</button>';}).join("")+
-    '<div style="display:flex;gap:8px;margin-top:10px">'+
-      '<input type="text" id="raum-frei" placeholder="Eigene Bezeichnung…" style="flex:1;border:1px solid #e0e0e0;border-radius:8px;padding:12px 13px;font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none">'+
-      '<button type="button" onclick="addRaumFrei()" style="border:none;background:#eb5b36;color:#fff;border-radius:8px;padding:12px 16px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-appearance:none">＋</button>'+
-    '</div>'+
-    '<button type="button" onclick="closeRaumDialog()" style="display:block;width:100%;padding:13px;margin-top:6px;border:none;background:#f0f0f0;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:700">Abbrechen</button>'+
-  '</div>';
-  ov.innerHTML=box;
-  ov.onclick=function(e){if(e.target===ov)closeRaumDialog();};
-  document.body.appendChild(ov);
-}
-function addRaumFrei(){
-  var el=ge("raum-frei");
-  var name=(el&&el.value||"").trim();
-  if(!name){if(el)el.focus();return;}
-  addRaum(name);
-}
 function closeRaumDialog(){var ov=ge("raum-add-ov");if(ov)ov.parentNode.removeChild(ov);}
 
 // Mangel hinzufügen: Raum wählen -> öffnet Raum, setzt Mängel/Schäden, Fokus auf Beschreibung
@@ -1153,27 +1132,12 @@ function delRaum(ri){
 function addRaum(name){
   closeRaumDialog();
   D.raeume.forEach(function(r){r._open=false;});
-  var neu={r:name,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:true};
+  var neu={r:name,ok:false,zustand:"",schwere:"",massnahme:"",beschreibung:"",fotos:[],_open:true};
   D.raeume.push(neu);
   render();
   toast("Raum hinzugefügt");
 }
 
-// v2.1 (#1): Schweregrad erscheint, sobald Text ODER Foto vorhanden – und bleibt dann sichtbar
-function schwereSichtbar(r){
-  if(r._ratedVisible)return true;
-  var hat=(r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length)||r.schwere;
-  if(hat)r._ratedVisible=true;
-  return !!hat;
-}
-function schwereReveal(ri){
-  // Live beim Tippen einblenden – ohne render(), damit der Textfeld-Fokus bleibt
-  var r=D.raeume[ri];if(!r)return;
-  if(schwereSichtbar(r)){
-    var el=ge("rb_schwere_"+ri);
-    if(el&&el.style.display==="none")el.style.display="";
-  }
-}
 function beschrBlur(ri){
   var r=D.raeume[ri];if(!r)return;
   if(r.beschreibung&&r.beschreibung.trim()&&r.zustand!=="mangel"){
@@ -1195,7 +1159,7 @@ function setZustandQuick(ri,z,ev){
   var r=D.raeume[ri];
   // v2.1 (#2): Umschalten auf "mängelfrei" bei vorhandenen Mangeldaten → Rückfrage
   if(z==="gut"){
-    var hatDaten=(r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length)||r.schwere;
+    var hatDaten=(r.beschreibung&&r.beschreibung.trim())||(r.fotos&&r.fotos.length)||r.schwere||r.massnahme;
     if(hatDaten){gruenRueckfrage(ri);return;}
   }
   r.zustand=z;
@@ -1225,7 +1189,7 @@ function gruenAbbruch(){var ov=ge("gruen-ov");if(ov)ov.parentNode.removeChild(ov
 function gruenBestaetigt(ri){
   gruenAbbruch();
   var r=D.raeume[ri];if(!r)return;
-  r.beschreibung="";r.schwere="";r.fotos=[];r._ratedVisible=false;
+  r.beschreibung="";r.schwere="";r.massnahme="";r.fotos=[];r._ratedVisible=false;
   r.zustand="gut";r.ok=true;r._open=false;
   persist();render();
   toast("Angaben entfernt – "+r.r+" mängelfrei");
@@ -1233,6 +1197,11 @@ function gruenBestaetigt(ri){
 function setSchwere(ri,s){
   saveMangelStep();
   D.raeume[ri].schwere=(D.raeume[ri].schwere===s?"":s);
+  persist();render();
+}
+function setMass(ri,k){
+  saveMangelStep();
+  D.raeume[ri].massnahme=(D.raeume[ri].massnahme===k?"":k);
   persist();render();
 }
 function alleGut(){
@@ -1340,7 +1309,6 @@ function addFotos(inputEl){
   var files=Array.from(inputEl.files),done=0,total=files.length,added=0;
   files.forEach(function(f){resizeImg(f,function(d){D.fotos.push({data:d,bez:""});added++;done++;if(done===total){loading(false);if(fotoPersistOderRollback(function(){for(var x=0;x<added;x++)D.fotos.pop();}))render();}});});
 }
-function addFotosSingle(inputEl){addFotos(inputEl);}
 function delFoto(i){D.fotos.splice(i,1);render();}
 
 // ── STEP 6: ABSCHLUSS ─────────────────────────────────────────────────────
@@ -1513,7 +1481,7 @@ function step5(c){
         '<button class="btn-dl" onclick="sharePDF()" type="button" style="font-size:15px;padding:13px 22px">'+icn("send",16)+' Protokoll senden</button>'+
       '</div>'+
     '</div>'+
-    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version 2.2 · Jakob Bonomo</div>';
+    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version 2.3 · Jakob Bonomo</div>';
 
 }
 
@@ -1695,20 +1663,6 @@ function sigOvSave(){
 
 
 // ── MAIL ──────────────────────────────────────────────────────────────────
-function doMail(){
-  saveStep();
-  var to=ge("f_email_empf")?ge("f_email_empf").value:D.email_empf||"";
-  var subj=encodeURIComponent(mailSubject());
-  var body=encodeURIComponent(
-    "Sehr geehrte Damen und Herren,\n\n"+
-    "anbei das "+protTitle()+" für "+(D.objekt||"die Wohnung")+(D.top?", Top "+D.top:"")+", "+D.typ+" vom "+fmtDate(D.datum)+".\n\n"+
-    "Bitte das beigefügte PDF-Protokoll zur Kenntnis nehmen und bei Rückfragen melden.\n\n"+
-    "Mit freundlichen Grüßen\n"+(D.verwalter||"PRISMA Zentrum für Standort- und Regionalentwicklung GmbH")+"\n"+
-    "www.prisma-zentrum.com"
-  );
-  window.location.href="mailto:"+to+"?subject="+subj+"&body="+body;
-}
-
 // ── PDF / PRINT ───────────────────────────────────────────────────────────
 // Signatur-Spalten-Labels (v2.0): Rollen-Label → Partei → "vertreten durch" → Person.
 // PRISMA ist auf Vermieterseite die zeichnende Partei (Vollmacht liegt dort).
@@ -1857,7 +1811,7 @@ function buildPDF(){
   }).join("");
   if(D.art==="wohnung"&&istRuecknahme())cbH+='<div class="cbl"><span class="cbx">'+(D.nachsend?"☑":"☐")+'</span><span>der Post-Nachsendeauftrag an die neue Adresse wurde '+(D.nachsend?"eingerichtet":"nicht eingerichtet &ndash; Fristsetzung bis "+(D.nachsend_frist?fmtDate(D.nachsend_frist):"________"))+'</span></div>';
   if(D.ba&&!istRuecknahme())cbH+='<div class="cbl"><span class="cbx">☑</span><span>die Bedienungsanleitungen wurden '+(istRuecknahme()?"zurückgegeben":"übergeben")+(D.ba_art?" ("+esc(D.ba_art)+")":"")+'</span></div>';
-  if(D.bs&&istGewerbe())cbH+='<div class="cbl"><span class="cbx">☑</span><span>die Brandschutzordnung wurde '+(istRuecknahme()?"zurückgegeben":"übergeben")+'</span></div>';
+  if(D.bs&&istGewerbe()&&!istRuecknahme())cbH+='<div class="cbl"><span class="cbx">☑</span><span>die Brandschutzordnung wurde übergeben</span></div>';
 
   var stromH=(D.anbieter||D.strom_bis)
     ? '<p class="txt">Stromzähler-'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' (Smart Meter) beim Anbieter <b>'+esc(D.anbieter||"-")+'</b> wird erledigt durch '+esc(D.strom_person||"-")+(D.strom_bis?' mit Zählerstichtag <b>'+fmtDate(D.strom_bis)+'</b>':"")+'.</p>'
@@ -1915,7 +1869,8 @@ function buildPDF(){
       mrDet.map(function(r,mi){
         var fotos=(r.fotos||[]).filter(function(f){return f&&f.data;}).map(function(f){return '<div class="mgbox"><img src="'+f.data+'"></div>';}).join("");
         return '<div class="mgblk'+(mi<mrDet.length-1?' sep':'')+'">'+
-          '<div class="mghd">'+r.r+(r.schwere?'&ensp;–&ensp;Schweregrad: '+SCHWERE_WORT[r.schwere]:'')+'</div>'+
+          '<div class="mghd">'+r.r+((!istRuecknahme()&&r.schwere)?'&ensp;–&ensp;Schweregrad: '+SCHWERE_WORT[r.schwere]:'')+'</div>'+
+          (r.massnahme?'<div style="font-size:9pt;color:#555;font-style:italic;margin-bottom:1.5mm">'+esc(massPdf(r.massnahme))+'</div>':'')+
           (r.beschreibung?'<div class="mgtxt" style="white-space:pre-line">'+esc(r.beschreibung)+'</div>':'')+
           (fotos?'<div class="mggrid">'+fotos+'</div>':'')+
         '</div>';
@@ -2101,7 +2056,7 @@ function closeBurst(){
 
 // ── NATIVES PDF (für Teilen/Share – ohne Druckdialog) ─────────────────────
 // Erzeugt ein echtes PDF (PDF 1.4, Helvetica/WinAnsi, JPEG-Bilder) rein clientseitig.
-var APP_VERSION="2.2";
+var APP_VERSION="2.3";
 
 function jpegDim(bin){
   var i=2,L=bin.length;
@@ -2163,7 +2118,6 @@ function buildNativePDF(sigV,sigM){
     o("BT /"+(bold?"F2":"F1")+" "+size+" Tf "+(gray!=null?gray+" g ":"")+x.toFixed(2)+" "+Y(y+size*0.85)+" Td ("+pdfEnc(s)+") Tj ET"+(gray!=null?" 0 g":""));
   }
   function hline(x1,x2,y,w,gray){o((gray!=null?gray+" G ":"0 G ")+(w||0.6)+" w "+x1.toFixed(2)+" "+Y(y)+" m "+x2.toFixed(2)+" "+Y(y)+" l S 0 G");}
-  function hlineC(x1,x2,y,w,r,g,b){o(r+" "+g+" "+b+" RG "+(w||0.6)+" w "+x1.toFixed(2)+" "+Y(y)+" m "+x2.toFixed(2)+" "+Y(y)+" l S 0 G");}
   function rect(x,y,w,h,lw,gray){o((gray!=null?gray+" G ":"0 G ")+(lw||0.6)+" w "+x.toFixed(2)+" "+Y(y+h)+" "+w.toFixed(2)+" "+h.toFixed(2)+" re S 0 G");}
   function frect(x,y,w,h,r,g,b){o(r+" "+g+" "+b+" rg "+x.toFixed(2)+" "+Y(y+h)+" "+w.toFixed(2)+" "+h.toFixed(2)+" re f 0 g");}
   function circle(cx,cy,r,lw,stroke){ // stroke = [r,g,b]
@@ -2400,9 +2354,9 @@ function buildNativePDF(sigV,sigM){
     checkbox(M,yy,true);
     txt(M+16,yy-1.5,"die Bedienungsanleitungen wurden "+(istRuecknahme()?"zurückgegeben":"übergeben")+(D.ba_art?" ("+D.ba_art+")":""),FS);yy+=LH+1;
   }
-  if(D.bs&&istGewerbe()){
+  if(D.bs&&istGewerbe()&&!istRuecknahme()){
     checkbox(M,yy,true);
-    txt(M+16,yy-1.5,"die Brandschutzordnung wurde "+(istRuecknahme()?"zurückgegeben":"übergeben"),FS);yy+=LH+1;
+    txt(M+16,yy-1.5,"die Brandschutzordnung wurde übergeben",FS);yy+=LH+1;
   }
   yy+=10;
   // Stromanmeldung (nur wenn Angaben vorhanden)
@@ -2516,10 +2470,12 @@ function buildNativePDF(sigV,sigM){
       });
       var fotos=(r.fotos||[]).filter(function(f){return f&&f.data;});
       var fRows=Math.ceil(fotos.length/2);
-      var bh=14+lines.length*12.5+(fotos.length?6+fRows*(FH+8):0)+16;
+      var massLines=r.massnahme?twrap(massPdf(r.massnahme),9,false,CW):[];
+      var bh=14+massLines.length*11+lines.length*12.5+(fotos.length?6+fRows*(FH+8):0)+16;
       // Block nie mitten teilen; sehr hohe Blöcke (viele Fotos) dürfen fließen
       if(yy+Math.min(bh,PH-BOT-M-60)>PH-BOT){np();header("Beilage 1: Mängel/Schäden im Detail (Fortsetzung)",true);yy+=2;}
-      txt(M,yy,r.r+(r.schwere?"  –  Schweregrad: "+SCHWERE_WORT[r.schwere]:""),10,true);yy+=14;
+      txt(M,yy,r.r+((!istRuecknahme()&&r.schwere)?"  –  Schweregrad: "+SCHWERE_WORT[r.schwere]:""),10,true);yy+=14;
+      if(massLines.length){massLines.forEach(function(L){txt(M,yy,L,9,false,0.35);yy+=11;});yy+=1;}
       lines.forEach(function(L){txt(M,yy,L,9.5,false,0.1);yy+=12.5;});
       if(fotos.length){
         yy+=6;
@@ -2664,11 +2620,6 @@ function mailBody(){
     (D.verwalter?D.verwalter+"\n":"")+
     "PRISMA Zentrum für Standort- und Regionalentwicklung GmbH";
 }
-function kopiere(txt,btn){
-  var done=function(){if(btn){var o=btn.textContent;btn.textContent="Kopiert ✓";setTimeout(function(){btn.textContent=o;},1400);}};
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(function(){});}
-  else{try{var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);done();}catch(e){}}
-}
 function sharePDF(){
   if(istEinseiter())saveSingle();else{saveStep();if(typeof saveMangelStep==="function")saveMangelStep();}
   var kern=[];
@@ -2797,14 +2748,14 @@ function migrateData(d){
   if(d.iban===undefined)d.iban="";
   if(d.nachfolge===undefined)d.nachfolge="";
   if(!d.raeume)d.raeume=[];
-  d.raeume.forEach(function(r){if(r._open===undefined)r._open=false;if(r.beschreibung===undefined)r.beschreibung="";if(r._ratedVisible===undefined)r._ratedVisible=false;});
+  d.raeume.forEach(function(r){if(r._open===undefined)r._open=false;if(r.beschreibung===undefined)r.beschreibung="";if(r._ratedVisible===undefined)r._ratedVisible=false;if(r.massnahme===undefined)r.massnahme="";});
   // Alt-Format: separate Mängel-Karten -> in Raum-Beschreibung übernehmen
   if(d.maengel&&d.maengel.length){
     d.maengel.forEach(function(m){
       var name=m._rsel||m.raum||"WEITERES";
       var r=null,i;
       for(i=0;i<d.raeume.length;i++){if(d.raeume[i].r===name){r=d.raeume[i];break;}}
-      if(!r){r={r:name,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};d.raeume.push(r);}
+      if(!r){r={r:name,ok:false,zustand:"",schwere:"",massnahme:"",beschreibung:"",fotos:[],_open:false};d.raeume.push(r);}
       if(!r)return;
       var t=(m.mangel||"").trim()+(m.bem?" ("+m.bem+")":"");
       if(t)r.beschreibung=(r.beschreibung?r.beschreibung+"\n":"")+t;
@@ -2883,10 +2834,6 @@ function persist(){
   map[id]={id:id,title:draftTitle(),ts:Date.now(),data:D};
   return saveDrafts(map);
 }
-function saveDraftManual(){
-  persist();
-  toast("Entwurf gespeichert ✓",1800);
-}
 function newDraft(art,typ){
   // aktuellen sichern (leere werden dank draftIstLeer nicht angelegt), dann frisches Protokoll
   persist();
@@ -2905,7 +2852,7 @@ function newDraft(art,typ){
     ],
     maengel:[],
     iban:"",nachfolge:"",
-    raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};}),
+    raeume:ROOMS.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",massnahme:"",beschreibung:"",fotos:[],_open:false};}),
     fotos:[],sig_v:null,sig_m:null,sig_v_ts:null,sig_m_ts:null,ba:false,ba_art:"",art:"wohnung",bs:false,nachsend:false,nachsend_frist:"",mv_ende:"",sk_fehlen:"",mieter_vd:"",bestandsobjekt:"",karten:[{nr:"",bez:"",fotos:[]}],verlust_eur:"15",email_empf:""
   };
   D.zaehler.forEach(function(z){z.ablese=D.datum;});
@@ -2915,7 +2862,7 @@ function newDraft(art,typ){
   if(art){
     D.art=art;
     var rc=ARTEN[art];
-    if(rc.rooms)D.raeume=rc.rooms.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",beschreibung:"",fotos:[],_open:false};});
+    if(rc.rooms)D.raeume=rc.rooms.map(function(r){return{r:r,ok:false,zustand:"",schwere:"",massnahme:"",beschreibung:"",fotos:[],_open:false};});
     var so=skOpts();
     if(so.length)D.schluessel=[{art:so[0],_sel:so[0],anz:"",nr:"",foto:null}];
     else D.schluessel=[{art:"",_sel:"",anz:"",nr:"",foto:null}]; // Einseiter Schlüssel: frei
@@ -3008,7 +2955,7 @@ function hdrBtn(){
   if(istEinseiter())saveSingle();else{saveStep();persist();}
   showStart();
 }
-function openDraftPanel(){showStart();}
+
 function closeDraftPanel(){}
 
 // ── RESTORE beim Start: aktuellen Entwurf laden, sonst Altformat migrieren ──
