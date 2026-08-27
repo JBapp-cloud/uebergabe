@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  PRISMA ÜBERGABEPROTOKOLL – Version 2.3                                      ║
+║  PRISMA ÜBERGABEPROTOKOLL – Version 2.4                                      ║
 ║  Projektkontext: Diese Datei hochladen, dann ist Claude sofort im Bild.      ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
@@ -53,6 +53,7 @@ html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;font-size:15px;background:#ededed;color:#1a1a1a;min-height:100vh;-webkit-overflow-scrolling:touch;overflow-y:auto;overflow-x:hidden}
 /* v2.1 (#6): Doppeltipp-Zoom unterbinden, Pinch-Zoom bleibt */
 button,a,label,input,select,textarea,.start-tile{touch-action:manipulation}
+.sticky-top,.sticky-top *{touch-action:manipulation} /* v2.4 (#1): Kopfleiste zoomte als einziger Bereich noch bei Doppeltipp */
 /* v2.1 (#3): Press-Feedback für Start-Kacheln */
 .start-tile{transition:transform .1s ease,filter .1s ease}
 .start-tile:active{transform:scale(.97);filter:brightness(.95)}
@@ -302,7 +303,7 @@ input:focus,select:focus,textarea:focus{border-bottom-color:#eb5b36 !important}
         <div class="app-title" id="app-title">Übergabeprotokoll Wohnung</div>
         <div class="app-sub" id="prog-lbl">Schritt 1 von 6</div>
       </div>
-      <div id="header-logo" style="flex:none">
+      <div id="header-logo" style="flex:none" onclick="logoTap()">
         <img src="data:image/png;base64,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" alt="PRISMA" style="height:26px;width:auto;display:block">
       </div>
     </div>
@@ -319,7 +320,7 @@ input:focus,select:focus,textarea:focus{border-bottom-color:#eb5b36 !important}
 <script>
 // ── DATA ───────────────────────────────────────────────────────────────────
 // Standard-Räume (Schlafzimmer 2/3 als optionale Ergänzung, nicht mehr default)
-var ROOMS=["Eingangstüre","Vorraum / Gang","Wohnzimmer","Schlafzimmer","Zimmer 2","Bad","Gäste-WC","Balkon","Abstellraum","Keller","Türen","Fenster"];
+var ROOMS=["Eingangstüre","Vorraum / Gang","Wohnzimmer","Küche","Schlafzimmer","Zimmer 2","Bad","Gäste-WC","Balkon","Abstellraum","Keller","Türen","Fenster"];
 var ROOMS_GEWERBE=["Eingangsportal","Vorraum/Empfang","Gangbereich","Büro 1","Büro 2","Büro 3","Besprechungsraum","WC","Türen","Fenster"];
 // ── PROTOKOLLARTEN (v18): zentrale Konfiguration ───────────────────────────
 var ARTEN={
@@ -717,14 +718,14 @@ function step0(){
       // v2.3 (#1): Abschnitt nur zeigen, wenn er Inhalt hat (z.B. bei Gewerbe-Rücknahme sonst leer)
       return festInhalt.trim()?('<div class="sec-hd">Bei der '+typWort()+' festgestellt</div><div class="grp-card">'+festInhalt+'</div>'):"";
     })()+
-    '<div class="sec-hd">Stromzähler-'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' (Smart Meter)</div>'+
+    '<div class="sec-hd">'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' Stromliefervertrag</div>'+
     '<div class="grp-card">'+
     '<div class="field-row" style="margin-bottom:2px">'+
       '<div class="field ac-wrap"><label>Anbieter</label>'+
         '<input type="text" id="f_anbieter" value="'+esc(D.anbieter)+'" placeholder="Tippen zum Suchen…" autocomplete="off" oninput="D.anbieter=this.value;anbFilter(this.value,this)" onblur="setTimeout(anbClose,200)" style="width:100%;border:none;border-bottom:1.5px solid #d0d0d0;padding:5px 3px 4px;font-size:16px;font-family:inherit;color:#1a1a1a;background:transparent;outline:none;-webkit-appearance:none;border-radius:0">'+
       '</div>'+
       '<div class="field"><label>wird erledigt durch</label>'+sel("f_strom_person",["Mieter","Vermieter"],D.strom_person)+'</div>'+
-      '<div class="field"><label>Zählerstichtag</label>'+inp("f_strom_bis",D.strom_bis,"","date")+'</div>'+
+      '<div class="field"><label>Zählerstichtag (Smart Meter)</label>'+inp("f_strom_bis",D.strom_bis,"","date")+'</div>'+
     '</div>'+
     '</div>'+
     navBar(false,true,"Weiter: Schlüssel →");
@@ -1481,7 +1482,7 @@ function step5(c){
         '<button class="btn-dl" onclick="sharePDF()" type="button" style="font-size:15px;padding:13px 22px">'+icn("send",16)+' Protokoll senden</button>'+
       '</div>'+
     '</div>'+
-    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version 2.3 · Jakob Bonomo</div>';
+    '<div style="text-align:center;color:#c8c8c8;font-size:11px;margin-top:16px">Version 2.4 · Jakob Bonomo</div>';
 
 }
 
@@ -1814,7 +1815,7 @@ function buildPDF(){
   if(D.bs&&istGewerbe()&&!istRuecknahme())cbH+='<div class="cbl"><span class="cbx">☑</span><span>die Brandschutzordnung wurde übergeben</span></div>';
 
   var stromH=(D.anbieter||D.strom_bis)
-    ? '<p class="txt">Stromzähler-'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' (Smart Meter) beim Anbieter <b>'+esc(D.anbieter||"-")+'</b> wird erledigt durch '+esc(D.strom_person||"-")+(D.strom_bis?' mit Zählerstichtag <b>'+fmtDate(D.strom_bis)+'</b>':"")+'.</p>'
+    ? '<p class="txt">'+(istRuecknahme()?"Abmeldung":"Anmeldung")+' Stromliefervertrag beim Anbieter <b>'+esc(D.anbieter||"-")+'</b> wird erledigt durch '+esc(D.strom_person||"-")+(D.strom_bis?' mit Zählerstichtag (Smart Meter) <b>'+fmtDate(D.strom_bis)+'</b>':"")+'.</p>'
     : "";
 
   var sk=D.schluessel.filter(function(s){return s.anz;});
@@ -1857,11 +1858,20 @@ function buildPDF(){
   '</div>';
 
   var clRows=D.raeume.map(function(r,i){
-    var befund=r.zustand==="gut"?'<span style="color:#333">Mängelfrei</span>'
-      :(r.zustand==="mangel"?'<b>Mängel/Schäden'+(r.schwere?" ("+SCHWERE_WORT[r.schwere].toLowerCase()+")":"")+'</b>'
-      :'<span class="dim">-</span>');
+    var befund;
+    if(!istRuecknahme()){
+      // v2.4 (#4): Übergabe entschärft – neutral "geprüft", Sternchen bei Anmerkung
+      befund=r.zustand==="gut"?'<span style="color:#333">geprüft</span>'
+        :(r.zustand==="mangel"?'<span style="color:#333">geprüft <b style="color:#993c1d">*</b></span>'
+        :'<span class="dim">-</span>');
+    }else{
+      befund=r.zustand==="gut"?'<span style="color:#333">Mängelfrei</span>'
+        :(r.zustand==="mangel"?'<b>Mängel/Schäden'+(r.schwere?" ("+SCHWERE_WORT[r.schwere].toLowerCase()+")":"")+'</b>'
+        :'<span class="dim">-</span>');
+    }
     return '<tr'+(i%2?' class="zeb"':'')+'><td class="rn">'+r.r+'</td><td class="ck">'+(r.ok?"✓":"")+'</td><td class="zu">'+befund+'</td></tr>';
   }).join("");
+  var hatStern=!istRuecknahme()&&D.raeume.some(function(r){return r.zustand==="mangel";});
   var mrDet=maengelRaeume();
   var mgDetail="";
   if(mrDet.length){
@@ -1877,7 +1887,9 @@ function buildPDF(){
       }).join("");
   }
   var blCheck='<div class="bl">'+hdr("Beilage 1: Checkliste & Mängel/Schäden")+
-    '<table class="cl"><thead><tr><th>Raum</th><th style="width:80px">Geprüft</th><th style="width:150px">Befund</th></tr></thead><tbody>'+clRows+'</tbody></table>'+mgDetail+'</div>';
+    '<table class="cl"><thead><tr><th>Raum</th><th style="width:80px">Geprüft</th><th style="width:150px">'+(istRuecknahme()?"Befund":"Status")+'</th></tr></thead><tbody>'+clRows+'</tbody></table>'+
+    (hatStern?'<div style="font-size:8.5pt;color:#555;font-style:italic;margin-top:2mm">* Zu diesen Räumen liegt eine Anmerkung vor — siehe Detailbeschreibung.</div>':'')+
+    mgDetail+'</div>';
 
   var blMg="";
 
@@ -2056,7 +2068,7 @@ function closeBurst(){
 
 // ── NATIVES PDF (für Teilen/Share – ohne Druckdialog) ─────────────────────
 // Erzeugt ein echtes PDF (PDF 1.4, Helvetica/WinAnsi, JPEG-Bilder) rein clientseitig.
-var APP_VERSION="2.3";
+var APP_VERSION="2.4";
 
 function jpegDim(bin){
   var i=2,L=bin.length;
@@ -2361,7 +2373,7 @@ function buildNativePDF(sigV,sigM){
   yy+=10;
   // Stromanmeldung (nur wenn Angaben vorhanden)
   if(D.anbieter||D.strom_bis){
-    var strom="Stromzähler-"+(istRuecknahme()?"Abmeldung":"Anmeldung")+" (Smart Meter) beim Anbieter "+(D.anbieter||"-")+" wird erledigt durch "+(D.strom_person||"-")+(D.strom_bis?" mit Zählerstichtag "+fmtDate(D.strom_bis):"")+".";
+    var strom=(istRuecknahme()?"Abmeldung":"Anmeldung")+" Stromliefervertrag beim Anbieter "+(D.anbieter||"-")+" wird erledigt durch "+(D.strom_person||"-")+(D.strom_bis?" mit Zählerstichtag (Smart Meter) "+fmtDate(D.strom_bis):"")+".";
     twrap(strom,FS,false,CW).forEach(function(L){txt(M,yy,L,FS);yy+=LH;});
     yy+=10;
   }
@@ -2434,24 +2446,42 @@ function buildNativePDF(sigV,sigM){
     frect(M,yy,CW,15,0.93,0.93,0.93);
     txt(M+8,yy+2.5,"Raum",9.5,true,0.15);
     txt(M+CW-225,yy+2.5,"Geprüft",9.5,true,0.15);
-    txt(M+CW-145,yy+2.5,"Befund",9.5,true,0.15);
+    txt(M+CW-145,yy+2.5,istRuecknahme()?"Befund":"Status",9.5,true,0.15);
     yy+=19;
   }
   clHead();
+  var pdfHatStern=false;
   D.raeume.forEach(function(r,idx){
     if(yy+RH>PH-BOT){np();header("Beilage 1: Checkliste & Mängel/Schäden (Fortsetzung)",true);yy+=6;clHead();}
     if(idx%2===1)frect(M,yy-3,CW,RH,0.966,0.966,0.966);
     txt(M+8,yy+1,r.r,9.5,true);
     if(r.ok){o("0 G 1.2 w "+(M+CW-215).toFixed(2)+" "+Y(yy+6)+" m "+(M+CW-211).toFixed(2)+" "+Y(yy+10)+" l "+(M+CW-204.5).toFixed(2)+" "+Y(yy+1.5)+" l S");}
-    if(r.zustand==="gut"){
-      txt(M+CW-145,yy+1,"Mängelfrei",9.5,false,0.2);
-    }else if(r.zustand==="mangel"){
-      txt(M+CW-145,yy+1,"Mängel/Schäden"+(r.schwere?" ("+SCHWERE_WORT[r.schwere].toLowerCase()+")":""),9.5,true);
+    if(!istRuecknahme()){
+      // v2.4 (#4): Übergabe entschärft – neutral "geprüft", Sternchen bei Anmerkung
+      if(r.zustand==="gut"){
+        txt(M+CW-145,yy+1,"geprüft",9.5,false,0.2);
+      }else if(r.zustand==="mangel"){
+        txt(M+CW-145,yy+1,"geprüft *",9.5,false,0.2);
+        pdfHatStern=true;
+      }else{
+        txt(M+CW-145,yy+1,"-",9.5,false,0.6);
+      }
     }else{
-      txt(M+CW-145,yy+1,"-",9.5,false,0.6);
+      if(r.zustand==="gut"){
+        txt(M+CW-145,yy+1,"Mängelfrei",9.5,false,0.2);
+      }else if(r.zustand==="mangel"){
+        txt(M+CW-145,yy+1,"Mängel/Schäden"+(r.schwere?" ("+SCHWERE_WORT[r.schwere].toLowerCase()+")":""),9.5,true);
+      }else{
+        txt(M+CW-145,yy+1,"-",9.5,false,0.6);
+      }
     }
     yy+=RH;
   });
+  if(pdfHatStern){
+    if(yy+14>PH-BOT){np();yy+=2;}
+    txt(M,yy+1,"* Zu diesen Räumen liegt eine Anmerkung vor — siehe Detailbeschreibung.",8.5,false,0.35);
+    yy+=14;
+  }
 
   // Mängel/Schäden im Detail: pro Raum ein Block mit großen Fotos (2 je Reihe)
   var mrDet=maengelRaeume();
@@ -3019,6 +3049,68 @@ function draftCards(map,curIdv,gesendet){
     '</div>';
   }).join("");
 }
+// ── v2.4 (#1): Easter Egg – 5× Logo-Tap am Startbildschirm → Konfetti + Gruß ─
+var _eggTaps=0,_eggLast=0,_eggActive=false;
+function logoTap(){
+  if(_screen!=="start"||_eggActive)return;
+  var now=Date.now();
+  if(now-_eggLast>2000)_eggTaps=0; // Taps müssen innerhalb von 2 Sek. kommen
+  _eggLast=now;
+  _eggTaps++;
+  if(_eggTaps>=5){_eggTaps=0;easterEgg();}
+}
+function easterEgg(){
+  _eggActive=true;
+  var ov=document.createElement("div");
+  ov.id="egg-ov";
+  ov.style.cssText="position:fixed;inset:0;z-index:3000;pointer-events:none;overflow:hidden";
+  ov.innerHTML='<canvas id="egg-cv" style="position:absolute;inset:0;width:100%;height:100%"></canvas>'+
+    '<div id="egg-msg" style="position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(.7);background:#fff;border:2px solid #eb5b36;border-radius:14px;padding:16px 22px;font-size:15.5px;font-weight:700;color:#1a1a1a;box-shadow:0 6px 24px rgba(0,0,0,.18);white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s">Gebaut von JB für Team PRISMA ❤️</div>';
+  document.body.appendChild(ov);
+  var cv=ov.querySelector("#egg-cv");
+  var W=window.innerWidth,H=window.innerHeight;
+  cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d");
+  var farben=["#eb5b36","#f0997b","#575656","#f7c94b","#5dcaa5","#378add"];
+  var parts=[];
+  for(var i=0;i<90;i++){
+    parts.push({
+      x:Math.random()*W, y:-20-Math.random()*H*0.4,
+      w:6+Math.random()*6, h:9+Math.random()*8,
+      vy:2+Math.random()*3, vx:(Math.random()-0.5)*1.6,
+      rot:Math.random()*Math.PI*2, vr:(Math.random()-0.5)*0.25,
+      c:farben[Math.floor(Math.random()*farben.length)]
+    });
+  }
+  var start=Date.now(),raf;
+  function frame(){
+    var t=Date.now()-start;
+    ctx.clearRect(0,0,W,H);
+    var fade=t>3000?Math.max(0,1-(t-3000)/800):1;
+    ctx.globalAlpha=fade;
+    parts.forEach(function(p){
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle=p.c;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    if(t<3800){raf=requestAnimationFrame(frame);}
+    else{
+      var msg=ov.querySelector("#egg-msg");
+      if(msg){msg.style.opacity="0";msg.style.transform="translate(-50%,-50%) scale(.7)";}
+      setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);_eggActive=false;},350);
+    }
+  }
+  raf=requestAnimationFrame(frame);
+  setTimeout(function(){
+    var msg=ov.querySelector("#egg-msg");
+    if(msg){msg.style.opacity="1";msg.style.transform="translate(-50%,-50%) scale(1)";}
+  },200);
+}
+
 function kopfLeiste(modus){
   var btn=ge("hdr-btn");
   if(btn){

@@ -2,7 +2,7 @@
 // Bei jedem App-Update: CACHE_VERSION erhöhen (z.B. v2, v3...)
 // Dadurch wird der alte Cache automatisch gelöscht und die neue Version geladen.
 
-var CACHE_VERSION = "prisma-uebergabe-v20-2.3";
+var CACHE_VERSION = "prisma-uebergabe-v20-2.4";
 
 var ASSETS = [
   "index.html",
